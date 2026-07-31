@@ -1,0 +1,22 @@
+[project]
+name = "world-builder-dnd"
+version = "0.1.0"
+description = "World Builder for Tabletop RPGs"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "typer>=0.16",
+    "rich>=14.0",
+    "pydantic>=2.11",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.1",
+    "notion-client>=2.4"
+]
+
+[project.scripts]
+worldbuilder = "worldbuilder.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
