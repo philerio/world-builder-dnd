@@ -1,7 +1,14 @@
-load_world()
+from pathlib import Path
 
-load_city()
+import yaml
 
-load_campaign()
+from worldbuilder.models.world import World
 
-load_npc()
+
+def load_world(path: Path) -> World:
+    """Load a world definition from a YAML file."""
+
+    with path.open("r", encoding="utf-8") as file:
+        data = yaml.safe_load(file)
+
+    return World.model_validate(data)
