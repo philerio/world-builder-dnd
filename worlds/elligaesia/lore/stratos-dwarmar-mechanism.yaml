@@ -1,0 +1,35 @@
+id: stratos-dwarmar-mechanism
+name: Stratos Dwarmar Mechanism
+description: >
+  An ancient Dwarmar technological system responsible for keeping
+  Stratos suspended in the sky and powering the mechanized golems
+  that control the city.
+
+player_knowledge: >
+  The party knows that ancient technology is responsible for keeping
+  Stratos suspended in the sky and that the city's mechanized golems
+  are connected to the same source of power.
+
+details: >
+  The mechanism sustains Stratos in the sky while also providing
+  power to the city's mechanized golems.
+  The system requires a continual source of energy and is slowly
+  draining life from the surrounding land. This has caused the
+  desert around Stratos to gradually expand.
+
+dm_notes: >
+  Aerick used ancient Dwarmar technology to lift Stratos into the sky.
+  The mechanism keeping the city airborne and the mechanism powering
+  the golems are part of the same system.
+
+  The technology is slowly draining the land of life to power itself,
+  causing the desert to expand.
+
+  Disabling the mechanism is the intended solution to the Stratos
+  conflict. When it is disabled, the golems will lose power, the
+  people trapped under Dorith's control will be freed, the desert
+  will stop expanding, and Stratos will descend back toward the
+  ground.
+
+  The full capabilities and origin of the technology should be
+  revealed gradually.

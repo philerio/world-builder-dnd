@@ -1,0 +1,27 @@
+id: zeffo-undead-sightings
+name: Zeffo Undead Sightings
+
+description: >
+  Rumors have spread of undead appearing in the woods of Zeffo.
+
+type: supernatural
+status: rumored
+
+locations:
+  - zeffo
+
+campaigns: []
+
+caused_by: []
+
+true_causes: []
+
+hidden_connections: []
+
+dm_notes: >
+  The reports of undead are currently only rumors. The actual cause
+  and nature of the undead activity have not yet been established.
+
+consequences: []
+
+potential_campaign: true

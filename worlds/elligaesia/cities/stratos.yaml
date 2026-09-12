@@ -1,0 +1,31 @@
+id: stratos
+name: Stratos
+description: >
+  A High Elf city that was believed to have been lost. Stratos is
+  suspended in the sky and is ruled by Dorith, whose control is
+  enforced through mechanized golems.
+
+kingdom: null
+region: null
+population: null
+
+details: >
+  Stratos was originally a ground-based city ruled by High Elves.
+  The city's ruling class remains High Elf, and Aerith is technically
+  a High Elf.
+  The city is currently suspended in the sky by ancient technology.
+  The same system is connected to the mechanized golems that control
+  the city.
+
+dm_notes: >
+  Aerick used ancient Dwarmar technology to lift Stratos into the sky.
+  The technology sustaining Stratos is slowly draining life from the
+  surrounding land, causing the desert to gradually expand.
+
+  Dorith, Aerith's maternal uncle, currently rules Stratos and
+  controls the city through the mechanized golems.
+
+  The eventual solution is to disable the mechanism powering the
+  city. Doing so will cause the golems to lose power, free the people
+  trapped under Dorith's control, stop the desert from expanding,
+  and cause Stratos to descend back toward the ground.

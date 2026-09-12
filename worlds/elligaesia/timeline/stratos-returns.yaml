@@ -1,0 +1,48 @@
+id: stratos-returns
+name: Stratos Returns
+
+description: >
+  The mechanism sustaining Stratos in the sky is disabled, causing
+  the city's mechanized golems to lose power and Stratos to descend
+  back toward the ground.
+
+era: Modern Era
+date: null
+
+locations:
+  - stratos
+
+kingdoms: []
+
+characters:
+  - aerith
+  - dorith
+
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - The mechanized golems lose their source of power.
+  - The people of Stratos are freed from the golems' control.
+  - The technology stops draining life from the surrounding land.
+  - The expansion of the desert stops.
+  - Stratos descends back toward the ground.
+  - The lost city of Stratos is restored to the wider world.
+
+dm_notes: >
+  The mechanism keeping Stratos airborne and powering the golems
+  is part of the same Dwarmar technological system.
+
+  Disabling the mechanism is intended to end Dorith's control over
+  the city.
+
+  The mechanism's destruction also ends the process that has been
+  draining life from the surrounding land and causing the desert
+  to expand.
+
+  Stratos was believed to have been lost before its existence was
+  rediscovered.
+
+  The exact circumstances of the mechanism's destruction and the
+  final confrontation with Dorith should be established when the
+  campaign reaches this point.

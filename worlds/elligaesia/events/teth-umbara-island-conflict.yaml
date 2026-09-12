@@ -1,0 +1,29 @@
+id: teth-umbara-island-conflict
+name: Teth-Umbara Island Conflict
+
+description: >
+  Teth and Umbara are engaged in a conflict over a mysterious island
+  that recently appeared in the ocean.
+
+type: conflict
+status: ongoing
+
+locations:
+  - teth
+  - umbara
+
+campaigns: []
+
+caused_by: []
+
+true_causes: []
+
+hidden_connections: []
+
+dm_notes: >
+  The true origin of the island and the reason it appeared are currently
+  unknown.
+
+consequences: []
+
+potential_campaign: true

@@ -4,7 +4,6 @@ from worldbuilder.loaders.entity_loader import load_yaml_directory
 from worldbuilder.loaders.yaml_loader import load_world
 from worldbuilder.models.city import City
 from worldbuilder.models.kingdom import Kingdom
-from worldbuilder.models.lore import Lore
 from worldbuilder.models.region import Region
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.registry import WorldRegistry
@@ -42,11 +41,5 @@ def load_world_registry(path: Path) -> WorldRegistry:
         TimelineEvent,
     ):
         registry.add_timeline_event(timeline_event)
-    
-    for lore in load_yaml_directory(
-        path.parent / "lore",
-        Lore,
-    ):
-        registry.add_lore(lore)
 
     return registry

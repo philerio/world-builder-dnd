@@ -1,0 +1,47 @@
+id: stratos-revealed
+name: Stratos Revealed
+
+description: >
+  The party discovers that Stratos, a city believed to have been
+  lost, still exists as a floating city in the sky.
+
+era: Modern Era
+date: null
+
+locations:
+  - stratos
+
+kingdoms: []
+
+characters:
+  - aerith
+  - dorith
+
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - The existence of Stratos becomes known to the party.
+  - Aerith's connection to Stratos becomes central to the continuing story.
+  - The party encounters the mechanized golems controlling the city.
+
+dm_notes: >
+  Stratos was originally a ground-based High Elf city.
+
+  Aerith is technically a High Elf and is connected to the ruling
+  class of Stratos.
+
+  Aerith's father used ancient Dwarmar technology to lift the city
+  into the sky. This is not initially known to the players.
+
+  The technology keeping Stratos airborne is also responsible for
+  powering the mechanized golems.
+
+  The same technology is slowly draining life from the surrounding
+  land, causing the desert to expand.
+
+  Dorith, Aerith's uncle, currently rules Stratos and controls the
+  city through the golems.
+
+  The full nature of the technology and its eventual connection to
+  the fate of Stratos should be revealed gradually.

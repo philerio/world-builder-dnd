@@ -17,13 +17,28 @@ details: >
 
   After leaving the forest as soon as she was old enough, Aerith
   became a mercenary.
+  
+  Aerith is technically a High Elf and is connected to the High Elf
+  ruling class of Stratos.
+
+  Stratos was believed to have been lost before Aerith's connection
+  to the city was revealed.
 
 role: player-character
-city: null
+city: stratos
 region: null
 kingdom: null
 
 events:
+  - stratos-revealed
+
+relationships:
+  - character: aerick
+    relationship: father
+  - character: elorith
+    relationship: mother
+  - character: dorith
+    relationship: maternal uncle
   - description: >
       Aerith was adopted by the rulers of West Wood.
     campaign: null
@@ -39,3 +54,14 @@ events:
       investigate the events in Reqrun.
     campaign: the-unforgiven
     location: reqrun
+dm_notes: >
+  Aerith's mother was transformed into one of the mechanized golems
+  controlling Stratos.
+
+  The smaller golem encountered by the party is actually Aerith's
+  mother. This truth should remain hidden from the players until the
+  appropriate reveal.
+
+  Dorith's control of Stratos and the golems is connected to the
+  larger mystery surrounding Aerith's family and the technology
+  sustaining the city.

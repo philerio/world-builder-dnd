@@ -12,5 +12,8 @@ def test_world_event_defaults():
     assert event.locations == []
     assert event.campaigns == []
     assert event.caused_by == []
+    assert event.true_causes == []
+    assert event.hidden_connections == []
+    assert event.dm_notes is None
     assert event.consequences == []
     assert event.potential_campaign is False

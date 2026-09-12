@@ -1,0 +1,41 @@
+id: bane-banishment
+name: Bane Is Banished
+
+description: >
+  Bane, a powerful god, interferes with mortals and is punished by
+  the other gods. Rather than destroy him, the gods imprison him
+  within the body of a sorcerer, stripping away much of his memory
+  of his former existence.
+
+era: Ancient Era
+date: null
+
+locations: []
+kingdoms: []
+characters:
+  - bane
+campaigns: []
+
+consequences:
+  - Bane is separated from his divine existence.
+  - Bane becomes trapped within a mortal sorcerer's body.
+  - Much of Bane's memory of his former existence is lost.
+  - Bane must regain power and influence through the mortal world.
+
+dm_notes: >
+  Bane was originally a god. His interference with mortals became
+  severe enough that the other gods determined he had to be contained.
+
+  They could not simply destroy him, so they imprisoned his essence
+  within the body of a sorcerer. This was the only method they had
+  to contain him.
+
+  Bane initially has little memory of who he was before the
+  imprisonment. His connection to the Dwarmar and the Power Sources
+  may be part of how he gradually rediscovers his identity and
+  begins rebuilding his influence.
+
+  The corruption caused by the Power Sources may be intentional.
+  Rather than conquering the realm directly, Bane can use corrupted
+  sources and their users to spread his influence throughout the
+  world.

@@ -1,0 +1,22 @@
+id: zeffo-undead-appear
+name: Undead Appear in Zeffo
+
+description: >
+  Reports emerge of undead appearing in the woods of Zeffo.
+
+era: Modern Era
+date: null
+
+locations:
+  - zeffo
+
+kingdoms: []
+characters: []
+campaigns: []
+
+consequences:
+  - Undead activity is reported in Zeffo.
+  - The reports create concern about the safety of the region.
+
+dm_notes: >
+  The true cause of the undead activity has not yet been established.

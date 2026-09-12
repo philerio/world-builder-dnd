@@ -1,0 +1,52 @@
+id: separation-of-northern-and-southern-kingdoms
+name: Separation of the Northern and Southern Kingdoms
+
+description: >
+  The gods divide the world into northern and southern regions as
+  punishment for the mortals who allowed Bane to spread his influence.
+  The Mountain of Bane becomes the great geographic boundary between
+  the two regions. The mountains are filled with monsters, making
+  passage between the regions extremely dangerous.
+
+era: Ancient Era
+date: null
+
+locations:
+  - mountain-of-bane
+
+kingdoms: []
+characters:
+  - bane
+campaigns: []
+
+consequences:
+  - The northern and southern regions are separated.
+  - The Mountain of Bane becomes a major geographic boundary.
+  - Monsters inhabit the mountain range.
+  - Travel between the northern and southern regions becomes extremely difficult.
+  - Powerful wizards eventually create a pass through the mountains.
+  - The road through the pass is enchanted to protect travelers from the monsters.
+
+dm_notes: >
+  The gods deliberately separated the world as punishment for the
+  mortal civilizations that allowed Bane to spread his influence.
+
+  The Mountain of Bane is the great mountain range separating the
+  northern and southern regions. The mountains are filled with
+  monsters, making them effectively impassable.
+
+  Powerful wizards eventually cut a pass through the mountain range
+  and created an enchanted road connecting the regions. The magic
+  surrounding the road protected travelers from the monsters of
+  the mountains.
+
+  The road eventually became an important trade route through Batik,
+  including the route passing through Reqrun.
+
+  During The Unforgiven, Pattrice drains the protective magic from
+  the road to power his enchantment and sustain himself. As that
+  magic disappears, the monsters are no longer restricted by the
+  road's protections and can roam freely across it.
+
+  The loss of the road's magic threatens to effectively close the
+  only reliable passage through the Mountain of Bane.

@@ -1,0 +1,40 @@
+id: sorcerer-identity-revealed
+name: The Sorcerer's Identity Is Revealed
+
+description: >
+  The truth behind the governor of Reqrun is revealed when Dronath
+  recognizes him as the sorcerer responsible for imprisoning him.
+
+era: Modern Era
+date: null
+
+locations:
+  - reqrun
+
+kingdoms: []
+characters:
+  - pattrice
+  - dronath
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - Pattrice's true nature is exposed.
+  - The conflict between Pattrice and Dronath comes into the open.
+  - The Misfits become directly involved in the confrontation between them.
+
+dm_notes: >
+  Pattrice is the sorcerer who previously fought Dronath and
+  imprisoned him. He had taken control of the town while concealing
+  his true identity.
+
+  Pattrice's identity is revealed when Dronath addresses him as
+  the sorcerer.
+
+  Pattrice attempts to turn the town's guards against the Misfits
+  by claiming that they are working for Dronath.
+
+  The deeper truth about Pattrice's multiple lives, his ability
+  to transfer his consciousness between bodies, and his connection
+  to Bane should remain separate from the public-facing history
+  until those revelations are appropriate.

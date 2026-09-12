@@ -1,0 +1,32 @@
+id: fall-of-the-dwarmar
+name: Fall of the Dwarmar
+
+description: >
+  The Dwarmar civilization falls after the Power Sources and the
+  forces surrounding them bring about its eventual destruction.
+
+era: Ancient Era
+date: null
+
+locations: []
+kingdoms: []
+characters: []
+campaigns: []
+
+consequences:
+  - The Dwarmar civilization falls.
+  - The Power Sources become remnants of a lost civilization.
+  - Ancient Dwarmar knowledge and technology become lost or forgotten.
+
+dm_notes: >
+  The exact circumstances of the Dwarmar's fall have not yet been
+  fully established.
+
+  The Power Sources and their connection to Bane are important to
+  understanding the downfall of the Dwarmar. Their tendency to
+  slowly corrupt those who use them may have contributed to the
+  civilization's eventual destruction.
+
+  Ancient Dwarmar machines and technology may still exist and can
+  become relevant to the modern world as they are rediscovered or
+  reactivated.

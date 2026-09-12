@@ -11,5 +11,11 @@ class WorldEvent(WorldObject):
     locations: list[str] = Field(default_factory=list)
     campaigns: list[str] = Field(default_factory=list)
     caused_by: list[str] = Field(default_factory=list)
+    true_causes: list[str] = Field(default_factory=list)
+    hidden_connections: list[str] = Field(default_factory=list)
+    dm_notes: str | None = None
     consequences: list[str] = Field(default_factory=list)
     potential_campaign: bool = False
+    true_causes: list[str] = Field(default_factory=list)
+    hidden_connections: list[str] = Field(default_factory=list)
+    dm_notes: str | None = None

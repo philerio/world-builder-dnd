@@ -1,0 +1,24 @@
+id: dorith
+name: Dorith
+
+description: >
+  A High Elf and the current ruler of Stratos. Dorith is Aerith's
+  uncle and maintains control of the city through its mechanized
+  golems.
+
+role: Ruler of Stratos
+city: stratos
+region: null
+kingdom: null
+
+details: >
+  Dorith is a member of Stratos's High Elf ruling class and currently
+  controls the city through the mechanized golems.
+
+events: []
+
+relationships:
+  - character: elorith
+    relationship: sister
+  - character: aerith
+    relationship: maternal niece

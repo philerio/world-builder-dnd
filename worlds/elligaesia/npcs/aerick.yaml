@@ -1,0 +1,22 @@
+id: aerick
+name: Aerick
+description: >
+  A High Elf of Stratos and Aerith's father. Aerick was responsible
+  for lifting Stratos into the sky using ancient Dwarmar technology.
+role: Former Ruler of Stratos
+city: stratos
+region: null
+kingdom: null
+details: >
+  Aerick used ancient Dwarmar technology to lift Stratos from the
+  ground and trap the city in the sky. He and Aerith disappeared
+  approximately 400 years ago, and Stratos was subsequently believed
+  to have been lost.
+
+events: []
+
+relationships:
+  - character: elorith
+    relationship: spouse
+  - character: aerith
+    relationship: daughter

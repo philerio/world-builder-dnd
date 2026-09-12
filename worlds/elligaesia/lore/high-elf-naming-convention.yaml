@@ -1,0 +1,21 @@
+id: high-elf-naming-convention
+name: High Elf Naming Convention
+description: >
+  High Elf children are traditionally given names formed from
+  variations of their parents' names.
+
+details: >
+  A child's name incorporates elements of both parents' names.
+  In Aerith's family, the "Aer" portion comes from her father
+  Aerick, while the "ith" portion comes from her mother Elorith.
+
+  The same maternal naming element appears in Dorith, who is
+  Elorith's brother. This reflects a family naming tradition in
+  which parts of names can be inherited through the maternal
+  and paternal lines.
+
+dm_notes: >
+  The naming convention can be used to identify family relationships
+  or ancestry among High Elves. The exact rules governing which
+  portions of a parent's name are inherited are not yet fully
+  established.

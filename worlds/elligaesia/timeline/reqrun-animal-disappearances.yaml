@@ -1,0 +1,29 @@
+id: reqrun-animal-disappearances
+name: Reqrun Animal Disappearances
+
+description: >
+  Animals begin disappearing from Reqrun at night, creating fear
+  and uncertainty throughout the town.
+
+era: Modern Era
+date: null
+
+locations:
+  - reqrun
+
+kingdoms: []
+characters: []
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - Livestock and other animals are lost from the town.
+  - The disappearances lead to an investigation into what is happening around Reqrun.
+
+dm_notes: >
+  The disappearances are caused by Dronath, the Aboleth beneath
+  Reqrun. His minions harvest livestock so that he can feed and
+  regain his strength after being trapped for centuries.
+
+  The disappearances are the initial mystery that draws the Misfits
+  into the events of The Unforgiven.

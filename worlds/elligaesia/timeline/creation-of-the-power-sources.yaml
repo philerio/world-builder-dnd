@@ -1,0 +1,35 @@
+id: creation-of-the-power-sources
+name: Creation of the Power Sources
+
+description: >
+  The Dwarmar come into possession of the Power Sources, powerful
+  magical artifacts that become central to their civilization.
+  Ancient knowledge hints that Bane was involved in their origin
+  or acquisition.
+
+era: Ancient Era
+date: null
+
+locations: []
+kingdoms: []
+characters:
+  - bane
+campaigns: []
+
+consequences:
+  - The Power Sources become central to Dwarmar civilization.
+  - Those who use the Power Sources are gradually corrupted.
+
+dm_notes: >
+  The exact origin of the Power Sources remains unclear, but there
+  are hints that Bane was responsible for introducing or providing
+  them to the Dwarmar.
+
+  The Power Sources slowly corrupt those who use them. This corruption
+  may have been part of Bane's larger plan: rather than simply
+  controlling individuals directly, the Power Sources allow his
+  influence to spread through those who depend upon their power.
+
+  The true relationship between Bane, the Dwarmar, and the Power
+  Sources should remain partially hidden until revealed through
+  the campaign.

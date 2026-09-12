@@ -1,0 +1,43 @@
+id: elorith
+name: Elorith
+
+description: >
+  A High Elf of Stratos and Aerith's mother. She was transformed into
+  one of the mechanized golems that now serve Dorith.
+
+role: Former member of the High Elf ruling class
+city: stratos
+region: null
+kingdom: null
+
+details: >
+  Aerith's mother was a member of the High Elf ruling class of
+  Stratos before being transformed into a mechanized golem.
+
+  Her identity is hidden behind her transformed state, leaving her
+  family and the people of Stratos unaware of her true condition.
+
+  Elorith is the sister of Dorith and the mother of Aerith.
+  She was among the people transformed into a mechanized golem
+  during Dorith's control of Stratos.
+
+events:
+  - stratos-revealed
+
+dm_notes: >
+  One of the mechanized golems encountered in Stratos is actually
+  Aerith's mother.
+
+  Her transformation is part of the larger mystery surrounding
+  Dorith, the golems, and the technology controlling Stratos.
+
+  The truth of her identity should be revealed to Aerith and the
+  party at an appropriate point in the campaign.
+
+relationships:
+  - character: aerick
+    relationship: spouse
+  - character: aerith
+    relationship: daughter
+  - character: dorith
+    relationship: sister

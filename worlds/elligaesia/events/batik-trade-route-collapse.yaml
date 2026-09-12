@@ -1,0 +1,46 @@
+id: batik-trade-route-collapse
+name: Collapse of the Batik Trade Route
+
+description: >
+  The ancient trade road through Batik has been overtaken by monsters
+  after the protective magic surrounding the road began to fail.
+
+type: consequence
+status: ongoing
+
+locations:
+  - batik
+
+campaigns:
+  - the-unforgiven
+
+caused_by:
+  - the-unforgiven
+
+true_causes:
+  - pattrice
+
+hidden_connections:
+  - bane
+  - dwarmar
+
+dm_notes: >
+  The protective magic surrounding the road was drained by Pattrice
+  during The Unforgiven. He used the stolen magic to power his
+  enchantment and sustain himself.
+
+  The collapse of the trade route is one of the larger consequences
+  of The Unforgiven and contributes to the political instability
+  affecting Elligaesia.
+
+  The deeper connection is to Bane and the remnants of Dwarmar
+  technology. Bane's growing influence is contributing to the
+  reactivation and increasing importance of ancient Dwarmar
+  machines and power sources.
+
+consequences:
+  - Trade along the southern route has been disrupted.
+  - Monsters now threaten travelers using the road.
+  - The disruption contributes to growing trade tensions across Elligaesia.
+
+potential_campaign: true

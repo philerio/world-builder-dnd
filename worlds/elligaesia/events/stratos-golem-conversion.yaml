@@ -1,0 +1,47 @@
+id: stratos-golem-conversion
+name: Stratos Golem Conversion
+description: >
+  The people of Stratos are transformed into mechanized golems
+  under Dorith's control.
+
+type: crisis
+status: ongoing
+
+locations:
+  - stratos
+
+campaigns:
+  - the-unforgiven
+
+caused_by:
+  - dorith
+  - stratos-dwarmar-mechanism
+
+consequences:
+  - Many people of Stratos are imprisoned within mechanized bodies.
+  - Dorith gains control over the city through the golems.
+  - Elorith is among those transformed into a mechanized golem.
+  - The true nature of the golems is hidden from the outside world.
+
+potential_campaign: false
+
+true_causes:
+  - dorith
+
+hidden_connections:
+  - stratos-dwarmar-mechanism
+  - dwarmar
+  - bane
+
+dm_notes: >
+  The mechanized golems are powered by the same ancient Dwarmar
+  technology that keeps Stratos suspended in the sky.
+
+  The golems are not simply constructs. They contain people who
+  have been imprisoned or transformed into mechanized bodies.
+
+  Elorith, Aerith's mother, is one of these golems.
+
+  The deeper relationship between the golems, the technology keeping
+  Stratos airborne, and the draining of life from the surrounding
+  land should be revealed during the Stratos storyline.

@@ -1,0 +1,34 @@
+id: elligaesia-trade-dispute
+name: Elligaesia Trade Dispute
+
+description: >
+  The political leaders of Elligaesia are unable to agree on how
+  to address the growing trade problems affecting the land.
+
+type: political
+status: ongoing
+
+locations: []
+
+campaigns: []
+
+caused_by:
+  - batik-trade-route-collapse
+
+true_causes: []
+
+hidden_connections:
+  - bane
+  - dwarmar
+
+dm_notes: >
+  The immediate cause of the trade dispute is the collapse of the
+  Batik trade route. The deeper consequences of the crisis may
+  eventually connect to Bane's growing influence and the reemergence
+  of ancient Dwarmar technology.
+
+consequences:
+  - Trade tensions have increased between the country-states.
+  - Regions are having to compensate for the loss of goods from Batik.
+
+potential_campaign: true

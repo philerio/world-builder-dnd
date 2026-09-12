@@ -1,0 +1,26 @@
+id: teth-umbara-island-conflict
+name: Teth and Umbara Contest the Mysterious Island
+
+description: >
+  Teth and Umbara enter into conflict over a mysterious island
+  that has appeared in the ocean.
+
+era: Modern Era
+date: null
+
+locations:
+  - teth
+  - umbara
+
+kingdoms: []
+characters: []
+campaigns: []
+
+consequences:
+  - Teth and Umbara are drawn into conflict.
+  - Relations between the two nations deteriorate.
+  - The mysterious island becomes a potential source of future conflict.
+
+dm_notes: >
+  The origin of the island and the reason it appeared have not yet
+  been established.

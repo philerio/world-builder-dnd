@@ -1,0 +1,24 @@
+id: bane-banished
+name: Bane Is Banished
+
+description: >
+  Bane, a powerful sorcerer, interferes with mortals and is
+  banished from the world.
+
+era: Ancient Era
+date: null
+
+locations: []
+kingdoms: []
+characters:
+  - bane
+campaigns: []
+
+consequences:
+  - Bane is separated from the mortal world.
+  - Bane's influence continues to affect the world long after his banishment.
+
+dm_notes: >
+  Bane's relationship with the Dwarmar and the Power Sources remains
+  an important unresolved part of ancient history. The full circumstances
+  surrounding his banishment have not yet been established.

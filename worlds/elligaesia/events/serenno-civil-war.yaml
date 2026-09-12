@@ -1,0 +1,29 @@
+id: serenno-civil-war
+name: Serenno Civil War
+
+description: >
+  Serenno has descended into civil war following the assassination
+  of its ruling family.
+
+type: conflict
+status: ongoing
+
+locations:
+  - serenno
+
+campaigns: []
+
+caused_by: []
+
+true_causes: []
+
+hidden_connections: []
+
+dm_notes: >
+  The assassination of Serenno's ruling family is the immediate cause
+  of the civil war. The deeper circumstances surrounding the
+  assassination have not yet been established.
+
+consequences: []
+
+potential_campaign: true

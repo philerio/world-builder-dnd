@@ -1,0 +1,28 @@
+id: serenno-civil-war
+name: Serenno Civil War
+
+description: >
+  Serenno descends into civil war following the assassination of
+  its ruling family.
+
+era: Modern Era
+date: null
+
+locations:
+  - serenno
+
+kingdoms: []
+characters: []
+campaigns: []
+
+consequences:
+  - Serenno is divided by civil war.
+  - The political stability of Serenno is disrupted.
+  - Trade and cooperation within Elligaesia are further strained.
+
+dm_notes: >
+  The assassination of Serenno's ruling family is the established
+  immediate cause of the civil war.
+
+  The identity of those responsible and any deeper connection to
+  Bane, the Dwarmar, or the Power Sources have not yet been established.

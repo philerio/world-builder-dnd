@@ -1,0 +1,36 @@
+id: dronath-awakened
+name: Dronath Is Awakened
+
+description: >
+  Construction of Reqrun's new capitol disturbs the ancient chamber
+  beneath the town and awakens Dronath, an Aboleth that has been
+  trapped beneath Reqrun for centuries.
+
+era: Modern Era
+date: null
+
+locations:
+  - reqrun
+
+kingdoms: []
+characters:
+  - dronath
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - Dronath begins feeding on livestock to regain his strength.
+  - The river becomes poisoned.
+  - Animals begin disappearing from Reqrun.
+  - Dronath begins searching for the sorcerer who previously imprisoned him.
+
+dm_notes: >
+  Dronath was trapped beneath Reqrun for approximately 1000 years.
+  Construction and explosions associated with the new capitol disturb
+  his prison and allow him to become active again.
+
+  Dronath discovers that the sorcerer responsible for his imprisonment
+  is still alive and living in Reqrun.
+
+  Dronath does not initially seek to destroy the town. His primary
+  goals are to regain his strength and find the sorcerer.

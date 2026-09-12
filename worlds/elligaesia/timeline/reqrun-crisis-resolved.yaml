@@ -1,0 +1,37 @@
+id: reqrun-crisis-resolved
+name: Reqrun Crisis Resolved
+
+description: >
+  The crisis in Reqrun comes to an end with the defeat of the
+  Aboleth and the sorcerer responsible for the events surrounding
+  the town.
+
+era: Modern Era
+date: null
+
+locations:
+  - reqrun
+
+kingdoms: []
+characters:
+  - pattrice
+  - dronath
+campaigns:
+  - the-unforgiven
+
+consequences:
+  - The Aboleth threat to Reqrun is ended.
+  - The sorcerer's control over the town comes to an end.
+  - The protective magic of the northern road has been severely depleted.
+  - The political and supernatural consequences of the crisis continue beyond Reqrun.
+
+dm_notes: >
+  The exact circumstances of the final confrontation should be
+  recorded here once established in the campaign's final events.
+
+  Pattrice had been draining the magic protecting the northern road
+  in order to power his enchantment and sustain himself. The loss
+  of this magic becomes one of the lasting consequences of the crisis.
+
+  The resolution of the crisis also leads into the events surrounding
+  the altar and Stratos/Aerith.
