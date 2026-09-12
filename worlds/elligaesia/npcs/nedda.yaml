@@ -1,0 +1,53 @@
+id: nedda
+name: Nedda
+description: >
+  The halfling innkeeper of The Mandolin in Reqrun, who runs her
+  family's inn with a stern attitude and little tolerance for
+  nonsense.
+
+details: >
+  Nedda is the owner of The Mandolin and inherited the inn from
+  her father, who died during an Orc raid many years ago. Her
+  family has operated the inn for generations.
+
+  Nedda is stern, judgmental, and welcoming, but does not tolerate
+  nonsense. She is distrustful of Orcs, Elves, and Wizards.
+
+  Nedda employs two dwarf barbarians at the inn. If an argument
+  becomes serious, she can whistle for them to arm themselves.
+
+  Nedda is the only halfling living in Reqrun. Her family originally
+  came from Haffinton, though she has not returned there since she
+  was a little girl.
+
+  Nedda knows the story of the Mad Halfling and the mysterious ring.
+  Her family used the story to frighten her into eating her
+  vegetables when she was young.
+
+  Nedda's inn suffered damage during a storm, including a tree
+  falling onto the building. She is saving money to repair the
+  leaky roof.
+
+role: innkeeper
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Nedda's inn served as a gathering place for the party while
+      they investigated the disappearances in Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      One of Nedda's dwarf employees came under the sorcerer's
+      mind control and attacked the party.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Nedda provided the party with information about the farmers
+      and the disappearances occurring around Reqrun.
+    campaign: the-unforgiven
+    location: reqrun

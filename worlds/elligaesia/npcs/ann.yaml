@@ -1,0 +1,33 @@
+id: ann
+name: Ann
+description: >
+  A human farmer in Reqrun who is judgmental, untrusting, and
+  convinced that she is better than those around her.
+
+details: >
+  Ann is a human farmer who lives on the north side of Reqrun,
+  with the river to the west of her farm.
+
+  She is judgmental and untrusting, and can be difficult to deal
+  with. Ann considers herself better than others in town.
+
+  During the disappearances, four of Ann's cattle went missing.
+  She believes that Orivom stole them to use for beard oil.
+
+role: farmer
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Four of Ann's cattle went missing during the disappearances
+      around Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Ann accused Orivom of stealing her cattle to use for
+      beard oil.
+    campaign: the-unforgiven
+    location: reqrun

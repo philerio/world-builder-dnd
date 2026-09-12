@@ -1,0 +1,34 @@
+id: dobby
+name: Dobby
+description: >
+  An elven farmer who owns the largest farm southwest of Reqrun.
+
+details: >
+  Dobby is an elf who operates the largest farm southwest of
+  Reqrun. His farm produces grains and raises pigs, cows, and
+  chickens.
+
+  During the investigation into the missing animals, Dobby is
+  away in Crossdale. Fredrick is caring for the farm in his
+  absence.
+
+  None of Dobby's animals are reported missing during the events
+  surrounding Reqrun.
+
+role: farmer
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Dobby left Reqrun for Crossdale, leaving Fredrick to care
+      for his farm.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      The party investigated Dobby's farm and found that none
+      of his animals were missing.
+    campaign: the-unforgiven
+    location: reqrun

@@ -1,0 +1,22 @@
+id: example-campaign
+name: Example Campaign
+description: >
+  Short description of the campaign.
+
+overview: >
+  Summary of the campaign's story.
+
+status: ongoing
+
+locations:
+  - example-city
+
+npcs:
+  - example-npc
+
+player_characters:
+  - example-character
+
+outcome: null
+
+consequences: null

@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from worldbuilder.loaders.yaml_loader import load_world
 from worldbuilder.models.world import World
-
+from worldbuilder.loaders.world_loader import load_world_registry
 
 WORLD_PATH = Path("worlds/elligaesia/world.yaml")
 
@@ -50,3 +50,10 @@ continents:
 
     with pytest.raises(ValidationError):
         load_world(invalid_file)
+    
+def test_load_world_registry_with_campaign() -> None:
+    """The world registry loader should load campaigns."""
+
+    registry = load_world_registry(WORLD_PATH)
+
+    assert registry.has_campaign("the-unforgiven")

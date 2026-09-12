@@ -1,0 +1,10 @@
+id: example-world
+name: Example World
+description: >
+  Description of the world.
+
+version: "1.0"
+author: Your Name
+
+continents:
+  - example-continent

@@ -1,0 +1,30 @@
+id: narle
+name: Narle
+description: >
+  A witness to the confrontation between Rowan and Faela during
+  the events surrounding Reqrun.
+
+details: >
+  Narle witnessed Rowan escaping with Moose after Rowan killed
+  Faela Logleragle.
+
+  Rowan's explanation and Charisma convinced Narle that Rowan was
+  not responsible for what had happened to Faela.
+
+role: unknown
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Narle witnessed Rowan escaping with Moose after the
+      confrontation with Faela Logleragle.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Rowan convinced Narle that she was not responsible for
+      Faela's death.
+    campaign: the-unforgiven
+    location: reqrun

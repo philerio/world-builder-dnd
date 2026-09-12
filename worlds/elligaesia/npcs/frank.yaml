@@ -1,0 +1,56 @@
+id: frank
+name: Frank
+description: >
+  The blacksmith of Reqrun, a reserved and honest craftsman who
+  was secretly forced to serve the sorcerer through mind control.
+
+details: >
+  Frank is a reserved, honest, and monotone blacksmith who has worked
+  in Reqrun for years. He is well respected by the townspeople and
+  produces equipment for local farmers as well as supplies for the
+  town barracks.
+
+  Frank regularly traveled to the northern lake to fish and spend
+  time alone. During these trips he heard strange noises coming from
+  across the lake.
+
+  During the events surrounding the disappearances, Frank was placed
+  under the sorcerer's magical influence. He was forced to assist
+  with the sorcerer's plans against his will.
+
+  Those under the sorcerer's control could be recognized by a faint
+  green glow in their eyes.
+
+  A farmer saw Frank sneaking around on the evening that Jackson was
+  supposedly taken. Frank claimed that he had been fishing at the
+  northern lake.
+
+role: blacksmith
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Frank continued working as the blacksmith of Reqrun while
+      secretly being subjected to the sorcerer's mind control.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Frank was seen sneaking around on the evening that Jackson
+      was supposedly taken and claimed that he had been fishing
+      at the northern lake.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Frank was forced by the sorcerer's mind control to assist
+      with the events surrounding the disappearances.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Frank's connection to the sorcerer's mind control was revealed.
+    campaign: the-unforgiven
+    location: reqrun

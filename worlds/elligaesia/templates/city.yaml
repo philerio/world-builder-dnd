@@ -1,0 +1,8 @@
+id: example-city
+name: Example City
+description: >
+  Description of the city.
+
+kingdom: null
+region: null
+population: null

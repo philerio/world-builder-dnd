@@ -1,0 +1,42 @@
+id: fredrick
+name: Fredrick
+description: >
+  A human farmer in Reqrun who is friendly but cautious and shy,
+  and who became entangled in the Aboleth's influence.
+
+details: >
+  Fredrick is a human farmer who lives south and east of the river
+  in Reqrun. He grows grain and raises pigs.
+
+  Fredrick is friendly, but cautious and shy. When questioned about
+  the missing animals, he initially claims that only one of his
+  pigs is missing. A closer examination reveals that many more
+  animals, including dogs, have disappeared.
+
+  Fredrick was under the influence of the Aboleth during the events
+  surrounding the disappearances. When pressed, the Aboleth's
+  influence could cause him to become violent.
+
+role: farmer
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Fredrick reported that one of his pigs was missing during
+      the investigation into the disappearances.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      The party discovered that many more animals, including dogs,
+      had disappeared from Fredrick's farm.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Fredrick was revealed to be under the influence of the
+      Aboleth.
+    campaign: the-unforgiven
+    location: reqrun

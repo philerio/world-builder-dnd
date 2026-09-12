@@ -1,0 +1,34 @@
+id: faela-logleragle
+name: Faela Logleragle
+description: >
+  A woman who was placed under the sorcerer's magical influence
+  during the events surrounding Reqrun.
+
+details: >
+  Faela Logleragle was under the sorcerer's mind control and was
+  forced to act against her will. Those subjected to the sorcerer's
+  control displayed a faint green glow in their eyes.
+
+  While under the sorcerer's influence, Faela attacked Rowan.
+  Rowan killed Faela while defending herself.
+
+role: unknown
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Faela Logleragle was placed under the sorcerer's mind control.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      While under the sorcerer's control, Faela attacked Rowan.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Rowan killed Faela while defending herself.
+    campaign: the-unforgiven
+    location: reqrun

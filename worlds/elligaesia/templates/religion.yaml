@@ -1,0 +1,15 @@
+id: example-religion
+name: Example Religion
+description: >
+  Description of the religion.
+
+details: >
+  Beliefs, practices, history, gods, and other information.
+
+deity: null
+
+locations:
+  - example-city
+
+organizations:
+  - example-organization

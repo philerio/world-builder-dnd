@@ -1,0 +1,13 @@
+id: example-magic-item
+name: Example Magic Item
+description: >
+  Description of the item.
+
+details: >
+  History, abilities, appearance, and other information.
+
+type: unknown
+
+owner: null
+location: null
+campaign: null

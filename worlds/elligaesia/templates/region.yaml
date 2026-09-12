@@ -1,0 +1,7 @@
+id: example-region
+name: Example Region
+description: >
+  Description of the region.
+
+kingdom: null
+continent: null

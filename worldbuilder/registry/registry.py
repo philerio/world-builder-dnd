@@ -2,6 +2,8 @@ from worldbuilder.models.city import City
 from worldbuilder.models.world import World
 from worldbuilder.models.kingdom import Kingdom
 from worldbuilder.models.region import Region
+from worldbuilder.models.npc import NPC
+from worldbuilder.models.campaign import Campaign
 
 class WorldRegistry:
     """Registry of all loaded world entities."""
@@ -11,6 +13,8 @@ class WorldRegistry:
         self.cities: dict[str, City] = {}
         self.kingdoms: dict[str, Kingdom] = {}
         self.regions: dict[str, Region] = {}
+        self.npcs: dict[str, NPC] = {}
+        self.campaigns: dict[str, Campaign] = {}
         
     def add_world(self, world: World) -> None:
         """Add a world to the registry."""
@@ -75,3 +79,37 @@ class WorldRegistry:
     def has_region(self, region_id: str) -> bool:
         """Check whether a region exists."""
         return region_id in self.regions
+
+    def add_npc(self, npc: NPC) -> None:
+        """Add an NPC to the registry."""
+        if npc.id in self.npcs:
+            raise ValueError(f"Duplicate NPC ID: {npc.id}")
+
+        self.npcs[npc.id] = npc
+
+
+    def get_npc(self, npc_id: str) -> NPC | None:
+        """Get an NPC by ID."""
+        return self.npcs.get(npc_id)
+
+
+    def has_npc(self, npc_id: str) -> bool:
+        """Check whether an NPC exists."""
+        return npc_id in self.npcs
+    
+    def add_campaign(self, campaign: Campaign) -> None:
+        """Add a campaign to the registry."""
+        if campaign.id in self.campaigns:
+            raise ValueError(f"Duplicate campaign ID: {campaign.id}")
+
+        self.campaigns[campaign.id] = campaign
+
+
+    def get_campaign(self, campaign_id: str) -> Campaign | None:
+        """Get a campaign by ID."""
+        return self.campaigns.get(campaign_id)
+
+
+    def has_campaign(self, campaign_id: str) -> bool:
+        """Check whether a campaign exists."""
+        return campaign_id in self.campaigns

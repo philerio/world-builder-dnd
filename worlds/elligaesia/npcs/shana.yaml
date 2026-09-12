@@ -1,0 +1,30 @@
+id: shana
+name: Shana
+
+description: >
+  The librarian of Reqrun who knows the town's history and the
+  strange events surrounding the disappearances.
+
+details: >
+  Shana is the librarian of Reqrun. She knows about the recent
+  disappearances and has knowledge of the town's history, including
+  the ancient conflict involving the wizard, the necromancer, and
+  the Aboleth.
+
+role: librarian
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Shana provided the party with information about the
+      disappearances and the history of Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Shana directed the party toward information concerning the
+      ancient wizard and the Aboleth.
+    campaign: the-unforgiven
+    location: reqrun

@@ -1,0 +1,20 @@
+id: example-monster
+name: Example Monster
+description: >
+  Description of the monster.
+
+details: >
+  Behavior, habitat, lore, and other information.
+
+type: unknown
+
+hit_points: null
+armor_class: null
+
+abilities:
+  - name: Example Ability
+    description: >
+      Description of the ability.
+
+campaign: null
+location: null

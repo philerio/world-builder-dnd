@@ -1,0 +1,42 @@
+id: orivom
+name: Orivom
+description: >
+  A friendly dwarf farmer in Reqrun who loves fishing, good company,
+  and cooking.
+
+details: >
+  Orivom is a friendly dwarf farmer who lives on the south side of
+  Reqrun near the river. He enjoys fishing and spending time with
+  other people, and is known as a great cook.
+
+  Orivom is somewhat superstitious and is knowledgeable about the
+  dangers surrounding the area. He warns travelers about the
+  mountain lake north of Reqrun.
+
+  Orivom has helped defend the town from Orcs in the past.
+
+  During the disappearances, four of Orivom's prize goats went
+  missing.
+
+role: farmer
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Four of Orivom's prize goats went missing during the events
+      surrounding the disappearances.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Orivom warned the party about the mountain lake and the
+      dangers surrounding it.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Orivom helped defend Reqrun from Orcs.
+    campaign: null
+    location: reqrun

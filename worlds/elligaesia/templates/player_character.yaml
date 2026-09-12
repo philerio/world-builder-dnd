@@ -1,0 +1,19 @@
+id: example-character
+name: Example Character
+description: >
+  Short description of the character.
+
+details: >
+  Background, personality, goals, relationships,
+  and other character information.
+
+role: player-character
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Something that happened to the character.
+    campaign: null
+    location: null

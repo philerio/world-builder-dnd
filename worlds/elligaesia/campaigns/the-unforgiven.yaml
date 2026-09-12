@@ -1,0 +1,38 @@
+id: the-unforgiven
+name: The Unforgiven
+
+description: >
+  The campaign centered on the strange disappearances in Reqrun,
+  the awakening of an ancient Aboleth, and the discovery of the
+  sorcerer's true identity.
+
+overview: >
+  Animals begin disappearing from Reqrun at night, followed by the
+  disappearance of the governor's supposed son. The party investigates
+  the town, follows clues toward the northern lake, and becomes
+  entangled in an ancient conflict involving an Aboleth and a
+  mysterious sorcerer.
+
+status: completed
+
+locations:
+  - reqrun
+
+npcs:
+  - pattrice
+  - nedda
+  - frank
+  - shana
+  - emmyth-carfir
+  - dronath
+
+player_characters: []
+
+outcome: >
+  The party uncovered the truth behind the disappearances and
+  confronted the sorcerer and the Aboleth.
+
+consequences: >
+  Reqrun was liberated from the sorcerer's influence. The events
+  surrounding the Aboleth and the sorcerer's past revealed deeper
+  forces affecting the world.

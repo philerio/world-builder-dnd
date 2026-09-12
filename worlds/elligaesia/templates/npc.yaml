@@ -1,0 +1,19 @@
+id: example-npc
+name: Example NPC
+description: >
+  Short description of the character.
+
+details: >
+  Background, personality, relationships, secrets,
+  or other information.
+
+role: null
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Something that happened to this character.
+    campaign: null
+    location: null

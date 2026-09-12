@@ -1,0 +1,34 @@
+id: emmyth-carfir
+name: Emmyth Carfir
+
+description: >
+  An elven teacher and wizard in Reqrun who teaches healing magic
+  and knows that the town's history may not be what it seems.
+
+details: >
+  Emmyth Carfir is an elf who runs a school of magic in Reqrun and
+  teaches healing. Some people in town blame the wizard associated
+  with Reqrun's history for past events.
+
+  Emmyth believes the great wizard was not who people believed him
+  to be. He directs the party toward the library to learn more about
+  Reqrun's history and the ancient events surrounding the town.
+
+role: teacher/wizard
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Emmyth spoke with the party about the disappearances and
+      suggested that the history of the great wizard was not what
+      people believed.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Emmyth directed the party to the library to investigate
+      Reqrun's history.
+    campaign: the-unforgiven
+    location: reqrun

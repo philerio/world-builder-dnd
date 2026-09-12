@@ -6,7 +6,8 @@ from worldbuilder.models.city import City
 from worldbuilder.models.kingdom import Kingdom
 from worldbuilder.models.region import Region
 from worldbuilder.registry import WorldRegistry
-
+from worldbuilder.models.npc import NPC
+from worldbuilder.models.campaign import Campaign
 
 def load_world_registry(path: Path) -> WorldRegistry:
     """Load a world and its entities into a registry."""
@@ -23,5 +24,11 @@ def load_world_registry(path: Path) -> WorldRegistry:
 
     for region in load_yaml_directory(path.parent / "regions", Region):
         registry.add_region(region)
+        
+    for npc in load_yaml_directory(path.parent / "npcs", NPC):
+        registry.add_npc(npc)
+        
+    for campaign in load_yaml_directory(path.parent / "campaigns", Campaign):
+        registry.add_campaign(campaign)
 
     return registry

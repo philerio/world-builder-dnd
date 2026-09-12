@@ -1,0 +1,67 @@
+id: alatar
+name: Alatar
+description: >
+  A human wizard and teacher in Reqrun who specializes in healing
+  magic and carries the scars of an ancient conflict he cannot
+  initially remember.
+
+details: >
+  Alatar is an old human wizard who appears younger than his age.
+  He is reserved, pacifistic, and complacent, and he teaches healing
+  magic at the School of Reqrun.
+
+  Alatar arrived in Reqrun years ago with no memory of his previous
+  life. The people of the town welcomed him, and he eventually
+  became a teacher.
+
+  Alatar is missing an arm. As his memories begin to return, he
+  recalls an ancient conflict with a powerful sorcerer. He believes
+  he once had a vendetta against that sorcerer.
+
+  The Necromancer erased Alatar's memories in order to make him a
+  scapegoat for the Necromancer's actions. The Necromancer had also
+  been missing an arm and removed Alatar's arm as part of the
+  deception.
+
+  Alatar has researched the strange events surrounding Reqrun,
+  including Aerith's history, the corruption affecting Harry, and
+  the ancient sorcerer connected to the town's past.
+
+role: school-wizard
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Alatar arrived in Reqrun with no memory of his previous life
+      and was welcomed by the townspeople.
+    campaign: null
+    location: reqrun
+
+  - description: >
+      Alatar became a teacher of healing magic at the School of
+      Reqrun.
+    campaign: null
+    location: reqrun
+
+  - description: >
+      Alatar began researching the strange events surrounding
+      Reqrun, including Aerith's history and the corruption
+      affecting Harry.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Alatar revealed that the ancient sorcerer had experimented
+      on creatures and was connected to the events surrounding
+      Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Alatar's forgotten history was revealed: the Necromancer had
+      erased his memories and removed his arm in order to use him
+      as a scapegoat.
+    campaign: the-unforgiven
+    location: reqrun

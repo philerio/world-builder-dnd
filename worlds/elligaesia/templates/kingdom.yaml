@@ -1,0 +1,7 @@
+id: example-kingdom
+name: Example Kingdom
+description: >
+  Description of the kingdom.
+
+ruler: null
+capital: null

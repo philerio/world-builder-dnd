@@ -1,0 +1,17 @@
+id: example-event
+name: Example Event
+description: >
+  Description of the historical event.
+
+date: null
+
+locations:
+  - example-city
+
+npcs:
+  - example-npc
+
+campaign: null
+
+consequences: >
+  What changed as a result of this event.

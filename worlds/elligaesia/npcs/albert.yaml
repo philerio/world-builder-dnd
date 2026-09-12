@@ -1,0 +1,18 @@
+id: albert
+name: Albert
+description: >
+  A Storm Mule associated with green lightning who wanders
+  the land protecting those in need.
+
+role: storm-mule
+city: null
+region: null
+kingdom: null
+events:
+  - "Struck by lightning and was given powers."
+  - "Ran away from his owner after a failed charisma check."
+details: Albert is a Storm Mule associated with green lightning. He does not
+  maintain a permanent residence and instead wanders the land,
+  protecting those in need. After the White Rabbit Incident, Albert
+  became known as the Guardian of the Roads. This character will appear periodically in the story, 
+  providing assistance to the main characters during their journey.  

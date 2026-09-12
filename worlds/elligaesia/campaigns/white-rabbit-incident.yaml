@@ -1,0 +1,32 @@
+id: white-rabbit-incident
+name: White Rabbit Incident
+
+description: >
+  A strange magical incident during a festival in Reqrun resulted
+  in a superpowered White Rabbit and an army of empowered rabbits.
+
+overview: >
+  During a festival in Reqrun, a magical fountain is struck by
+  emerald lightning. The resulting magic grants extraordinary
+  abilities to a White Rabbit, who creates an army of empowered
+  rabbits. The party ultimately defeats the White Rabbit using
+  the Holy Hand Grenade.
+
+status: completed
+
+locations:
+  - reqrun
+
+npcs:
+  - bill
+  - albert
+
+player_characters: []
+
+outcome: >
+  The White Rabbit was defeated using the Holy Hand Grenade.
+
+consequences: >
+  Bill became known as the Defender of Reqrun, while Albert became
+  known as the Guardian of the Roads. The Holy Hand Grenade was
+  returned to the church in Reqrun.

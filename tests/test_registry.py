@@ -8,6 +8,8 @@ from pathlib import Path
 
 from worldbuilder.loaders.world_loader import load_world_registry
 from worldbuilder.models.city import City
+from worldbuilder.models.npc import NPC
+
 
 def make_world(world_id: str = "elligaesia") -> World:
     return World(
@@ -283,3 +285,98 @@ continent: test-continent
     assert region.name == "Example Region"
     assert region.kingdom == "example-kingdom"
     assert region.continent == "test-continent"
+    
+def test_add_and_get_npc() -> None:
+    """An NPC can be added and retrieved by ID."""
+    registry = WorldRegistry()
+
+    npc = NPC(
+        id="bill",
+        name='William "Bill"',
+        role="farmer",
+    )
+
+    registry.add_npc(npc)
+
+    assert registry.get_npc("bill") == npc
+
+
+def test_has_npc() -> None:
+    """The registry can determine whether an NPC exists."""
+    registry = WorldRegistry()
+
+    registry.add_npc(
+        NPC(
+            id="bill",
+            name='William "Bill"',
+        )
+    )
+
+    assert registry.has_npc("bill")
+    assert not registry.has_npc("unknown-npc")
+
+
+def test_duplicate_npc_id_raises_error() -> None:
+    """Two NPCs cannot have the same ID."""
+    registry = WorldRegistry()
+
+    npc = NPC(
+        id="bill",
+        name='William "Bill"',
+    )
+
+    registry.add_npc(npc)
+
+    with pytest.raises(ValueError, match="Duplicate NPC ID"):
+        registry.add_npc(npc)
+        
+def test_load_world_registry_includes_npcs(tmp_path: Path) -> None:
+    """Loading a world also loads its NPC files."""
+    world_path = tmp_path / "world.yaml"
+    npcs_path = tmp_path / "npcs"
+    npcs_path.mkdir()
+
+    world_path.write_text(
+        """
+id: test-world
+name: Test World
+description: A test world.
+version: "1.0"
+author: Test
+continents:
+  - test-continent
+""",
+        encoding="utf-8",
+    )
+
+    (npcs_path / "example.yaml").write_text(
+        """
+id: example-npc
+name: Example NPC
+role: farmer
+city: example-city
+""",
+        encoding="utf-8",
+    )
+
+    registry = load_world_registry(world_path)
+
+    npc = registry.get_npc("example-npc")
+
+    assert npc is not None
+    assert npc.name == "Example NPC"
+    assert npc.role == "farmer"
+    assert npc.city == "example-city"
+    
+def test_elligaesia_registry_contains_bill() -> None:
+    """The Elligaesia world registry contains Bill."""
+    registry = load_world_registry(
+        Path("worlds/elligaesia/world.yaml")
+    )
+
+    bill = registry.get_npc("bill")
+
+    assert bill is not None
+    assert bill.name == 'William "Bill"'
+    assert bill.role == "farmer"
+    assert bill.city == "reqrun"

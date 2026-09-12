@@ -1,0 +1,67 @@
+id: rowan
+name: Rowan
+description: >
+  A human swordswoman and mercenary driven by the loss of her father
+  and her desire for revenge against the Orcs responsible.
+
+details: >
+  Rowan was raised in Baldon by her father, a blacksmith who taught
+  her how to fight with a sword.
+
+  While exploring one day, Rowan discovered Moose trapped in a cage
+  and freed him. Through their connection, Rowan gained the ability
+  to communicate with animals.
+
+  While returning from a supply trip, Rowan and her family were
+  ambushed by Orcs. Her father was killed by a stab in the back,
+  and Rowan killed the remaining Orcs. She swore revenge against
+  the Orcs responsible and eventually joined a mercenary group,
+  where she met Aerith.
+
+role: player-character
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Rowan's father taught her how to fight with a sword.
+    campaign: null
+    location: bald-on
+
+  - description: >
+      Rowan freed Moose from a cage and formed a bond with him,
+      gaining the ability to communicate with animals.
+    campaign: null
+    location: null
+
+  - description: >
+      Rowan's family was ambushed by Orcs while returning from a
+      supply trip. Her father was killed, and Rowan killed the
+      remaining Orcs.
+    campaign: null
+    location: null
+
+  - description: >
+      Rowan swore revenge against the Orcs responsible for her
+      father's death and joined a mercenary group.
+    campaign: null
+    location: null
+
+  - description: >
+      Rowan met Aerith after joining the mercenaries.
+    campaign: null
+    location: null
+
+  - description: >
+      Faela Logleragle, while under the sorcerer's mind control,
+      attacked Rowan. Rowan killed Faela while defending herself.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Rowan escaped with Moose after the confrontation with Faela.
+      Narle witnessed Rowan leaving with Moose and was convinced
+      that Rowan was not responsible for Faela's death.
+    campaign: the-unforgiven
+    location: reqrun

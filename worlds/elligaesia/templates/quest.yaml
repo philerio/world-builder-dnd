@@ -1,0 +1,20 @@
+id: example-quest
+name: Example Quest
+description: >
+  Description of the quest.
+
+status: active
+
+campaign: null
+location: null
+
+npcs:
+  - example-npc
+
+player_characters:
+  - example-character
+
+objective: >
+  What the characters are trying to accomplish.
+
+outcome: null

@@ -1,0 +1,63 @@
+id: dronath
+name: Dronath
+description: >
+  An ancient Aboleth awakened beneath the northern lake after being
+  trapped underground for centuries.
+
+details: >
+  Dronath is the son of the ancient Aboleth that once ruled the lake
+  and surrounding city. During the ancient conflict between his
+  mother, the wizard, and the sorcerer, Dronath became trapped
+  underground.
+
+  Dronath was eventually freed when storms and construction connected
+  to Reqrun disturbed the area. After awakening, he began feeding on
+  livestock to regain his strength and discovered that the sorcerer
+  responsible for the ancient conflict was still alive.
+
+  Dronath seeks revenge against the sorcerer. He wants the sorcerer
+  dead and initially uses the crisis surrounding Reqrun to force
+  the party into confronting him.
+
+  Dronath remembers that the ancient wizard was consumed by his
+  mother and that the wizard's memories became part of her. The
+  sorcerer later damaged her memory during their conflict.
+
+role: aboleth
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Dronath was awakened after storms and construction connected
+      to Reqrun disturbed the area surrounding the northern lake.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Dronath began feeding on livestock to restore his strength.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Dronath discovered that the ancient sorcerer was still alive.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Dronath revealed the ancient history connecting his mother,
+      the wizard, and the sorcerer.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Dronath demanded that the sorcerer be brought to him and
+      offered to leave Reqrun alone if the party helped accomplish it.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Dronath confronted the sorcerer and sought his death.
+    campaign: the-unforgiven
+    location: reqrun

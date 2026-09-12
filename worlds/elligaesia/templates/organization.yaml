@@ -1,0 +1,17 @@
+id: example-organization
+name: Example Organization
+description: >
+  Description of the organization.
+
+details: >
+  Purpose, history, beliefs, structure, and other information.
+
+type: unknown
+
+leader: null
+
+locations:
+  - example-city
+
+members:
+  - example-npc

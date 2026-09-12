@@ -1,0 +1,67 @@
+id: harry
+name: Harry
+description: >
+  A halfling scholar and aspiring fighter whose mysterious ring has
+  gradually corrupted him while granting him strange abilities.
+
+details: >
+  Harry is a halfling from Haffinton and a scholar of animal studies.
+  He discovered a mysterious ring after seeing a flash from the sky.
+  Over the years, the ring corrupted him and he became known as the
+  "Mad Halfling," although Harry believes that he is completely sane.
+
+  Harry originally wanted to become a fighter and spent time boxing
+  in Larton, where he lost repeatedly. He eventually convinced a
+  wizard to enchant a pair of gloves for him. The gloves grant him
+  great strength but cannot be removed.
+
+  The mysterious ring fits over the gloves. After obtaining both,
+  Harry began winning his fights and was eventually recruited by
+  the mercenary leader.
+
+role: player-character
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Harry discovered the mysterious ring after seeing a flash
+      from the sky.
+    campaign: null
+    location: null
+
+  - description: >
+      The ring gradually corrupted Harry, leading to his reputation
+      as the "Mad Halfling."
+    campaign: null
+    location: null
+
+  - description: >
+      Harry attempted to become a fighter and repeatedly lost
+      boxing matches in Larton.
+    campaign: null
+    location: larton
+
+  - description: >
+      Harry convinced a wizard to enchant his gloves, giving him
+      great strength. The gloves cannot be removed.
+    campaign: null
+    location: larton
+
+  - description: >
+      Harry began winning fights after combining the enchanted
+      gloves with the mysterious ring.
+    campaign: null
+    location: larton
+
+  - description: >
+      Harry was recruited by the mercenary leader.
+    campaign: null
+    location: null
+
+  - description: >
+      Harry's ring became an important factor in encounters with
+      the sorcerer and creatures influenced by him.
+    campaign: the-unforgiven
+    location: reqrun

@@ -1,0 +1,11 @@
+id: example-map
+name: Example Map
+description: >
+  Description of what the map represents.
+
+type: regional
+
+location: null
+
+details: >
+  Additional information about the map.

@@ -1,0 +1,49 @@
+id: pattrice
+name: Pattrice
+description: >
+  The respected human governor of Reqrun who secretly possesses a
+  much darker identity.
+
+details: >
+  Pattrice has governed Reqrun for many years and is well respected
+  by its citizens. He helped lead the town into a period of prosperity,
+  with strong trade, food, and housing for its people.
+
+  Beneath this public identity, Pattrice is the sorcerer and necromancer
+  responsible for manipulating events in Reqrun. He possesses the ability
+  to transfer his consciousness into other bodies, allowing him to survive
+  beyond a normal lifetime. He sought to use the ancient altar beneath
+  the town to restore his strength and continue his existence.
+
+  Pattrice fabricated the story of his missing son in order to gain the
+  party's trust and draw them into the events surrounding the Aboleth.
+
+role: governor
+city: reqrun
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Pattrice employed the adventurers to investigate the disappearances
+      occurring around Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Pattrice intervened when the party was detained by the town guards,
+      appearing to help them while secretly manipulating the situation.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Pattrice's identity as the sorcerer behind the events in Reqrun
+      was revealed.
+    campaign: the-unforgiven
+    location: reqrun
+
+  - description: >
+      Pattrice confronted Dronath and attempted to force the Aboleth
+      to submit to his will.
+    campaign: the-unforgiven
+    location: reqrun

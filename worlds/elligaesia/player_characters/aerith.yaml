@@ -1,0 +1,41 @@
+id: aerith
+name: Aerith
+description: >
+  A wood elf mercenary from West Wood who has always suspected that
+  she does not truly belong to the family that raised her.
+
+details: >
+  Aerith was adopted by the rulers of West Wood and grew up in the
+  great elven city. She never felt that she belonged there and has
+  only fragmented memories of her early childhood, including bright
+  flashes and a faint blue glow.
+
+  Aerith is unusually tall for a wood elf and was naturally gifted
+  with a bow from a young age. Her adoptive parents eventually gave
+  her a bow bearing ancient lettering, telling her that it belonged
+  to her true family.
+
+  After leaving the forest as soon as she was old enough, Aerith
+  became a mercenary.
+
+role: player-character
+city: null
+region: null
+kingdom: null
+
+events:
+  - description: >
+      Aerith was adopted by the rulers of West Wood.
+    campaign: null
+    location: null
+
+  - description: >
+      Aerith left the forest and became a mercenary.
+    campaign: null
+    location: null
+
+  - description: >
+      Aerith joined the mercenary group that would eventually
+      investigate the events in Reqrun.
+    campaign: the-unforgiven
+    location: reqrun
