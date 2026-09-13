@@ -1,0 +1,18 @@
+id: test-mother
+name: Test Mother
+description: An NPC used for automated tests.
+role: Test Mother
+city: test-city
+region: test-region
+kingdom: test-kingdom
+details: >
+  Test Mother is a High Elf who is used for automated tests.
+relationships:
+  - character: test-npc
+    relationship: daughter
+events:
+  - test-event
+  - description: >
+      Test Mother was adopted.
+    campaign: null
+    location: null

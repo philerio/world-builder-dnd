@@ -31,14 +31,6 @@ kingdom: null
 
 events:
   - stratos-revealed
-
-relationships:
-  - character: aerick
-    relationship: father
-  - character: elorith
-    relationship: mother
-  - character: dorith
-    relationship: maternal uncle
   - description: >
       Aerith was adopted by the rulers of West Wood.
     campaign: null
@@ -54,6 +46,14 @@ relationships:
       investigate the events in Reqrun.
     campaign: the-unforgiven
     location: reqrun
+
+relationships:
+  - character: aerick
+    relationship: father
+  - character: elorith
+    relationship: mother
+  - character: dorith
+    relationship: maternal uncle
 dm_notes: >
   Aerith's mother was transformed into one of the mechanized golems
   controlling Stratos.

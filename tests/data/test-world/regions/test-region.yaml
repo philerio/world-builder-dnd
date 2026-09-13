@@ -1,0 +1,5 @@
+id: test-region
+name: Test Region
+description: A region used for automated tests.
+kingdom: test-kingdom
+continent: test-continent

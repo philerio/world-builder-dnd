@@ -1,0 +1,90 @@
+]633;E;echo "================ CHARACTER ================";67b746e6-5a48-401d-b72f-477eb95f41d2]633;C================ CHARACTER ================
+from pydantic import Field
+
+from worldbuilder.models.character_event import CharacterEvent
+from worldbuilder.models.character_relationship import CharacterRelationship
+from .base import WorldObject
+
+
+class Character(WorldObject):
+    role: str | None = None
+    city: str | None = None
+    region: str | None = None
+    kingdom: str | None = None
+    details: str | None = None
+    events: list[str | CharacterEvent] = Field(default_factory=list)
+    relationships: list[CharacterRelationship] = Field(default_factory=list)
+
+================ CHARACTER RELATIONSHIP ================
+from pydantic import BaseModel
+
+
+class CharacterRelationship(BaseModel):
+    character: str
+    relationship: str
+    notes: str | None = None
+
+================ CHARACTER EVENT ================
+from pydantic import BaseModel
+
+class CharacterEvent(BaseModel):
+    description: str
+    campaign: str | None = None
+    location: str | None = None
+================ CAMPAIGN ================
+from pydantic import Field
+
+from worldbuilder.models.base import WorldObject
+
+
+class Campaign(WorldObject):
+    """A campaign or major story arc in the world."""
+
+    overview: str | None = None
+    status: str | None = None
+    locations: list[str] = Field(default_factory=list)
+    npcs: list[str] = Field(default_factory=list)
+    player_characters: list[str] = Field(default_factory=list)
+    outcome: str | None = None
+    consequences: str | None = None
+
+================ WORLD EVENT ================
+from pydantic import Field
+
+from .base import WorldObject
+
+
+class WorldEvent(WorldObject):
+    """An event, crisis, development, or unresolved situation in the world."""
+
+    type: str | None = None
+    status: str | None = None
+    locations: list[str] = Field(default_factory=list)
+    campaigns: list[str] = Field(default_factory=list)
+    caused_by: list[str] = Field(default_factory=list)
+    true_causes: list[str] = Field(default_factory=list)
+    hidden_connections: list[str] = Field(default_factory=list)
+    dm_notes: str | None = None
+    consequences: list[str] = Field(default_factory=list)
+    potential_campaign: bool = False
+    true_causes: list[str] = Field(default_factory=list)
+    hidden_connections: list[str] = Field(default_factory=list)
+    dm_notes: str | None = None
+
+================ TIMELINE EVENT ================
+from pydantic import Field
+
+from .base import WorldObject
+
+
+class TimelineEvent(WorldObject):
+    """A significant event in the history of the world."""
+
+    era: str | None = None
+    date: str | None = None
+    locations: list[str] = Field(default_factory=list)
+    kingdoms: list[str] = Field(default_factory=list)
+    characters: list[str] = Field(default_factory=list)
+    campaigns: list[str] = Field(default_factory=list)
+    consequences: list[str] = Field(default_factory=list)
+    dm_notes: str | None = None

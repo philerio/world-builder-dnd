@@ -1,0 +1,10 @@
+id: test-city
+name: Test City
+description: A city used for automated tests.
+kingdom: test-kingdom
+region: test-region
+population: 1000
+details: >
+  This is a test city used for automated tests.
+dm_notes: >
+  These are test DM notes for the test city used for automated tests.

@@ -1,0 +1,7 @@
+id: test-world
+name: Test World
+description: A minimal world used for automated tests.
+version: "1.0"
+author: Test
+continents:
+  - test-continent

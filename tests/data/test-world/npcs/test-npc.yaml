@@ -1,0 +1,18 @@
+id: test-npc
+name: Test NPC
+description: An NPC used for automated tests.
+role: Test NPC
+city: test-city
+region: test-region
+kingdom: test-kingdom
+details: >
+  Test NPC is a High Elf who is used for automated tests.
+relationships:
+  - character: test-mother
+    relationship: mother
+events:
+  - test-event
+  - description: >
+      Test NPC was adopted.
+    campaign: null
+    location: null

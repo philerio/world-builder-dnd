@@ -1,0 +1,5 @@
+id: test-lore
+name: Test Lore
+description: Lore used for automated tests.
+details: >
+  This is a test lore entry used for automated tests.

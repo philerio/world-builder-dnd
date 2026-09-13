@@ -60,14 +60,14 @@ def test_duplicate_world_id_raises_error() -> None:
 
 def test_load_world_registry() -> None:
     """A world YAML file can be loaded directly into a registry."""
-    path = Path("worlds/elligaesia/world.yaml")
+    path = Path("tests/data/test-world/world.yaml")
 
     registry = load_world_registry(path)
 
-    world = registry.get_world("elligaesia-world")
+    world = registry.get_world("test-world")
 
     assert world is not None
-    assert world.name == "Elligaesia"
+    assert world.name == "Test World"
     assert world.version == "1.0"
     
 def test_add_and_get_city() -> None:
@@ -116,13 +116,13 @@ def test_duplicate_city_id_raises_error() -> None:
 def test_load_world_registry_includes_cities() -> None:
     """Loading a world also loads its city files."""
     registry = load_world_registry(
-        Path("worlds/elligaesia/world.yaml")
+        Path("tests/data/test-world/world.yaml")
     )
 
-    city = registry.get_city("reqrun")
+    city = registry.get_city("test-city")
 
     assert city is not None
-    assert city.name == "Reqrun"
+    assert city.name == "Test City"
     
 def test_add_and_get_kingdom() -> None:
     """A kingdom can be added and retrieved by ID."""
@@ -368,15 +368,154 @@ city: example-city
     assert npc.role == "farmer"
     assert npc.city == "example-city"
     
-def test_elligaesia_registry_contains_bill() -> None:
-    """The Elligaesia world registry contains Bill."""
+def test_test_world_registry_contains_test_npc() -> None:
+    """The Test World registry contains the test NPC."""
     registry = load_world_registry(
-        Path("worlds/elligaesia/world.yaml")
+        Path("tests/data/test-world/world.yaml")
     )
 
-    bill = registry.get_npc("bill")
+    bill = registry.get_npc("test-npc")
 
     assert bill is not None
-    assert bill.name == 'William "Bill"'
-    assert bill.role == "farmer"
-    assert bill.city == "reqrun"
+    assert bill.name == 'Test NPC'
+    assert bill.role == "Test NPC"
+    assert bill.city == "test-city"
+
+def test_add_player_character() -> None:
+    from worldbuilder.models.player_character import PlayerCharacter
+
+    registry = WorldRegistry()
+    character = PlayerCharacter(
+        id="aerith",
+        name="Aerith",
+    )
+
+    registry.add_player_character(character)
+
+    assert registry.get_player_character("aerith") == character
+    assert registry.has_player_character("aerith")
+
+
+def test_duplicate_player_character_id_raises() -> None:
+    from worldbuilder.models.player_character import PlayerCharacter
+
+    registry = WorldRegistry()
+
+    registry.add_player_character(
+        PlayerCharacter(
+            id="aerith",
+            name="Aerith",
+        )
+    )
+
+    try:
+        registry.add_player_character(
+            PlayerCharacter(
+                id="aerith",
+                name="Another Aerith",
+            )
+        )
+        assert False, "Expected duplicate player character ID to raise"
+    except ValueError as error:
+        assert str(error) == "Duplicate player character ID: aerith"
+
+def test_get_entity_finds_entities_across_collections() -> None:
+    registry = WorldRegistry()
+
+    city = City(
+        id="reqrun",
+        name="Reqrun",
+    )
+
+    registry.add_city(city)
+
+    assert registry.get_entity("reqrun") == city
+
+def test_get_entity_returns_none_for_unknown_id() -> None:
+    registry = WorldRegistry()
+
+    assert registry.get_entity("does-not-exist") is None
+     
+def test_missing_player_character_returns_none() -> None:
+    registry = WorldRegistry()
+
+    assert registry.get_player_character("missing") is None
+    assert not registry.has_player_character("missing")
+    
+def test_duplicate_id_across_entity_types_raises() -> None:
+    registry = WorldRegistry()
+
+    registry.add_city(
+        City(
+            id="shared-id",
+            name="Example City",
+        )
+    )
+
+    from worldbuilder.models.npc import NPC
+
+    try:
+        registry.add_npc(
+            NPC(
+                id="shared-id",
+                name="Example NPC",
+            )
+        )
+        assert False, "Expected duplicate entity ID to raise"
+    except ValueError as error:
+        assert str(error) == (
+            "Duplicate entity ID across registry: shared-id"
+        )
+        
+def test_registry_persists_entities_between_add_calls() -> None:
+    registry = WorldRegistry()
+
+    city = City(
+        id="shared-id",
+        name="Example City",
+    )
+
+    registry.add_city(city)
+
+    assert "shared-id" in registry.cities
+    assert registry.get_city("shared-id") == city
+
+    from worldbuilder.models.npc import NPC
+
+    npc = NPC(
+        id="different-id",
+        name="Example NPC",
+    )
+
+    registry.add_npc(npc)
+
+    assert "shared-id" in registry.cities
+    assert registry.get_city("shared-id") == city
+    assert "different-id" in registry.npcs
+    assert registry.get_npc("different-id") == npc
+    
+def test_duplicate_id_between_player_character_and_npc_raises() -> None:
+    from worldbuilder.models.npc import NPC
+    from worldbuilder.models.player_character import PlayerCharacter
+
+    registry = WorldRegistry()
+
+    registry.add_player_character(
+        PlayerCharacter(
+            id="shared-id",
+            name="Example Character",
+        )
+    )
+
+    try:
+        registry.add_npc(
+            NPC(
+                id="shared-id",
+                name="Example NPC",
+            )
+        )
+        assert False, "Expected duplicate entity ID to raise"
+    except ValueError as error:
+        assert str(error) == (
+            "Duplicate entity ID across registry: shared-id"
+        )

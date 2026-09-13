@@ -1,0 +1,9 @@
+id: test-event
+name: Test World Event
+description: A world event used for automated tests.
+type: test
+status: ongoing
+locations:
+  - test-city
+campaigns:
+  - test-campaign

@@ -1,0 +1,7 @@
+id: test-pc
+name: Test PC
+description: A player character used for automated tests.
+role: Adventurer
+city: test-city
+region: test-region
+kingdom: test-kingdom

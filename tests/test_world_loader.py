@@ -7,7 +7,7 @@ from worldbuilder.loaders.yaml_loader import load_world
 from worldbuilder.models.world import World
 from worldbuilder.loaders.world_loader import load_world_registry
 
-WORLD_PATH = Path("worlds/elligaesia/world.yaml")
+WORLD_PATH = Path("tests/data/test-world/world.yaml")
 
 
 def test_load_valid_world() -> None:
@@ -16,16 +16,16 @@ def test_load_valid_world() -> None:
     world = load_world(WORLD_PATH)
 
     assert isinstance(world, World)
-    assert world.id == "elligaesia-world"
-    assert world.name == "Elligaesia"
+    assert world.id == "test-world"
+    assert world.name == "Test World"
     assert world.version == "1.0"
-    assert len(world.continents) == 2
+    assert len(world.continents) == 1
 
 
 def test_load_missing_file() -> None:
     """Loading a nonexistent file should raise FileNotFoundError."""
 
-    missing_path = Path("worlds/elligaesia/does_not_exist.yaml")
+    missing_path = Path("tests/data/test-world/does_not_exist.yaml")
 
     with pytest.raises(FileNotFoundError):
         load_world(missing_path)
@@ -56,4 +56,4 @@ def test_load_world_registry_with_campaign() -> None:
 
     registry = load_world_registry(WORLD_PATH)
 
-    assert registry.has_campaign("the-unforgiven")
+    assert registry.has_campaign("test-campaign")

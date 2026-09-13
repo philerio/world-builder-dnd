@@ -1,0 +1,16 @@
+id: test-timeline-event
+name: Test Timeline Event
+description: A timeline event used for automated tests.
+era: Test Era
+date: null
+locations:
+  - test-city
+kingdoms:
+  - test-kingdom
+characters:
+  - test-npc
+  - test-pc
+campaigns:
+  - test-campaign
+consequences: []
+dm_notes: null

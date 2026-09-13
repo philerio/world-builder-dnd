@@ -1,0 +1,11 @@
+id: test-campaign
+name: Test Campaign
+description: A campaign used for automated tests.
+overview: A test campaign.
+status: active
+locations:
+  - test-city
+npcs:
+  - test-npc
+player_characters:
+  - test-pc

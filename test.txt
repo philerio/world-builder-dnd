@@ -1,0 +1,77 @@
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-20-true_causes:
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-21-  - pattrice
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-22-
+worlds/elligaesia/events/batik-trade-route-collapse.yaml:23:hidden_connections:
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-24-  - bane
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-25-  - dwarmar
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-26-
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-27-dm_notes: >
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-28-  The protective magic surrounding the road was drained by Pattrice
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-29-  during The Unforgiven. He used the stolen magic to power his
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-30-  enchantment and sustain himself.
+worlds/elligaesia/events/batik-trade-route-collapse.yaml-31-
+--
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-18-
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-19-true_causes: []
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-20-
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml:21:hidden_connections: []
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-22-
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-23-dm_notes: >
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-24-  The true origin of the island and the reason it appeared are currently
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-25-  unknown.
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-26-
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-27-consequences: []
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-28-
+worlds/elligaesia/events/teth-umbara-island-conflict.yaml-29-potential_campaign: true
+--
+worlds/elligaesia/events/serenno-civil-war.yaml-17-
+worlds/elligaesia/events/serenno-civil-war.yaml-18-true_causes: []
+worlds/elligaesia/events/serenno-civil-war.yaml-19-
+worlds/elligaesia/events/serenno-civil-war.yaml:20:hidden_connections: []
+worlds/elligaesia/events/serenno-civil-war.yaml-21-
+worlds/elligaesia/events/serenno-civil-war.yaml-22-dm_notes: >
+worlds/elligaesia/events/serenno-civil-war.yaml-23-  The assassination of Serenno's ruling family is the immediate cause
+worlds/elligaesia/events/serenno-civil-war.yaml-24-  of the civil war. The deeper circumstances surrounding the
+worlds/elligaesia/events/serenno-civil-war.yaml-25-  assassination have not yet been established.
+worlds/elligaesia/events/serenno-civil-war.yaml-26-
+worlds/elligaesia/events/serenno-civil-war.yaml-27-consequences: []
+worlds/elligaesia/events/serenno-civil-war.yaml-28-
+--
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-16-
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-17-true_causes: []
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-18-
+worlds/elligaesia/events/zeffo-undead-sightings.yaml:19:hidden_connections: []
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-20-
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-21-dm_notes: >
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-22-  The reports of undead are currently only rumors. The actual cause
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-23-  and nature of the undead activity have not yet been established.
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-24-
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-25-consequences: []
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-26-
+worlds/elligaesia/events/zeffo-undead-sightings.yaml-27-potential_campaign: true
+--
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-17-
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-18-true_causes: []
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-19-
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml:20:hidden_connections:
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-21-  - bane
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-22-  - dwarmar
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-23-
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-24-dm_notes: >
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-25-  The immediate cause of the trade dispute is the collapse of the
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-26-  Batik trade route. The deeper consequences of the crisis may
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-27-  eventually connect to Bane's growing influence and the reemergence
+worlds/elligaesia/events/elligaesia-trade-dispute.yaml-28-  of ancient Dwarmar technology.
+--
+worlds/elligaesia/events/stratos-golem-conversion.yaml-28-true_causes:
+worlds/elligaesia/events/stratos-golem-conversion.yaml-29-  - dorith
+worlds/elligaesia/events/stratos-golem-conversion.yaml-30-
+worlds/elligaesia/events/stratos-golem-conversion.yaml:31:hidden_connections:
+worlds/elligaesia/events/stratos-golem-conversion.yaml-32-  - stratos-dwarmar-mechanism
+worlds/elligaesia/events/stratos-golem-conversion.yaml-33-  - dwarmar
+worlds/elligaesia/events/stratos-golem-conversion.yaml-34-  - bane
+worlds/elligaesia/events/stratos-golem-conversion.yaml-35-
+worlds/elligaesia/events/stratos-golem-conversion.yaml-36-dm_notes: >
+worlds/elligaesia/events/stratos-golem-conversion.yaml-37-  The mechanized golems are powered by the same ancient Dwarmar
+worlds/elligaesia/events/stratos-golem-conversion.yaml-38-  technology that keeps Stratos suspended in the sky.
+worlds/elligaesia/events/stratos-golem-conversion.yaml-39-
