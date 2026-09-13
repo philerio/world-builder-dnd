@@ -16,10 +16,10 @@ def test_load_valid_world() -> None:
     world = load_world(WORLD_PATH)
 
     assert isinstance(world, World)
-    assert world.id == "elligaesia"
+    assert world.id == "elligaesia-world"
     assert world.name == "Elligaesia"
     assert world.version == "1.0"
-    assert len(world.continents) == 3
+    assert len(world.continents) == 2
 
 
 def test_load_missing_file() -> None:
@@ -38,7 +38,7 @@ def test_invalid_world_data(tmp_path: Path) -> None:
 
     invalid_file.write_text(
         """
-id: elligaesia
+id: elligaesia-world
 name: Elligaesia
 version: 1.0
 author: Patrick

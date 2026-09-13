@@ -24,3 +24,25 @@ def load_yaml_directory(
         entities.append(model.model_validate(data))
 
     return entities
+
+
+def save_yaml_entity(
+    entity: ModelT,
+    directory: Path,
+) -> Path:
+    """Save a Pydantic entity to a YAML file based on its ID."""
+    directory.mkdir(parents=True, exist_ok=True)
+
+    path = directory / f"{entity.id}.yaml"
+
+    data = entity.model_dump(mode="json", exclude_none=True)
+
+    with path.open("w", encoding="utf-8") as file:
+        yaml.safe_dump(
+            data,
+            file,
+            sort_keys=False,
+            default_flow_style=False,
+        )
+
+    return path

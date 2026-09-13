@@ -64,7 +64,7 @@ def test_load_world_registry() -> None:
 
     registry = load_world_registry(path)
 
-    world = registry.get_world("elligaesia")
+    world = registry.get_world("elligaesia-world")
 
     assert world is not None
     assert world.name == "Elligaesia"
