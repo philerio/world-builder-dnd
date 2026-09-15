@@ -1,0 +1,1 @@
+uv run uvicorn worldbuilder.api.app:app --reload

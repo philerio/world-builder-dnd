@@ -399,3 +399,79 @@ def test_world_event_campaign_reference_is_validated() -> None:
     assert result.errors == [
         "Unknown campaign ID: unknown-campaign",
     ]
+def test_campaign_story_references_are_validated() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    result = validate_registry(registry)
+
+    assert result.is_valid
+    
+def test_campaign_story_with_unknown_entity_fails_validation() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    campaign = registry.get_campaign("test-campaign")
+    assert campaign is not None
+    assert campaign.story is not None
+
+    campaign.story.nodes[1].entity_id = "does-not-exist"
+
+    result = validate_registry(registry)
+
+    assert not result.is_valid
+    assert "Unknown entity ID in story: does-not-exist" in result.errors
+    
+def test_map_marker_reference_is_validated() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    result = validate_registry(registry)
+
+    assert result.is_valid
+    
+def test_map_marker_unknown_entity_fails_validation() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    map_object = registry.get_map("test-map")
+    assert map_object is not None
+    assert len(map_object.markers) == 1
+
+    map_object.markers[0].entity_id = "does-not-exist"
+
+    result = validate_registry(registry)
+
+    assert not result.is_valid
+    assert (
+        "Unknown entity ID in map marker: does-not-exist"
+        in result.errors
+    )
+    
+def test_map_parent_reference_is_validated() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    result = validate_registry(registry)
+
+    assert result.is_valid
+
+def test_map_unknown_parent_fails_validation() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    map_object = registry.get_map("test-map")
+    assert map_object is not None
+
+    map_object.parent_map = "does-not-exist"
+
+    result = validate_registry(registry)
+
+    assert not result.is_valid
+    assert "Unknown map ID: does-not-exist" in result.errors

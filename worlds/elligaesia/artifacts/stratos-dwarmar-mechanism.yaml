@@ -1,0 +1,14 @@
+id: stratos-dwarmar-mechanism
+name: Stratos Dwarmar Mechanism
+description: >
+  An ancient Dwarmar mechanism responsible for keeping Stratos
+  suspended in the sky and powering the mechanized golems.
+details: >
+  The mechanism uses ancient Dwarmar technology. Its operation
+  is connected to the suspension of Stratos and the power sustaining
+  the mechanized golems. Disabling the mechanism is expected to
+  cause Stratos to return to the ground and deprive the golems
+  of their power.
+dm_notes: >
+  The mechanism is part of the same ancient technology responsible
+  for the growing desert and the mechanized golems.

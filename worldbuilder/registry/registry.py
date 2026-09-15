@@ -1,4 +1,7 @@
+from worldbuilder.models import artifact
+from worldbuilder.models.artifact import Artifact
 from worldbuilder.models.city import City
+from worldbuilder.models.map import Map
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.models.world import World
 from worldbuilder.models.kingdom import Kingdom
@@ -25,6 +28,8 @@ class WorldRegistry:
         self.timeline_events: dict[str, TimelineEvent] = {}
         self.lores: dict[str, Lore] = {}
         self.player_characters: dict[str, PlayerCharacter] = {}
+        self.artifacts: dict[str, Artifact] = {}
+        self.maps: dict[str, Map] = {}
 
     def _ensure_unique_id(self, entity_id: str) -> None:
         """Ensure an entity ID is unique across the registry."""
@@ -40,6 +45,8 @@ class WorldRegistry:
             self.world_events,
             self.timeline_events,
             self.lores,
+            self.artifacts,
+            self.maps,
         )
 
         if any(entity_id in collection for collection in collections):
@@ -154,6 +161,21 @@ class WorldRegistry:
         """Check whether a continent exists."""
         return continent_id in self.continents
 
+    def add_artifact(self, artifact: Artifact) -> None:
+        """Add an artifact to the registry."""
+        if artifact.id in self.artifacts:
+            raise ValueError(f"Duplicate artifact ID: {artifact.id}")
+        self._ensure_unique_id(artifact.id)
+
+        self.artifacts[artifact.id] = artifact
+
+    def get_artifact(self, artifact_id: str) -> Artifact | None:
+        return self.artifacts.get(artifact_id)
+
+
+    def has_artifact(self, artifact_id: str) -> bool:
+        return artifact_id in self.artifacts
+    
     def add_player_character(self, character: PlayerCharacter) -> None:
         """Add a player character to the registry."""
         if character.id in self.player_characters:
@@ -223,6 +245,21 @@ class WorldRegistry:
     def has_lore(self, lore_id: str) -> bool:
         """Check whether a lore entry exists."""
         return lore_id in self.lores
+    def add_map(self, map_object: Map) -> None:
+        """Add a map to the registry."""
+        if map_object.id in self.maps:
+            raise ValueError(f"Duplicate map ID: {map_object.id}")
+
+        self._ensure_unique_id(map_object.id)
+        self.maps[map_object.id] = map_object
+
+    def get_map(self, map_id: str) -> Map | None:
+        """Get a map by ID."""
+        return self.maps.get(map_id)
+
+    def has_map(self, map_id: str) -> bool:
+        """Check whether a map exists."""
+        return map_id in self.maps
     
     def get_entity(self, entity_id: str) -> object | None:
         """Get an entity by ID from any registry collection."""
@@ -238,6 +275,8 @@ class WorldRegistry:
             self.world_events,
             self.timeline_events,
             self.lores,
+            self.artifacts,
+            self.maps,
         )
 
         for collection in collections:
@@ -245,3 +284,34 @@ class WorldRegistry:
                 return collection[entity_id]
 
         return None
+
+    def get_entity_type(self, entity_id: str) -> str | None:
+        """Return the registry collection containing an entity ID."""
+        if entity_id in self.worlds:
+            return "world"
+        if entity_id in self.continents:
+            return "continent"
+        if entity_id in self.regions:
+            return "region"
+        if entity_id in self.kingdoms:
+            return "kingdom"
+        if entity_id in self.cities:
+            return "city"
+        if entity_id in self.npcs:
+            return "npc"
+        if entity_id in self.player_characters:
+            return "player_character"
+        if entity_id in self.campaigns:
+            return "campaign"
+        if entity_id in self.world_events:
+            return "world_event"
+        if entity_id in self.timeline_events:
+            return "timeline_event"
+        if entity_id in self.lores:
+            return "lore"
+        if entity_id in self.artifacts:
+            return "artifact"
+        if entity_id in self.maps:
+            return "map"
+        return None
+    

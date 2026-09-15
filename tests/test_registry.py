@@ -1,4 +1,8 @@
 import pytest
+from worldbuilder.models.artifact import Artifact
+from worldbuilder.models.campaign import Campaign
+from worldbuilder.models.map import Map
+from worldbuilder.models.reference import EntityReference
 from worldbuilder.models.region import Region
 
 from worldbuilder.models.kingdom import Kingdom
@@ -9,6 +13,7 @@ from pathlib import Path
 from worldbuilder.loaders.world_loader import load_world_registry
 from worldbuilder.models.city import City
 from worldbuilder.models.npc import NPC
+from worldbuilder.registry.reference_resolver import resolve_reference
 
 
 def make_world(world_id: str = "elligaesia") -> World:
@@ -519,3 +524,111 @@ def test_duplicate_id_between_player_character_and_npc_raises() -> None:
         assert str(error) == (
             "Duplicate entity ID across registry: shared-id"
         )
+
+def test_registry_can_identify_entity_type():
+    registry = WorldRegistry()
+
+    registry.add_npc(
+        NPC(
+            id="test-npc",
+            name="Test NPC",
+        )
+    )
+
+    registry.add_campaign(
+        Campaign(
+            id="test-campaign",
+            name="Test Campaign",
+        )
+    )
+
+    assert registry.get_entity_type("test-npc") == "npc"
+    assert registry.get_entity_type("test-campaign") == "campaign"
+    assert registry.get_entity_type("missing") is None
+    
+def test_registry_can_store_artifacts():
+    registry = WorldRegistry()
+
+    artifact = Artifact(
+        id="test-artifact",
+        name="Test Artifact",
+    )
+
+    registry.add_artifact(artifact)
+
+    assert registry.get_artifact("test-artifact") is artifact
+    assert registry.has_artifact("test-artifact")
+    assert registry.get_entity_type("test-artifact") == "artifact"
+    
+def test_registry_can_identify_entity_type():
+    registry = WorldRegistry()
+
+    registry.add_npc(
+        NPC(
+            id="test-npc",
+            name="Test NPC",
+        )
+    )
+
+    registry.add_campaign(
+        Campaign(
+            id="test-campaign",
+            name="Test Campaign",
+        )
+    )
+
+    registry.add_artifact(
+        Artifact(
+            id="test-artifact",
+            name="Test Artifact",
+        )
+    )
+
+    assert registry.get_entity_type("test-npc") == "npc"
+    assert registry.get_entity_type("test-campaign") == "campaign"
+    assert registry.get_entity_type("test-artifact") == "artifact"
+    assert registry.get_entity_type("missing") is None
+
+def test_resolve_reference_returns_entity():
+    registry = WorldRegistry()
+
+    artifact = Artifact(
+        id="test-artifact",
+        name="Test Artifact",
+    )
+
+    registry.add_artifact(artifact)
+
+    reference = resolve_reference(
+        registry,
+        "test-artifact",
+    )
+
+    assert reference is not None
+    assert reference.id == "test-artifact"
+    assert reference.entity_type == "artifact"
+    assert reference.entity is artifact
+
+def test_resolve_reference_returns_none_for_unknown_id():
+    registry = WorldRegistry()
+
+    assert resolve_reference(
+        registry,
+        "does-not-exist",
+    ) is None
+
+def test_registry_can_store_maps() -> None:
+    registry = WorldRegistry()
+
+    world_map = Map(
+        id="test-map",
+        name="Test Map",
+        map_type="world",
+    )
+
+    registry.add_map(world_map)
+
+    assert registry.get_map("test-map") is world_map
+    assert registry.has_map("test-map")
+    assert registry.get_entity("test-map") is world_map
+    assert registry.get_entity_type("test-map") == "map"

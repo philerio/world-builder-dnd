@@ -9,3 +9,12 @@ npcs:
   - test-npc
 player_characters:
   - test-pc
+story:
+  nodes:
+    - type: text
+      text: "The party discovered "
+    - type: entity_link
+      text: "an ancient artifact"
+      entity_id: test-artifact
+    - type: text
+      text: " hidden beneath the ruins."

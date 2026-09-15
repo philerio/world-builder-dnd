@@ -112,6 +112,12 @@ id: test-lore
 name: Test Lore
 description: Lore used for automated tests.
 """,
+"artifacts/test-artifact.yaml": """\
+id: test-artifact
+name: Test Artifact
+description: An artifact used for automated tests.
+details: A mysterious object used to verify artifact loading.
+""",
 }
 
 

@@ -1,0 +1,16 @@
+id: test-map
+name: Test Map
+description: A map used for automated tests.
+map_type: region
+parent_map: test-parent-map
+image_path: null
+details: A simple test map for verifying map functionality.
+dm_notes: Test-only map data.
+markers:
+  - id: test-city-marker
+    entity_id: test-city
+    x: 42.5
+    y: 67.2
+    label: Test City
+    visible: true
+    dm_only: false

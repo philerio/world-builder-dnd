@@ -1,6 +1,7 @@
 from pydantic import Field
 
 from worldbuilder.models.base import WorldObject
+from worldbuilder.models.story import StoryContent
 
 
 class Campaign(WorldObject):
@@ -13,3 +14,4 @@ class Campaign(WorldObject):
     player_characters: list[str] = Field(default_factory=list)
     outcome: str | None = None
     consequences: str | None = None
+    story: StoryContent | None = None

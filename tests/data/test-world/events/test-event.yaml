@@ -7,3 +7,5 @@ locations:
   - test-city
 campaigns:
   - test-campaign
+hidden_connections:
+  - test-artifact

@@ -57,3 +57,41 @@ def test_load_world_registry_with_campaign() -> None:
     registry = load_world_registry(WORLD_PATH)
 
     assert registry.has_campaign("test-campaign")
+    
+def test_loads_artifacts():
+    registry = load_world_registry(WORLD_PATH)
+
+    artifact = registry.get_artifact("test-artifact")
+
+    assert artifact is not None
+    assert artifact.name == "Test Artifact"
+    assert artifact.description == "An artifact used for automated tests."
+
+def test_world_event_can_reference_artifact():
+    registry = load_world_registry(WORLD_PATH)
+
+    event = registry.get_world_event("test-event")
+
+    assert event is not None
+    assert "test-artifact" in event.hidden_connections
+
+def test_campaign_loads_story_content() -> None:
+    registry = load_world_registry(WORLD_PATH)
+
+    campaign = registry.get_campaign("test-campaign")
+
+    assert campaign is not None
+    assert campaign.story is not None
+    assert len(campaign.story.nodes) == 3
+    assert campaign.story.nodes[1].type == "entity_link"
+    assert campaign.story.nodes[1].entity_id == "test-artifact"
+    
+def test_loads_maps() -> None:
+    registry = load_world_registry(WORLD_PATH)
+
+    world_map = registry.get_map("test-map")
+
+    assert world_map is not None
+    assert world_map.name == "Test Map"
+    assert world_map.map_type == "region"
+    assert world_map.parent_map == "test-parent-map"

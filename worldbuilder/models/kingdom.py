@@ -6,3 +6,4 @@ class Kingdom(WorldObject):
 
     ruler: str | None = None
     capital: str | None = None
+    continent: str | None = None

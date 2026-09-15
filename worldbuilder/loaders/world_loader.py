@@ -2,9 +2,11 @@ from pathlib import Path
 
 from worldbuilder.loaders.entity_loader import load_yaml_directory
 from worldbuilder.loaders.yaml_loader import load_world
+from worldbuilder.models.artifact import Artifact
 from worldbuilder.models.city import City
 from worldbuilder.models.kingdom import Kingdom
 from worldbuilder.models.lore import Lore
+from worldbuilder.models.map import Map
 from worldbuilder.models.region import Region
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.registry import WorldRegistry
@@ -30,6 +32,11 @@ def load_world_registry(path: Path) -> WorldRegistry:
     ):
         registry.add_continent(continent)
 
+    for artifact in load_yaml_directory(path.parent / "artifacts", Artifact):
+        registry.add_artifact(artifact)
+    
+    for map in load_yaml_directory(path.parent / "maps", Map):
+        registry.add_map(map)
 
     for kingdom in load_yaml_directory(path.parent / "kingdoms", Kingdom):
         registry.add_kingdom(kingdom)
