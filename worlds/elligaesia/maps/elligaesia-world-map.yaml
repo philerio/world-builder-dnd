@@ -1,0 +1,31 @@
+id: elligaesia-world-map
+name: World Map
+description: The known world of Elligaesia.
+map_type: world
+parent_map: null
+image_path: maps/elligaesia-world-map.png
+details: >
+  A map of the known world, including the continents of Elligaesia
+  and Rendelle.
+dm_notes: null
+
+markers:
+  - id: elligaesia-world-marker
+    entity_id: elligaesia
+    x: 30
+    y: 50
+    label: Elligaesia
+    tooltip: Continent of Elligaesia
+    linked_map: elligaesia-map
+    visible: true
+    dm_only: false
+
+  - id: rendelle-world-marker
+    entity_id: rendelle
+    x: 70
+    y: 50
+    label: Rendelle
+    tooltip: Continent of Rendelle
+    linked_map: rendelle-map
+    visible: true
+    dm_only: false

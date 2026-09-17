@@ -1,0 +1,118 @@
+id: elligaesia-map
+
+name: Elligaesia
+
+description: The continent of Elligaesia.
+
+map_type: continent
+
+parent_map: elligaesia-world-map
+
+image_path: maps/elligaesia.png
+
+details: >
+
+  The continent of Elligaesia, including North Elligaesia
+
+  and the Kingdom of Batik.
+
+dm_notes: null
+
+markers:
+  - id: reqrun-map-marker
+    entity_id: reqrun
+    x: 83.5
+    y: 67
+    label: Reqrun
+    tooltip: City of Reqrun
+    linked_map: reqrun-map
+    visible: true
+    dm_only: false
+
+  - id: northern-road-marker
+    entity_id: northern-road
+    x: 78.8
+    y: 56.2
+    tooltip: Northern Road
+    linked_map: null
+    visible: true
+    dm_only: false
+  - id: halfington-map-marker
+    entity_id: halfington
+    x: 5
+    y: 68
+    label: Halfington
+    tooltip: City of Halfington
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: larton-map-marker
+    entity_id: larton
+    x: 31.5
+    y: 69.8
+    label: Larton
+    tooltip: City of Larton
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: ole-hythe-map-marker
+    entity_id: ole-hythe
+    x: 47
+    y: 70
+    label: Ole Hythe
+    tooltip: City of Ole Hythe
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: colkirk-map-marker
+    entity_id: colkirk
+    x: 36
+    y: 75.8
+    label: Colkirk
+    tooltip: City of Colkirk
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: baldons-map-marker
+    entity_id: baldon
+    x: 48.5
+    y: 82
+    label: Baldon
+    tooltip: Capital of Batik
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: west-town-map-marker
+    entity_id: west-town
+    x: 67.1
+    y: 72
+    label: West Town
+    tooltip: City of West Town
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: easton-map-marker
+    entity_id: easton
+    x: 88.6
+    y: 78
+    label: Easton
+    tooltip: City of Easton
+    linked_map: null
+    visible: true
+    dm_only: false
+
+  - id: sho-dar-map-marker
+    entity_id: sho-dar
+    x: 57.5
+    y: 93
+    label: Sho Dar
+    tooltip: City of Sho Dar
+    linked_map: null
+    visible: true
+    dm_only: false

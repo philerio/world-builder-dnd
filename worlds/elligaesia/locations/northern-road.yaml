@@ -1,0 +1,15 @@
+id: northern-road
+name: Northern Road
+description: The road crossing the Mountains of Bane.
+location_type: road
+continent: elligaesia
+kingdom: batik
+region: null
+details: >
+  A road crossing the Mountains of Bane through the pass cut
+  by powerful wizards. The road was once protected by an
+  enchantment that helped travelers survive the mountains.
+dm_notes: >
+  The protective magic was drained by Pattrice to power his
+  altar. The protection is now gone, allowing monsters to roam
+  the road and effectively cutting off the route.

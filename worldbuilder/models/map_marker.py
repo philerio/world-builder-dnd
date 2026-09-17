@@ -9,5 +9,7 @@ class MapMarker(BaseModel):
     x: float = Field(ge=0, le=100)
     y: float = Field(ge=0, le=100)
     label: str | None = None
+    linked_map: str | None = None
     visible: bool = True
     dm_only: bool = False
+    tooltip: str | None = None

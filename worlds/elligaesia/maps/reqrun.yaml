@@ -1,0 +1,19 @@
+id: reqrun-map
+
+name: Reqrun
+
+description: The city of Reqrun.
+entity_id: reqrun
+map_type: city
+
+parent_map: elligaesia-map
+
+image_path: maps/reqrun.png
+
+details: >
+
+  A city in the Kingdom of Batik.
+
+dm_notes: null
+
+markers: []

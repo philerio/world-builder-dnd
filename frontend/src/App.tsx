@@ -25,6 +25,7 @@ import EventIcon from "@mui/icons-material/Event";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DiamondIcon from "@mui/icons-material/Diamond";
 import MapIcon from "@mui/icons-material/Map";
+import WorldMapPage from "./pages/WorldMapPage";
 import StarsIcon from "@mui/icons-material/Stars";
 
 import type { WorldData } from "./types";
@@ -36,6 +37,7 @@ import EventsPage from "./pages/EventsPage";
 import LorePage from "./pages/LorePage";
 import ArtifactsPage from "./pages/ArtifactsPage";
 import MapsPage from "./pages/MapsPage";
+import ExploreIcon from "@mui/icons-material/Explore";
 
 const drawerWidth = 240;
 
@@ -54,6 +56,11 @@ const navigation = [
     path: "/locations",
     label: "Locations",
     icon: <PlaceIcon />,
+  },
+  {
+    path: "/world-map",
+    label: "World Map",
+    icon: <ExploreIcon />,
   },
   {
     path: "/characters",
@@ -412,14 +419,12 @@ function AppContent() {
           <Route path="/" element={<Dashboard data={data} />} />
           <Route path="/world" element={<WorldPage data={data} />} />
           <Route path="/locations" element={<LocationsPage />} />
-
+          <Route path="/world-map" element={<WorldMapPage />} />
           <Route path="/characters" element={<CharactersPage data={data} />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/lore" element={<LorePage />} />
-          <Route
-            path="/artifacts"
-            element={<ArtifactsPage />} />
+          <Route path="/artifacts" element={<ArtifactsPage />} />
           <Route path="/maps" element={<MapsPage />} />
         </Routes>
       </Box>

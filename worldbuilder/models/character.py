@@ -11,5 +11,10 @@ class Character(WorldObject):
     region: str | None = None
     kingdom: str | None = None
     details: str | None = None
+    motives: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(default_factory=list)
+    fears: list[str] = Field(default_factory=list)
+    secrets: list[str] = Field(default_factory=list)
+    knowledge: list[str] = Field(default_factory=list)
     events: list[str | CharacterEvent] = Field(default_factory=list)
     relationships: list[CharacterRelationship] = Field(default_factory=list)

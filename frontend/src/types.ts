@@ -68,6 +68,11 @@ export type Character = {
     region?: string;
     kingdom?: string;
     details?: string;
+    motives: string[];
+    goals: string[];
+    fears: string[];
+    secrets: string[];
+    knowledge: string[];
     events: CharacterEvent[];
     relationships: CharacterRelationship[];
 };
@@ -133,8 +138,10 @@ export type MapMarker = {
     x: number;
     y: number;
     label?: string;
+    linked_map?: string;
     visible: boolean;
     dm_only: boolean;
+    tooltip?: string;
 };
 
 export type Map = {
@@ -143,6 +150,7 @@ export type Map = {
     description?: string;
     map_type?: string;
     parent_map?: string;
+    entity_id?: string;
     image_path?: string;
     details?: string;
     dm_notes?: string;

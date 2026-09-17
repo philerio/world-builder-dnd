@@ -1,0 +1,19 @@
+id: grimsard-map
+
+name: Grimsard
+
+description: The city of Grimsard.
+
+map_type: city
+
+parent_map: rendelle-map
+
+image_path: maps/grimsard.png
+
+details: >
+
+  A major port city of Rendelle.
+
+dm_notes: null
+entity_id: grimsard
+markers: []

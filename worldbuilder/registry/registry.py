@@ -1,6 +1,6 @@
-from worldbuilder.models import artifact
 from worldbuilder.models.artifact import Artifact
 from worldbuilder.models.city import City
+from worldbuilder.models.location import Location
 from worldbuilder.models.map import Map
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.models.world import World
@@ -30,7 +30,8 @@ class WorldRegistry:
         self.player_characters: dict[str, PlayerCharacter] = {}
         self.artifacts: dict[str, Artifact] = {}
         self.maps: dict[str, Map] = {}
-
+        self.locations: dict[str, Location] = {}
+        
     def _ensure_unique_id(self, entity_id: str) -> None:
         """Ensure an entity ID is unique across the registry."""
         collections = (
@@ -46,6 +47,7 @@ class WorldRegistry:
             self.timeline_events,
             self.lores,
             self.artifacts,
+            self.locations,
             self.maps,
         )
 
@@ -68,6 +70,21 @@ class WorldRegistry:
     def has_world(self, world_id: str) -> bool:
         """Check whether a world exists."""
         return world_id in self.worlds
+    
+    def add_location(self, location: Location) -> None:
+        """Add a location to the registry."""
+        if location.id in self.locations:
+            raise ValueError(f"Duplicate location ID: {location.id}")
+        self._ensure_unique_id(location.id)
+        self.locations[location.id] = location
+
+    def get_location(self, location_id: str) -> Location | None:
+        """Get a location by ID."""
+        return self.locations.get(location_id)
+
+    def has_location(self, location_id: str) -> bool:
+        """Check whether a location exists."""
+        return location_id in self.locations
 
     def add_city(self, city: City) -> None:
         """Add a city to the registry."""
@@ -277,6 +294,7 @@ class WorldRegistry:
             self.lores,
             self.artifacts,
             self.maps,
+            self.locations,
         )
 
         for collection in collections:
@@ -313,5 +331,7 @@ class WorldRegistry:
             return "artifact"
         if entity_id in self.maps:
             return "map"
+        if entity_id in self.locations:
+            return "location"
         return None
     

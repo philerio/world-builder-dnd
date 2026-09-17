@@ -451,28 +451,29 @@ function KingdomDetails({
   onOpenEntity,
   getEntity,
 }: KingdomDetailsProps) {
-  const { entities: relatedEntities } = useRelatedEntities(
+  const { entities: relatedEntities, loading } = useRelatedEntities(
     typeof entity.id === "string" ? entity.id : null,
   );
 
   const cities = relatedEntities
     .filter((relatedEntity) => relatedEntity.entity_type === "city")
     .map((relatedEntity) => relatedEntity.id);
+
   return (
-    <DetailSection title="Kingdom" icon={<LocationOnIcon />}>
+    <DetailSection title="Kingdom" icon={<PublicIcon />}>
+      <TextField
+        value={entity.description}
+        fallback="No description available."
+      />
+
+      <Divider />
+
       <EntityReferenceField
         label="Continent"
         value={entity.continent}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
-      <EntityReferenceListField
-        label="Cities"
-        entityIds={cities}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
-      <ReferenceField label="Ruler" value={entity.ruler} />
 
       <EntityReferenceField
         label="Capital"
@@ -480,6 +481,26 @@ function KingdomDetails({
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
+
+      <EntityReferenceField
+        label="Ruler"
+        value={entity.ruler}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+
+      {loading ? (
+        <Typography variant="body2" color="text.secondary">
+          Loading cities…
+        </Typography>
+      ) : (
+        <EntityReferenceListField
+          label="Cities"
+          entityIds={cities}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      )}
     </DetailSection>
   );
 }
@@ -732,7 +753,12 @@ function CharacterDetails({
   return (
     <DetailSection title="Character" icon={<PeopleIcon />}>
       <ReferenceField label="Role" value={entity.role} />
+      <TextListField label="Motives" value={entity.motives} />
 
+      <TextListField label="Goals" value={entity.goals} />
+      <TextListField label="Fears" value={entity.fears} />
+      <TextListField label="Secrets" value={entity.secrets} />
+      <TextListField label="Knowledge" value={entity.knowledge} />
       <EntityReferenceField
         label="City"
         value={entity.city}
@@ -988,6 +1014,52 @@ function EntityReferenceField({
           {value}
         </Typography>
       )}
+    </Box>
+  );
+}
+function TextListField({ label, value }: { label: string; value: unknown }) {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const items = value.filter(
+    (item): item is string => typeof item === "string" && item.trim() !== "",
+  );
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+
+      <Stack spacing={1} sx={{ mt: 0.75 }}>
+        {items.map((item, index) => (
+          <Box
+            key={index}
+            sx={{
+              p: 1.5,
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 1,
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                lineHeight: 1.6,
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {item}
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
     </Box>
   );
 }

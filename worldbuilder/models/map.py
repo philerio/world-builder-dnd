@@ -12,3 +12,6 @@ class Map(WorldObject):
     details: str | None = None
     dm_notes: str | None = None
     markers: list[MapMarker] = Field(default_factory=list)
+    linked_map: str | None = None
+    entity_id: str | None = None
+    tooltip: str | None = None
