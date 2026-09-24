@@ -1,8 +1,12 @@
 id: baldon
 name: Baldon
-description: >
-  Capital city of the Kingdom of Batik.
+description: 'Capital city of the Kingdom of Batik.
 
+  '
+created: '2026-09-22T15:09:28.164289'
+updated: '2026-09-22T15:09:28.164291'
 kingdom: batik
 region: null
 population: null
+details: null
+dm_notes: null

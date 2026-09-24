@@ -1,118 +1,196 @@
 id: elligaesia-map
-
 name: Elligaesia
-
 description: The continent of Elligaesia.
-
+created: '2026-09-24T13:15:27.608390'
+updated: '2026-09-24T13:15:27.608395'
 map_type: continent
-
 parent_map: elligaesia-world-map
-
 image_path: maps/elligaesia.png
-
-details: >
+details: '
 
   The continent of Elligaesia, including North Elligaesia
 
   and the Kingdom of Batik.
 
+  '
 dm_notes: null
-
 markers:
-  - id: reqrun-map-marker
-    entity_id: reqrun
-    x: 83.5
-    y: 67
-    label: Reqrun
-    tooltip: City of Reqrun
-    linked_map: reqrun-map
-    visible: true
-    dm_only: false
-
-  - id: northern-road-marker
-    entity_id: northern-road
-    x: 78.8
-    y: 56.2
-    tooltip: Northern Road
-    linked_map: null
-    visible: true
-    dm_only: false
-  - id: halfington-map-marker
-    entity_id: halfington
-    x: 5
-    y: 68
-    label: Halfington
-    tooltip: City of Halfington
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: larton-map-marker
-    entity_id: larton
-    x: 31.5
-    y: 69.8
-    label: Larton
-    tooltip: City of Larton
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: ole-hythe-map-marker
-    entity_id: ole-hythe
-    x: 47
-    y: 70
-    label: Ole Hythe
-    tooltip: City of Ole Hythe
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: colkirk-map-marker
-    entity_id: colkirk
-    x: 36
-    y: 75.8
-    label: Colkirk
-    tooltip: City of Colkirk
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: baldons-map-marker
-    entity_id: baldon
-    x: 48.5
-    y: 82
-    label: Baldon
-    tooltip: Capital of Batik
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: west-town-map-marker
-    entity_id: west-town
-    x: 67.1
-    y: 72
-    label: West Town
-    tooltip: City of West Town
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: easton-map-marker
-    entity_id: easton
-    x: 88.6
-    y: 78
-    label: Easton
-    tooltip: City of Easton
-    linked_map: null
-    visible: true
-    dm_only: false
-
-  - id: sho-dar-map-marker
-    entity_id: sho-dar
-    x: 57.5
-    y: 93
-    label: Sho Dar
-    tooltip: City of Sho Dar
-    linked_map: null
-    visible: true
-    dm_only: false
+- id: northern-road-marker
+  entity_id: northern-road
+  x: 78.8
+  y: 56.2
+  label: Northern Road
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Northern Road
+  hide_label: true
+  icon: null
+- id: afaddd8e-c545-47a4-bb47-d674a91a702a
+  entity_id: ''
+  x: 43.27485380116959
+  y: 29.058639466840052
+  label: The Shifting Sands
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+- id: sho-dar-map-marker
+  entity_id: shodar
+  x: 57.6674552456445
+  y: 92.42805312296815
+  label: Sho Dar
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Sho Dar
+  hide_label: false
+  icon: null
+- id: a1a1aea7-578c-4a03-b3c8-7c35ab535437
+  entity_id: ''
+  x: 57.10632443195662
+  y: 37.875671783566325
+  label: Mortiz
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: city
+- id: reqrun-map-marker
+  entity_id: reqrun
+  x: 83.1587109184637
+  y: 66.49776304961802
+  label: Reqrun
+  linked_map: reqrun-map
+  visible: true
+  dm_only: false
+  tooltip: City of Reqrun
+  hide_label: false
+  icon: map
+- id: west-town-map-marker
+  entity_id: west-town
+  x: 67.1
+  y: 72.0
+  label: West Town
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of West Town
+  hide_label: false
+  icon: city
+- id: easton-map-marker
+  entity_id: easton
+  x: 88.95172059652168
+  y: 77.49320279482282
+  label: Easton
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Easton
+  hide_label: false
+  icon: city
+- id: baldons-map-marker
+  entity_id: baldon
+  x: 49.19065955089547
+  y: 81.50985578876788
+  label: Baldon
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Capital of Batik
+  hide_label: false
+  icon: city
+- id: colkirk-map-marker
+  entity_id: colkirk
+  x: 36.0
+  y: 75.8
+  label: Colkirk
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Colkirk
+  hide_label: false
+  icon: city
+- id: ole-hythe-map-marker
+  entity_id: ole-hythe
+  x: 47.23815323084186
+  y: 69.46837347102569
+  label: Ole Hythe
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Ole Hythe
+  hide_label: false
+  icon: city
+- id: larton-map-marker
+  entity_id: larton
+  x: 31.570375081856117
+  y: 69.28110903974317
+  label: Larton
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Larton
+  hide_label: false
+  icon: city
+- id: halfington-map-marker
+  entity_id: halfington
+  x: 5.679071437545687
+  y: 67.8588549709444
+  label: Halfington
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Halfington
+  hide_label: false
+  icon: city
+- id: f90d3c7c-06a5-436d-8deb-1e6cdc7bc0dd
+  entity_id: serenno-city
+  x: 20.38536146137914
+  y: 42.2996491232526
+  label: Serenno
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: city
+- id: 19d3e480-3489-4ac5-b752-02ebcbaf683e
+  entity_id: ''
+  x: 19.069631476151315
+  y: 35.09037330339727
+  label: Umbara
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: city
+- id: 9f31b1e9-d5c0-405f-9ec4-46c9de1162c8
+  entity_id: ''
+  x: 14.827301441809821
+  y: 27.644258853828024
+  label: Teth
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: city
+- id: f0f38475-1527-4789-9320-c6bd1c269ac6
+  entity_id: null
+  x: 74.3
+  y: 22.0
+  label: Nevarro
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: city
+linked_map: null
+entity_id: null
+tooltip: null

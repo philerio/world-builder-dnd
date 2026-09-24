@@ -1,0 +1,17 @@
+id: test-npc
+name: test
+description: test
+created: '2026-09-23T22:45:17.928387'
+updated: '2026-09-23T22:45:17.928393'
+role: null
+city: reqrun
+region: null
+kingdom: batik
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

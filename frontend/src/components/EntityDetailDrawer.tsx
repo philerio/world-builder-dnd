@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
   Divider,
@@ -10,17 +12,16 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CloseIcon from "@mui/icons-material/Close";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
 import PublicIcon from "@mui/icons-material/Public";
-
+import EntityForm from "./EntityForm";
 import type { EntityResponse, EntitySummary } from "../types";
 import useEntityIndex from "../hooks/useEntityIndex";
 import useRelatedEntities from "../hooks/useRelatedEntities";
+import { useWorldData } from "../context/WorldDataContext";
 
 type EntityDetailDrawerProps = {
   entityId: string | null;
@@ -43,32 +44,81 @@ function EntityDetailDrawer({
 }: EntityDetailDrawerProps) {
   const [data, setData] = useState<EntityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<Record<string, unknown>>({});
+  const [saving, setSaving] = useState(false);
   const { getEntity } = useEntityIndex();
-
+  const {
+    getEntity: getSharedEntity,
+    loadEntity,
+    updateEntity,
+  } = useWorldData();
   useEffect(() => {
-    if (!entityId || !open) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsEditing(false);
+  }, [entityId]);
+  const sharedData = entityId ? getSharedEntity(entityId) : undefined;
+  const currentData = sharedData ?? data;
+  const handleEdit = () => {
+    if (!currentData) {
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setData(null);
+    setEditFormData({ ...currentData.entity });
+    setIsEditing(true);
+    setError(null);
+  };
+  const handleSave = async () => {
+    if (!entityId) {
+      return;
+    }
+
+    setSaving(true);
     setError(null);
 
-    fetch(`http://localhost:8000/entities/${entityId}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
+    try {
+      await updateEntity(entityId, editFormData);
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save changes.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  useEffect(() => {
+    if (!entityId) {
+      setData(null);
+      return;
+    }
 
-        return response.json();
-      })
-      .then((entityData: EntityResponse) => {
-        setData(entityData);
+    let cancelled = false;
+
+    setLoading(true);
+    setError(null);
+
+    loadEntity(entityId)
+      .then((result) => {
+        if (!cancelled) {
+          setData(result);
+        }
       })
       .catch((err: Error) => {
-        setError(err.message);
+        if (!cancelled) {
+          setError(err.message);
+          setData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
-  }, [entityId, open]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [entityId, loadEntity]);
 
   return (
     <Drawer
@@ -101,20 +151,30 @@ function EntityDetailDrawer({
               gap: 1,
             }}
           >
-            {canGoBack && (
-              <IconButton onClick={onBack} aria-label="Go back" size="small">
-                <ArrowBackIcon />
-              </IconButton>
-            )}
-
-            <Typography variant="overline" color="text.secondary">
-              ENTITY
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {canGoBack && (
+                <IconButton onClick={onBack} aria-label="Go back" size="small">
+                  <ArrowBackIcon />
+                </IconButton>
+              )}
+              <Typography variant="overline" sx={{ color: "text.secondary" }}>
+                {isEditing ? "EDITING" : "ENTITY"}
+              </Typography>
+              {!isEditing && currentData && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 2,
+                  }}
+                >
+                  <Button variant="outlined" onClick={handleEdit}>
+                    Edit
+                  </Button>
+                </Box>
+              )}
+            </Box>
           </Stack>
-
-          <IconButton onClick={onClose} aria-label="Close entity details">
-            <CloseIcon />
-          </IconButton>
         </Stack>
 
         <Divider sx={{ my: 2 }} />
@@ -135,13 +195,61 @@ function EntityDetailDrawer({
           <Typography color="error">Could not load entity: {error}</Typography>
         )}
 
-        {data && (
-          <EntityContent
-            data={data}
-            onOpenEntity={onOpenEntity}
-            getEntity={getEntity}
-          />
-        )}
+        {currentData &&
+          (isEditing ? (
+            <>
+              <EntityForm
+                entityType={currentData.entity_type}
+                formData={editFormData}
+                onChange={setEditFormData}
+                disabled={saving}
+              />
+
+              <Box
+                sx={{
+                  position: "sticky",
+                  bottom: 0,
+                  mt: 3,
+                  pt: 2,
+                  pb: 2,
+                  backgroundColor: "background.paper",
+                  borderTop: 1,
+                  borderColor: "divider",
+                  zIndex: 1,
+                }}
+              >
+                <Stack
+                  direction="row"
+                  sx={{
+                    justifyContent: "flex-end",
+                    gap: 1,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => setIsEditing(false)}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    {saving ? "Saving…" : "Save Changes"}
+                  </Button>
+                </Stack>
+              </Box>
+            </>
+          ) : (
+            <EntityContent
+              data={currentData}
+              onOpenEntity={onOpenEntity}
+              getEntity={getEntity}
+            />
+          ))}
       </Box>
     </Drawer>
   );
@@ -199,6 +307,37 @@ function EntityContent({
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
+
+      {typeof entity.dm_notes === "string" && entity.dm_notes.trim() !== "" && (
+        <>
+          <Divider />
+
+          <Box>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "warning.main",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              DM Notes
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 1,
+                lineHeight: 1.7,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {entity.dm_notes}
+            </Typography>
+          </Box>
+        </>
+      )}
 
       <Divider />
 

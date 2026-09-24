@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import TypeVar
 
 from pydantic import BaseModel
+import yaml
 
 from worldbuilder.config.entity_directories import ENTITY_DIRECTORIES
 from worldbuilder.loaders.entity_loader import (
@@ -58,16 +59,22 @@ class WorldService:
         )
 
     def update_entity(self, entity: ModelT) -> Path:
-        """Update an existing entity."""
         directory = self._get_entity_directory(type(entity))
-        path = directory / f"{entity.id}.yaml"
 
-        if not path.exists():
-            raise FileNotFoundError(
-                f"Entity does not exist: {path}"
-            )
+        for path in sorted(directory.glob("*.yaml")):
+            with path.open("r", encoding="utf-8") as file:
+                data = yaml.safe_load(file)
 
-        return save_yaml_entity(entity, directory)
+            if data.get("id") == entity.id:
+                return save_yaml_entity(
+                    entity,
+                    directory,
+                    filename=path.name,
+                )
+
+        raise FileNotFoundError(
+            f"Entity does not exist: {directory / f'{entity.id}.yaml'}"
+        )
 
     def delete_entity(
         self,

@@ -1,0 +1,20 @@
+id: test-jim-npc
+name: test-jim
+description: null
+created: '2026-09-24T12:55:21.327869'
+updated: '2026-09-24T12:55:21.327871'
+role: null
+city: colkirk
+region: null
+kingdom: null
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships:
+- character: aerith
+  relationship: Cousin
+  notes: test character

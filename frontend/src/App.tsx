@@ -3,6 +3,7 @@ import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Divider,
@@ -38,14 +39,22 @@ import LorePage from "./pages/LorePage";
 import ArtifactsPage from "./pages/ArtifactsPage";
 import MapsPage from "./pages/MapsPage";
 import ExploreIcon from "@mui/icons-material/Explore";
+import CreateEntityDrawer from "./components/CreateEntityDrawer";
 
 const drawerWidth = 240;
-
+type SidebarProps = {
+  onNewEntity: () => void;
+};
 const navigation = [
   {
     path: "/",
     label: "Dashboard",
     icon: <DashboardIcon />,
+  },
+  {
+    path: "/world-map",
+    label: "World Map",
+    icon: <ExploreIcon />,
   },
   {
     path: "/world",
@@ -56,11 +65,6 @@ const navigation = [
     path: "/locations",
     label: "Locations",
     icon: <PlaceIcon />,
-  },
-  {
-    path: "/world-map",
-    label: "World Map",
-    icon: <ExploreIcon />,
   },
   {
     path: "/characters",
@@ -94,7 +98,7 @@ const navigation = [
   },
 ];
 
-function Sidebar() {
+function Sidebar({ onNewEntity }: SidebarProps) {
   return (
     <Drawer
       variant="permanent"
@@ -174,7 +178,32 @@ function Sidebar() {
 
       <Box sx={{ mt: "auto", p: 2 }}>
         <Divider sx={{ mb: 2 }} />
-
+        <Button
+          fullWidth
+          onClick={onNewEntity}
+          sx={{
+            mt: 2,
+            mb: 3,
+            height: 40,
+            justifyContent: "flex-start",
+            px: 2,
+            color: "text.secondary",
+            border: 1,
+            borderColor: "divider",
+            borderRadius: 1.5,
+            backgroundColor: "transparent",
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            "&:hover": {
+              color: "text.primary",
+              borderColor: "primary.main",
+              backgroundColor: "action.hover",
+            },
+          }}
+        >
+          + New Entity
+        </Button>
         <Typography
           variant="caption"
           color="text.secondary"
@@ -365,7 +394,7 @@ function Dashboard({ data }: { data: WorldData }) {
 function AppContent() {
   const [data, setData] = useState<WorldData | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   useEffect(() => {
     fetch("http://localhost:8000/world")
       .then((response) => {
@@ -405,8 +434,14 @@ function AppContent() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-
+      <Sidebar onNewEntity={() => setCreateDrawerOpen(true)} />{" "}
+      <CreateEntityDrawer
+        open={createDrawerOpen}
+        onClose={() => setCreateDrawerOpen(false)}
+        onCreated={() => {
+          setCreateDrawerOpen(false);
+        }}
+      />
       <Box
         component="main"
         sx={{
@@ -417,9 +452,9 @@ function AppContent() {
       >
         <Routes>
           <Route path="/" element={<Dashboard data={data} />} />
+          <Route path="/world-map" element={<WorldMapPage />} />
           <Route path="/world" element={<WorldPage data={data} />} />
           <Route path="/locations" element={<LocationsPage />} />
-          <Route path="/world-map" element={<WorldMapPage />} />
           <Route path="/characters" element={<CharactersPage data={data} />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/events" element={<EventsPage />} />

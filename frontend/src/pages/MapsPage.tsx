@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-
+import { useMemo, useEffect, useState, useRef } from "react";
+import type { MouseEvent } from "react";
 import {
   Box,
   Button,
@@ -13,15 +13,23 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import Tooltip from "@mui/material/Tooltip";
 import MapIcon from "@mui/icons-material/Map";
+import CastleIcon from "@mui/icons-material/Castle";
+import ChurchIcon from "@mui/icons-material/Church";
+import LocationCityIcon from "@mui/icons-material/LocationCity";
+import ForestIcon from "@mui/icons-material/Forest";
+import PlaceIcon from "@mui/icons-material/Place";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import type { EntitySummary, Map, WorldData } from "../types";
+import type { EntitySummary, Map, MapMarker } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import useEntityIndex from "../hooks/useEntityIndex";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useWorldData } from "../context/WorldDataContext";
+import MarkerDrawer from "../components/MarkerDrawer";
+import MarkerContextMenu from "../components/MarkerContextMenu";
 
 type MapCardProps = {
   map: Map;
@@ -31,49 +39,106 @@ type MapMarkerLayerProps = {
   map: Map;
   onOpenEntity: (entityId: string) => void;
   onOpenMap: (mapId: string) => void;
+  onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
+  onMarkerMove: (marker: MapMarker) => void;
 };
+type MarkerMenuTarget = {
+  event: MouseEvent;
+  x?: number;
+  y?: number;
+  markerId?: string;
+};
+
 type MapViewerProps = {
   map: Map;
   maps: Map[];
   onBack: () => void;
-  fromWorldMap: boolean;
   onOpenEntity: (entityId: string) => void;
   onOpenMap: (mapId: string) => void;
   getEntity: (entityId: string) => EntitySummary | undefined;
+  onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
+  onMarkerMove: (marker: MapMarker) => void;
 };
+type MarkerDrawerState = {
+  open: boolean;
+  mode: "create" | "edit";
+  marker: MapMarker | null;
+};
+
+function MarkerIcon({ icon }: { icon?: string }) {
+  switch (icon) {
+    case "city":
+      return <LocationCityIcon fontSize="small" />;
+
+    case "castle":
+      return <CastleIcon fontSize="small" />;
+
+    case "church":
+      return <ChurchIcon fontSize="small" />;
+
+    case "forest":
+      return <ForestIcon fontSize="small" />;
+
+    case "map":
+      return <MapOutlinedIcon fontSize="small" />;
+
+    case "location":
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+}
 
 function MapsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [maps, setMaps] = useState<Map[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(
     searchParams.get("map"),
   );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [markerDrawer, setMarkerDrawer] = useState<MarkerDrawerState>({
+    open: false,
+    mode: "create",
+    marker: null,
+  });
+  const [markerContextMenu, setMarkerContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    mapX: number;
+    mapY: number;
+    markerId: string | null;
+  } | null>(null);
+
+  const {
+    entities,
+    getEntity: getWorldEntity,
+    loadEntities,
+    updateEntity,
+    entitiesLoading,
+    entitiesError,
+  } = useWorldData();
+
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
   const { getEntity } = useEntityIndex();
 
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
+  const mapSummaries = useMemo(
+    () => entities.filter((entity) => entity.entity_type === "map"),
+    [entities],
+  );
 
-        return response.json();
-      })
-      .then((data: WorldData) => {
-        setMaps(data.maps);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  useEffect(() => {
+    if (mapSummaries.length === 0) {
+      return;
+    }
+
+    void loadEntities(mapSummaries.map((map) => map.id));
+  }, [loadEntities, mapSummaries]);
+
+  const maps = mapSummaries
+    .map((summary) => getWorldEntity(summary.id)?.entity)
+    .filter((entity): entity is Record<string, unknown> => Boolean(entity))
+    .map((entity) => entity as unknown as Map);
+
   const openMap = (mapId: string) => {
     setSelectedMapId(mapId);
     setSearchParams({
@@ -83,18 +148,150 @@ function MapsPage() {
         : {}),
     });
   };
+  const handleMarkerMove = async (marker: MapMarker) => {
+    if (!selectedMap) {
+      return;
+    }
+
+    const updatedMarkers = selectedMap.markers.map((currentMarker) =>
+      currentMarker.id === marker.id ? marker : currentMarker,
+    );
+
+    try {
+      await updateEntity(selectedMap.id, {
+        ...selectedMap,
+        markers: updatedMarkers,
+      });
+    } catch (error) {
+      console.error("Failed to move marker:", error);
+    }
+  };
+  const handleEditMarker = () => {
+    if (!markerContextMenu?.markerId || !selectedMap) {
+      return;
+    }
+
+    const marker = selectedMap.markers.find(
+      (existingMarker) => existingMarker.id === markerContextMenu.markerId,
+    );
+
+    if (!marker) {
+      return;
+    }
+
+    setMarkerDrawer({
+      open: true,
+      mode: "edit",
+      marker,
+    });
+
+    setMarkerContextMenu(null);
+  };
+
+  const handleOpenMarkerMenu = ({
+    event,
+    x,
+    y,
+    markerId,
+  }: MarkerMenuTarget) => {
+    event.preventDefault();
+
+    setMarkerContextMenu({
+      mouseX: event.clientX,
+      mouseY: event.clientY,
+      mapX: x ?? 0,
+      mapY: y ?? 0,
+      markerId: markerId ?? null,
+    });
+  };
+  const handleCreateMarker = () => {
+    if (!markerContextMenu) {
+      return;
+    }
+
+    const marker: MapMarker = {
+      id: crypto.randomUUID(),
+      entity_id: "",
+      x: markerContextMenu.mapX,
+      y: markerContextMenu.mapY,
+      visible: true,
+      dm_only: false,
+      hide_label: false,
+      icon: "location",
+    };
+
+    setMarkerDrawer({
+      open: true,
+      mode: "create",
+      marker,
+    });
+
+    setMarkerContextMenu(null);
+  };
+  const handleDeleteMarker = async () => {
+    if (!markerContextMenu?.markerId || !selectedMap) {
+      return;
+    }
+
+    const updatedMarkers = selectedMap.markers.filter(
+      (marker) => marker.id !== markerContextMenu.markerId,
+    );
+
+    try {
+      await updateEntity(selectedMap.id, {
+        ...selectedMap,
+        markers: updatedMarkers,
+      });
+
+      setMarkerContextMenu(null);
+    } catch (error) {
+      console.error("Failed to delete marker:", error);
+    }
+  };
+  const handleSaveMarker = async (marker: MapMarker) => {
+    if (!selectedMap) {
+      return;
+    }
+
+    const updatedMarkers = [
+      ...selectedMap.markers.filter(
+        (existingMarker) => existingMarker.id !== marker.id,
+      ),
+      marker,
+    ];
+
+    try {
+      await updateEntity(selectedMap.id, {
+        ...selectedMap,
+        markers: updatedMarkers,
+      });
+
+      setMarkerDrawer({
+        open: false,
+        mode: "create",
+        marker: null,
+      });
+    } catch (error) {
+      console.error("Failed to save marker:", error);
+    }
+  };
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
       behavior: "instant",
     });
   }, [selectedMapId]);
-  if (loading) {
+  if (entitiesLoading && mapSummaries.length === 0) {
     return <Typography color="text.secondary">Loading maps…</Typography>;
   }
 
-  if (error) {
-    return <Typography color="error">Could not load maps: {error}</Typography>;
+  if (entitiesError) {
+    return (
+      <Typography color="error">
+        Could not load maps: {entitiesError}
+      </Typography>
+    );
   }
   const selectedMap = maps.find((map) => map.id === selectedMapId);
   const handleBack = () => {
@@ -113,10 +310,11 @@ function MapsPage() {
           map={selectedMap}
           maps={maps}
           onBack={handleBack}
-          fromWorldMap={searchParams.get("from") === "world-map"}
           onOpenEntity={openEntity}
           onOpenMap={openMap}
           getEntity={getEntity}
+          onOpenMarkerMenu={handleOpenMarkerMenu}
+          onMarkerMove={handleMarkerMove}
         />
 
         <EntityDetailDrawer
@@ -126,6 +324,35 @@ function MapsPage() {
           onOpenEntity={openEntity}
           onBack={goBack}
           canGoBack={canGoBack}
+        />
+        <MarkerDrawer
+          open={markerDrawer.open}
+          marker={markerDrawer.marker}
+          mode={markerDrawer.mode}
+          onClose={() =>
+            setMarkerDrawer({
+              open: false,
+              mode: "create",
+              marker: null,
+            })
+          }
+          onSave={handleSaveMarker}
+        />
+        <MarkerContextMenu
+          open={Boolean(markerContextMenu)}
+          position={
+            markerContextMenu
+              ? {
+                  mouseX: markerContextMenu.mouseX,
+                  mouseY: markerContextMenu.mouseY,
+                }
+              : null
+          }
+          markerId={markerContextMenu?.markerId ?? null}
+          onCreate={handleCreateMarker}
+          onEdit={handleEditMarker}
+          onDelete={handleDeleteMarker}
+          onClose={() => setMarkerContextMenu(null)}
         />
       </>
     );
@@ -273,10 +500,11 @@ function MapViewer({
   map,
   maps,
   onBack,
-  fromWorldMap,
   onOpenEntity,
   onOpenMap,
   getEntity,
+  onOpenMarkerMenu,
+  onMarkerMove,
 }: MapViewerProps) {
   const entity = map.entity_id ? getEntity(map.entity_id) : undefined;
   const parentMap = map.parent_map
@@ -321,48 +549,71 @@ function MapViewer({
               : "Back to Maps"}{" "}
         </Button>
 
-        <Typography
-          variant="overline"
-          color="text.secondary"
+        <Stack
+          direction="row"
           sx={{
-            display: "block",
-            letterSpacing: "0.15em",
-            lineHeight: 1.2,
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 2,
           }}
         >
-          {entity?.entity_type ?? map.map_type ?? "MAP"}
-        </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="overline"
+              color="text.secondary"
+              sx={{
+                display: "block",
+                letterSpacing: "0.15em",
+                lineHeight: 1.2,
+              }}
+            >
+              {entity?.entity_type ?? map.map_type ?? "MAP"}
+            </Typography>
 
-        <Typography
-          variant="h1"
-          component="button"
-          onClick={() => {
-            if (map.entity_id) {
-              onOpenEntity(map.entity_id);
-            }
-          }}
-          sx={{
-            mt: 0.75,
-            p: 0,
-            border: 0,
-            background: "none",
-            color: "text.primary",
-            font: "inherit",
-            fontSize: { xs: "1.5rem", md: "2rem" },
-            fontWeight: 600,
-            lineHeight: 1.1,
-            textAlign: "left",
-            textDecoration: map.entity_id ? "underline" : "none",
-            cursor: map.entity_id ? "pointer" : "default",
-            "&:hover": map.entity_id
-              ? {
-                  color: "primary.main",
+            <Typography
+              variant="h1"
+              component="button"
+              onClick={() => {
+                if (map.entity_id) {
+                  onOpenEntity(map.entity_id);
                 }
-              : undefined,
-          }}
-        >
-          {entity?.name ?? map.name}
-        </Typography>
+              }}
+              sx={{
+                mt: 0.75,
+                p: 0,
+                border: 0,
+                background: "none",
+                color: "text.primary",
+                font: "inherit",
+                fontSize: { xs: "1.5rem", md: "2rem" },
+                fontWeight: 600,
+                lineHeight: 1.1,
+                textAlign: "left",
+                textDecoration: map.entity_id ? "underline" : "none",
+                cursor: map.entity_id ? "pointer" : "default",
+                "&:hover": map.entity_id
+                  ? {
+                      color: "primary.main",
+                    }
+                  : undefined,
+              }}
+            >
+              {entity?.name ?? map.name}
+            </Typography>
+          </Box>
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={() => onOpenEntity(map.id)}
+            sx={{
+              flexShrink: 0,
+            }}
+          >
+            Edit Map
+          </Button>
+        </Stack>
       </Box>
 
       <Box
@@ -389,6 +640,18 @@ function MapViewer({
             >
               <Box
                 component="img"
+                onContextMenu={(event) => {
+                  const rect = event.currentTarget.getBoundingClientRect();
+
+                  const x = ((event.clientX - rect.left) / rect.width) * 100;
+                  const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+                  onOpenMarkerMenu({
+                    event,
+                    x,
+                    y,
+                  });
+                }}
                 src={map.image_path}
                 alt={map.name}
                 sx={{
@@ -405,6 +668,8 @@ function MapViewer({
                 map={map}
                 onOpenEntity={onOpenEntity}
                 onOpenMap={onOpenMap}
+                onOpenMarkerMenu={onOpenMarkerMenu}
+                onMarkerMove={onMarkerMove}
               />
             </Box>
           </Box>
@@ -418,13 +683,132 @@ function MapViewer({
   );
 }
 
-function MapMarkerLayer({ map, onOpenEntity, onOpenMap }: MapMarkerLayerProps) {
+function MapMarkerLayer({
+  map,
+  onOpenEntity,
+  onOpenMap,
+  onOpenMarkerMenu,
+  onMarkerMove,
+}: MapMarkerLayerProps) {
   const visibleMarkers = map.markers.filter(
     (marker) => marker.visible && !marker.dm_only,
   );
+  const [draggingMarkerId, setDraggingMarkerId] = useState<string | null>(null);
+  const [dragPosition, setDragPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const mapLayerRef = useRef<HTMLDivElement | null>(null);
+  const draggedMarkerRef = useRef<string | null>(null);
+  const didDragRef = useRef(false);
 
+  const getPointerPosition = (event: React.PointerEvent) => {
+    if (!mapLayerRef.current) {
+      return null;
+    }
+
+    const rect = mapLayerRef.current.getBoundingClientRect();
+
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    return {
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    };
+  };
+
+  const handleMarkerPointerDown = (
+    event: React.PointerEvent,
+    marker: MapMarker,
+  ) => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    draggedMarkerRef.current = marker.id;
+    didDragRef.current = false;
+
+    setDraggingMarkerId(marker.id);
+    setDragPosition({
+      x: marker.x,
+      y: marker.y,
+    });
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleMarkerPointerMove = (event: React.PointerEvent) => {
+    const markerId = draggedMarkerRef.current;
+
+    if (!markerId) {
+      return;
+    }
+
+    const position = getPointerPosition(event);
+
+    if (!position) {
+      return;
+    }
+
+    const marker = map.markers.find(
+      (currentMarker) => currentMarker.id === markerId,
+    );
+
+    if (!marker) {
+      return;
+    }
+
+    const distance = Math.sqrt(
+      Math.pow(position.x - marker.x, 2) + Math.pow(position.y - marker.y, 2),
+    );
+
+    if (distance > 0.5) {
+      didDragRef.current = true;
+      setDragPosition(position);
+    }
+  };
+
+  const handleMarkerPointerUp = (event: React.PointerEvent) => {
+    const markerId = draggedMarkerRef.current;
+
+    if (!markerId) {
+      return;
+    }
+
+    const position = getPointerPosition(event);
+
+    const marker = map.markers.find(
+      (currentMarker) => currentMarker.id === markerId,
+    );
+
+    if (position && marker && didDragRef.current) {
+      onMarkerMove({
+        ...marker,
+        x: position.x,
+        y: position.y,
+      });
+    }
+
+    setDraggingMarkerId(null);
+    setDragPosition(null);
+    draggedMarkerRef.current = null;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (didDragRef.current) {
+      requestAnimationFrame(() => {
+        didDragRef.current = false;
+      });
+    }
+  };
   return (
     <Box
+      ref={mapLayerRef}
       sx={{
         position: "absolute",
         inset: 0,
@@ -437,27 +821,52 @@ function MapMarkerLayer({ map, onOpenEntity, onOpenMap }: MapMarkerLayerProps) {
         return (
           <Box
             key={marker.id}
+            onContextMenu={(event) => {
+              event.stopPropagation();
+
+              onOpenMarkerMenu({
+                event,
+                markerId: marker.id,
+              });
+            }}
             sx={{
               position: "absolute",
-              left: `${marker.x}%`,
-              top: `${marker.y}%`,
+              left: `${
+                draggingMarkerId === marker.id && dragPosition
+                  ? dragPosition.x
+                  : marker.x
+              }%`,
+              top: `${
+                draggingMarkerId === marker.id && dragPosition
+                  ? dragPosition.y
+                  : marker.y
+              }%`,
               width: 0,
               height: 0,
               pointerEvents: "auto",
               zIndex: 100,
+              cursor: draggingMarkerId === marker.id ? "grabbing" : "grab",
+            }}
+            onPointerDown={(event) => handleMarkerPointerDown(event, marker)}
+            onPointerMove={handleMarkerPointerMove}
+            onPointerUp={handleMarkerPointerUp}
+            onPointerCancel={handleMarkerPointerUp}
+            onClick={() => {
+              if (didDragRef.current) {
+                return;
+              }
+
+              if (marker.linked_map) {
+                onOpenMap(marker.linked_map);
+              } else {
+                onOpenEntity(marker.entity_id);
+              }
             }}
           >
             <Tooltip title={marker.tooltip ?? ""}>
               <IconButton
                 size="small"
                 aria-label={marker.label ?? "Map location"}
-                onClick={() => {
-                  if (marker.linked_map) {
-                    onOpenMap(marker.linked_map);
-                  } else {
-                    onOpenEntity(marker.entity_id);
-                  }
-                }}
                 sx={{
                   position: "absolute",
                   left: 0,
@@ -474,14 +883,10 @@ function MapMarkerLayer({ map, onOpenEntity, onOpenMap }: MapMarkerLayerProps) {
                   },
                 }}
               >
-                {isMapMarker ? (
-                  <MapOutlinedIcon fontSize="small" />
-                ) : (
-                  <LocationOnIcon fontSize="small" />
-                )}
+                <MarkerIcon icon={marker.icon} />
               </IconButton>
             </Tooltip>
-            {marker.label && (
+            {marker.label && !marker.hide_label && (
               <Typography
                 variant="caption"
                 sx={{
