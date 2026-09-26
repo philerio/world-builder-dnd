@@ -1,24 +1,4 @@
-export type EntityFieldType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "boolean"
-  | "reference"
-  | "referenceArray"
-  | "array"
-  | "objectArray"
-  | "icon";
-
-export type EntityFieldDefinition = {
-  name: string;
-  label: string;
-  type: EntityFieldType;
-  referenceType?: string;
-  fields?: EntityFieldDefinition[];
-  generated?: boolean;
-  accordion?: boolean;
-  accordionTitleField?: string;
-};
+import type { EntityFieldDefinition } from "./types";
 
 const COMMON_FIELDS: EntityFieldDefinition[] = [
   {
@@ -590,6 +570,32 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             label: "Linked Map",
             type: "reference",
             referenceType: "map",
+          },
+          {
+            name: "type",
+            label: "Type",
+            type: "autocomplete",
+            options: [
+              { value: "point", label: "Point" },
+              { value: "area", label: "Area" },
+              { value: "path", label: "Path" },
+            ],
+          },
+          {
+            name: "points",
+            label: "Points",
+            type: "text",
+            hidden: true,
+          },
+          {
+            name: "fill_color",
+            label: "Color",
+            type: "color",
+          },
+          {
+            name: "fill_opacity",
+            label: "Fill Opacity",
+            type: "number",
           },
           {
             name: "x",

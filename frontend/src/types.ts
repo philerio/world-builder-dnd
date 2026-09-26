@@ -142,15 +142,19 @@ export type Artifact = {
 export type MapMarker = {
   id: string;
   entity_id: string;
+  type?: "point" | "area" | "path";
   x: number;
   y: number;
+  points?: [number, number][];
   label?: string;
+  icon?: string;
   linked_map?: string;
   visible: boolean;
   dm_only: boolean;
   tooltip?: string;
   hide_label?: boolean;
-  icon?: string;
+  fill_color?: string;
+  fill_opacity?: number;
 };
 
 export type Map = {
@@ -222,4 +226,38 @@ export type EntityData = {
   id: string;
   entity_type: string;
   entity: Record<string, unknown>;
+};
+export type EntityFieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "boolean"
+  | "reference"
+  | "referenceArray"
+  | "array"
+  | "objectArray"
+  | "autocomplete"
+  | "color"
+  | "icon";
+
+export type OptionsDefinition = {
+  value: string;
+  label: string;
+};
+export type EntityFieldDefinition = {
+  name: string;
+  label: string;
+  type: EntityFieldType;
+  referenceType?: string;
+  fields?: EntityFieldDefinition[];
+  generated?: boolean;
+  accordion?: boolean;
+  accordionTitleField?: string;
+  options?: OptionsDefinition[];
+  hidden?: boolean;
+};
+export type DrawingState = {
+  markerId: string;
+  type: "area" | "path";
+  points: [number, number][];
 };

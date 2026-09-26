@@ -77,6 +77,9 @@ def get_world() -> dict:
         "maps": [
             world_map.model_dump(mode="json") for world_map in registry.maps.values()
         ],
+        "locations": [
+            location.model_dump(mode="json") for location in registry.locations.values()
+        ],
     }
 
 
@@ -121,6 +124,7 @@ def list_entities() -> list[dict[str, str]]:
         registry.lores,
         registry.artifacts,
         registry.maps,
+        registry.locations,
     ]
 
     for collection in collections:
@@ -294,3 +298,29 @@ def delete_entity(entity_id: str) -> dict[str, str]:
         "entity_type": entity_type or "",
         "status": "deleted",
     }
+
+
+@app.get("/entities/{entity_id}/maps")
+def get_entity_maps(entity_id: str) -> list[dict[str, str]]:
+    registry = load_world_registry(WORLD_PATH)
+
+    if registry.get_entity(entity_id) is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Entity not found: {entity_id}",
+        )
+
+    maps = []
+
+    for world_map in registry.maps.values():
+        for marker in world_map.markers:
+            if marker.entity_id == entity_id:
+                maps.append(
+                    {
+                        "id": world_map.id,
+                        "name": world_map.name,
+                    }
+                )
+                break
+
+    return maps

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -44,9 +45,13 @@ function LocationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getEntity } = useEntityIndex();
+  const navigate = useNavigate();
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
+  const openMap = (mapId: string) => {
+    navigate(`/maps?map=${mapId}`);
+  };
   useEffect(() => {
     fetch("http://localhost:8000/world")
       .then((response) => {
@@ -198,6 +203,7 @@ function LocationsPage() {
       <EntityDetailDrawer
         entityId={entityId}
         open={isOpen}
+        onOpenMap={openMap}
         onClose={closeEntity}
         onOpenEntity={openEntity}
         onBack={goBack}

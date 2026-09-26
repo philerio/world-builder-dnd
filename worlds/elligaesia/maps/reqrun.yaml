@@ -1,19 +1,73 @@
 id: reqrun-map
-
 name: Reqrun
-
 description: The city of Reqrun.
-entity_id: reqrun
+created: '2026-09-25T23:34:21.027473'
+updated: '2026-09-25T23:34:21.027477'
 map_type: city
-
 parent_map: elligaesia-map
-
 image_path: maps/reqrun.png
-
-details: >
+details: '
 
   A city in the Kingdom of Batik.
 
+  '
 dm_notes: null
-
-markers: []
+markers:
+- id: 696a9f90-789f-477d-a911-e82c0e4ede93
+  entity_id: ''
+  type: point
+  points: []
+  x: 17.534901114071115
+  y: 20.32935412176724
+  label: Governor's Mansion
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: house
+  fill_color: null
+  fill_opacity: 0.2
+- id: 377ea7a3-48e2-4ed3-aa4b-eb65cdeb20f1
+  entity_id: ''
+  type: point
+  points: []
+  x: 15.118974797865924
+  y: 41.34415409482759
+  label: Capitol Building
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: castle
+  fill_color: null
+  fill_opacity: 0.2
+- id: 9abec45e-f12c-4f87-ac3e-922126943c6e
+  entity_id: ''
+  type: area
+  points:
+  - - 33.994276383343866
+    - 48.33969221443966
+  - - 35.81927243401022
+    - 36.464405980603445
+  - - 43.8995080835679
+    - 37.525828394396555
+  - - 46.21835596421185
+    - 43.338328394396555
+  - - 47.62903101303998
+    - 48.78955078125
+  x: 39.24632352941176
+  y: 44.68426724137931
+  label: Market District
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Market District
+  hide_label: true
+  icon: location
+  fill_color: green
+  fill_opacity: 0.2
+linked_map: null
+entity_id: reqrun
+tooltip: null

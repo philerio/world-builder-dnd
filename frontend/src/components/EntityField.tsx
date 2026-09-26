@@ -17,16 +17,20 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CastleIcon from "@mui/icons-material/Castle";
 import ChurchIcon from "@mui/icons-material/Church";
+import HouseIcon from "@mui/icons-material/House";
 import ForestIcon from "@mui/icons-material/Forest";
+import AgricultureIcon from "@mui/icons-material/Agriculture";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import MapIcon from "@mui/icons-material/Map";
 import PlaceIcon from "@mui/icons-material/Place";
-import { type EntityFieldDefinition } from "../entityFieldDefinitions";
+import { type EntityFieldDefinition } from "../types";
 const ICON_OPTIONS = [
   { value: "location", label: "Location", icon: PlaceIcon },
   { value: "city", label: "City", icon: LocationCityIcon },
   { value: "castle", label: "Castle", icon: CastleIcon },
   { value: "church", label: "Church", icon: ChurchIcon },
+  { value: "farm", label: "Farm", icon: AgricultureIcon },
+  { value: "house", label: "House", icon: HouseIcon },
   { value: "forest", label: "Forest", icon: ForestIcon },
   { value: "map", label: "Map", icon: MapIcon },
 ];
@@ -293,21 +297,23 @@ function EntityField({
                       </IconButton>
                     </Stack>
 
-                    {fields.map((childField) => (
-                      <EntityField
-                        key={childField.name}
-                        field={childField}
-                        value={itemData[childField.name]}
-                        entities={entities}
-                        onChange={(newValue) =>
-                          updateItem(index, {
-                            ...itemData,
-                            [childField.name]: newValue,
-                          })
-                        }
-                        disabled={disabled}
-                      />
-                    ))}
+                    {fields
+                      .filter((childField) => !childField.hidden)
+                      .map((childField) => (
+                        <EntityField
+                          key={childField.name}
+                          field={childField}
+                          value={itemData[childField.name]}
+                          entities={entities}
+                          onChange={(newValue) =>
+                            updateItem(index, {
+                              ...itemData,
+                              [childField.name]: newValue,
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      ))}
                   </Stack>
                 </Box>
               );
@@ -386,7 +392,10 @@ function EntityField({
                     </Stack>
 
                     {fields
-                      .filter((childField) => !childField.generated)
+                      .filter(
+                        (childField) =>
+                          !childField.generated && !childField.hidden,
+                      )
                       .map((childField) => (
                         <EntityField
                           key={childField.name}
@@ -430,6 +439,72 @@ function EntityField({
           minRows={3}
           helperText="Enter one item per line."
           disabled={disabled}
+        />
+      );
+    }
+    case "color":
+      return (
+        <Stack spacing={1}>
+          <Typography variant="body2" color="text.secondary">
+            {field.label}
+          </Typography>
+
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: "center",
+              gap: 1.5,
+            }}
+          >
+            <Box
+              component="input"
+              type="color"
+              value={typeof value === "string" ? value : "#1976d2"}
+              onChange={(event) => onChange(event.target.value)}
+              disabled={disabled}
+              sx={{
+                width: 48,
+                height: 40,
+                p: 0.5,
+                border: 1,
+                borderColor: "divider",
+                borderRadius: 1,
+                backgroundColor: "background.paper",
+                cursor: disabled ? "default" : "pointer",
+              }}
+            />
+
+            <TextField
+              label={field.label}
+              value={typeof value === "string" ? value : "#1976d2"}
+              onChange={(event) => onChange(event.target.value)}
+              fullWidth
+              disabled={disabled}
+            />
+          </Stack>
+        </Stack>
+      );
+    case "autocomplete": {
+      const options = field.options ?? [];
+
+      const selectedOption =
+        typeof value === "string"
+          ? (options.find((option) => option.value === value) ?? null)
+          : null;
+
+      return (
+        <Autocomplete
+          options={options}
+          value={selectedOption}
+          onChange={(_, selected) => onChange(selected?.value ?? null)}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(option, selected) =>
+            option.value === selected.value
+          }
+          disabled={disabled}
+          renderInput={(params) => (
+            <TextField {...params} label={field.label} />
+          )}
         />
       );
     }

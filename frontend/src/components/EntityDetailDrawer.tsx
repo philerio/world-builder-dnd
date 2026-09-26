@@ -12,7 +12,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useEntityMaps } from "../hooks/useEntityMaps";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import MapIcon from "@mui/icons-material/Map";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
@@ -30,6 +32,7 @@ type EntityDetailDrawerProps = {
   onOpenEntity: (id: string) => void;
   onBack: () => void;
   canGoBack: boolean;
+  onOpenMap?: (id: string) => void;
 };
 
 const drawerWidth = 440;
@@ -41,6 +44,7 @@ function EntityDetailDrawer({
   onOpenEntity,
   onBack,
   canGoBack,
+  onOpenMap,
 }: EntityDetailDrawerProps) {
   const [data, setData] = useState<EntityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -248,6 +252,7 @@ function EntityDetailDrawer({
               data={currentData}
               onOpenEntity={onOpenEntity}
               getEntity={getEntity}
+              onOpenMap={onOpenMap}
             />
           ))}
       </Box>
@@ -258,16 +263,18 @@ function EntityDetailDrawer({
 function EntityContent({
   data,
   onOpenEntity,
+  onOpenMap,
   getEntity,
 }: {
   data: EntityResponse;
   onOpenEntity?: (id: string) => void;
+  onOpenMap?: (id: string) => void;
   getEntity: (id: string) => EntitySummary | undefined;
 }) {
   const entity = data.entity;
 
   const name = typeof entity.name === "string" ? entity.name : data.id;
-
+  const { maps, loading: mapsLoading } = useEntityMaps(data.id);
   const description =
     typeof entity.description === "string" ? entity.description : null;
 
@@ -307,7 +314,7 @@ function EntityContent({
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
-
+      <EntityMaps maps={maps} loading={mapsLoading} onOpenMap={onOpenMap} />
       {typeof entity.dm_notes === "string" && entity.dm_notes.trim() !== "" && (
         <>
           <Divider />
@@ -1262,7 +1269,51 @@ function TextField({ value, fallback }: { value: unknown; fallback: string }) {
     </Typography>
   );
 }
+type EntityMapsProps = {
+  maps: {
+    id: string;
+    name: string;
+  }[];
+  loading: boolean;
+  onOpenMap?: (id: string) => void;
+};
 
+function EntityMaps({ maps, loading, onOpenMap }: EntityMapsProps) {
+  if (loading) {
+    return (
+      <DetailSection title="Appears on Maps" icon={<MapIcon />}>
+        <Typography variant="body2" color="text.secondary">
+          Loading maps…
+        </Typography>
+      </DetailSection>
+    );
+  }
+
+  if (maps.length === 0) {
+    return null;
+  }
+
+  return (
+    <DetailSection title="Appears on Maps" icon={<MapIcon />}>
+      <Stack
+        direction="row"
+        sx={{
+          flexWrap: "wrap",
+          gap: 1,
+        }}
+      >
+        {maps.map((map) => (
+          <Chip
+            key={map.id}
+            label={map.name}
+            clickable={Boolean(onOpenMap)}
+            onClick={() => onOpenMap?.(map.id)}
+          />
+        ))}
+      </Stack>
+    </DetailSection>
+  );
+}
 function formatValue(value: unknown): string {
   if (typeof value === "string") {
     return value;

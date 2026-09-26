@@ -18,11 +18,13 @@ import Tooltip from "@mui/material/Tooltip";
 import MapIcon from "@mui/icons-material/Map";
 import CastleIcon from "@mui/icons-material/Castle";
 import ChurchIcon from "@mui/icons-material/Church";
+import AgricultureIcon from "@mui/icons-material/Agriculture";
+import HouseIcon from "@mui/icons-material/House";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import ForestIcon from "@mui/icons-material/Forest";
 import PlaceIcon from "@mui/icons-material/Place";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import type { EntitySummary, Map, MapMarker } from "../types";
+import type { DrawingState, EntitySummary, Map, MapMarker } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import useEntityIndex from "../hooks/useEntityIndex";
@@ -35,12 +37,15 @@ type MapCardProps = {
   map: Map;
   onOpen: () => void;
 };
+
 type MapMarkerLayerProps = {
   map: Map;
   onOpenEntity: (entityId: string) => void;
   onOpenMap: (mapId: string) => void;
   onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
   onMarkerMove: (marker: MapMarker) => void;
+  drawingState: DrawingState | null;
+  onAddDrawingPoint: (point: [number, number]) => void;
 };
 type MarkerMenuTarget = {
   event: MouseEvent;
@@ -58,6 +63,10 @@ type MapViewerProps = {
   getEntity: (entityId: string) => EntitySummary | undefined;
   onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
   onMarkerMove: (marker: MapMarker) => void;
+  drawingState: DrawingState | null;
+  onCancelDrawing: () => void;
+  onAddDrawingPoint: (point: [number, number]) => void;
+  onFinishDrawing: () => void;
 };
 type MarkerDrawerState = {
   open: boolean;
@@ -76,24 +85,92 @@ function MarkerIcon({ icon }: { icon?: string }) {
     case "church":
       return <ChurchIcon fontSize="small" />;
 
+    case "farm":
+      return <AgricultureIcon fontSize="small" />;
+
     case "forest":
       return <ForestIcon fontSize="small" />;
 
     case "map":
       return <MapOutlinedIcon fontSize="small" />;
 
+    case "house":
+      return <HouseIcon fontSize="small" />;
+
     case "location":
     default:
       return <PlaceIcon fontSize="small" />;
   }
 }
+const isPointInPolygon = (
+  point: [number, number],
+  polygon: [number, number][],
+) => {
+  const [x, y] = point;
+  let inside = false;
 
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [xi, yi] = polygon[i];
+    const [xj, yj] = polygon[j];
+
+    const intersects =
+      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+    if (intersects) {
+      inside = !inside;
+    }
+  }
+
+  return inside;
+};
+
+const distanceToSegment = (
+  point: [number, number],
+  start: [number, number],
+  end: [number, number],
+) => {
+  const [px, py] = point;
+  const [x1, y1] = start;
+  const [x2, y2] = end;
+
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+
+  if (dx === 0 && dy === 0) {
+    return Math.hypot(px - x1, py - y1);
+  }
+
+  const t = Math.max(
+    0,
+    Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)),
+  );
+
+  const closestX = x1 + t * dx;
+  const closestY = y1 + t * dy;
+
+  return Math.hypot(px - closestX, py - closestY);
+};
+
+const isPointNearPath = (
+  point: [number, number],
+  path: [number, number][],
+  tolerance = 1.5,
+) => {
+  for (let i = 1; i < path.length; i += 1) {
+    if (distanceToSegment(point, path[i - 1], path[i]) <= tolerance) {
+      return true;
+    }
+  }
+
+  return false;
+};
 function MapsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedMapId, setSelectedMapId] = useState<string | null>(
     searchParams.get("map"),
   );
+  const [drawingState, setDrawingState] = useState<DrawingState | null>(null);
   const [markerDrawer, setMarkerDrawer] = useState<MarkerDrawerState>({
     open: false,
     mode: "create",
@@ -107,6 +184,73 @@ function MapsPage() {
     markerId: string | null;
   } | null>(null);
 
+  const startDrawing = (type: "area" | "path") => {
+    if (!markerDrawer.marker) {
+      return;
+    }
+
+    setDrawingState({
+      markerId: markerDrawer.marker.id,
+      type,
+      points: [],
+    });
+
+    setMarkerDrawer({
+      open: false,
+      mode: markerDrawer.mode,
+      marker: markerDrawer.marker,
+    });
+  };
+
+  const cancelDrawing = () => {
+    if (!markerDrawer.marker) {
+      setDrawingState(null);
+      return;
+    }
+
+    setDrawingState(null);
+
+    setMarkerDrawer({
+      open: true,
+      mode: markerDrawer.mode,
+      marker: markerDrawer.marker,
+    });
+  };
+  const finishDrawing = () => {
+    if (!drawingState) {
+      return;
+    }
+
+    const marker = markerDrawer.marker;
+
+    if (!marker) {
+      return;
+    }
+
+    setMarkerDrawer({
+      open: true,
+      mode: markerDrawer.mode,
+      marker: {
+        ...marker,
+        type: drawingState.type,
+        points: drawingState.points,
+      },
+    });
+
+    setDrawingState(null);
+  };
+  const addDrawingPoint = (point: [number, number]) => {
+    setDrawingState((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        points: [...current.points, point],
+      };
+    });
+  };
   const {
     entities,
     getEntity: getWorldEntity,
@@ -315,6 +459,10 @@ function MapsPage() {
           getEntity={getEntity}
           onOpenMarkerMenu={handleOpenMarkerMenu}
           onMarkerMove={handleMarkerMove}
+          drawingState={drawingState}
+          onCancelDrawing={cancelDrawing}
+          onAddDrawingPoint={addDrawingPoint}
+          onFinishDrawing={finishDrawing}
         />
 
         <EntityDetailDrawer
@@ -337,6 +485,7 @@ function MapsPage() {
             })
           }
           onSave={handleSaveMarker}
+          onStartDrawing={startDrawing}
         />
         <MarkerContextMenu
           open={Boolean(markerContextMenu)}
@@ -505,6 +654,10 @@ function MapViewer({
   getEntity,
   onOpenMarkerMenu,
   onMarkerMove,
+  drawingState,
+  onCancelDrawing,
+  onAddDrawingPoint,
+  onFinishDrawing,
 }: MapViewerProps) {
   const entity = map.entity_id ? getEntity(map.entity_id) : undefined;
   const parentMap = map.parent_map
@@ -670,6 +823,8 @@ function MapViewer({
                 onOpenMap={onOpenMap}
                 onOpenMarkerMenu={onOpenMarkerMenu}
                 onMarkerMove={onMarkerMove}
+                drawingState={drawingState}
+                onAddDrawingPoint={onAddDrawingPoint}
               />
             </Box>
           </Box>
@@ -679,6 +834,39 @@ function MapViewer({
           </Typography>
         )}
       </Box>
+      {drawingState && (
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            position: "absolute",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 200,
+            backgroundColor: "background.paper",
+            p: 1,
+            borderRadius: 1,
+            boxShadow: 3,
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={onFinishDrawing}
+            disabled={
+              drawingState.type === "area"
+                ? drawingState.points.length < 3
+                : drawingState.points.length < 2
+            }
+          >
+            Done
+          </Button>
+
+          <Button variant="outlined" onClick={onCancelDrawing}>
+            Cancel
+          </Button>
+        </Stack>
+      )}
     </Box>
   );
 }
@@ -689,6 +877,8 @@ function MapMarkerLayer({
   onOpenMap,
   onOpenMarkerMenu,
   onMarkerMove,
+  drawingState,
+  onAddDrawingPoint,
 }: MapMarkerLayerProps) {
   const visibleMarkers = map.markers.filter(
     (marker) => marker.visible && !marker.dm_only,
@@ -698,11 +888,61 @@ function MapMarkerLayer({
     x: number;
     y: number;
   } | null>(null);
+  const [hoveredMarker, setHoveredMarker] = useState<{
+    marker: MapMarker;
+    x: number;
+    y: number;
+  } | null>(null);
   const mapLayerRef = useRef<HTMLDivElement | null>(null);
   const draggedMarkerRef = useRef<string | null>(null);
   const didDragRef = useRef(false);
+  const getMarkerAtPosition = (x: number, y: number) => {
+    const point: [number, number] = [x, y];
+    const pointMarker = map.markers.find(
+      (marker) =>
+        marker.visible &&
+        !marker.dm_only &&
+        marker.type !== "area" &&
+        marker.type !== "path" &&
+        Math.hypot(x - marker.x, y - marker.y) <= 2,
+    );
+    if (pointMarker) return pointMarker;
+    const path = map.markers.find((marker) => {
+      if (
+        !marker.visible ||
+        marker.dm_only ||
+        marker.type !== "path" ||
+        !marker.points ||
+        marker.points.length < 2
+      ) {
+        return false;
+      }
 
-  const getPointerPosition = (event: React.PointerEvent) => {
+      return isPointNearPath(point, marker.points);
+    });
+
+    if (path) {
+      return path;
+    }
+    const area = map.markers.find((marker) => {
+      if (
+        !marker.visible ||
+        marker.dm_only ||
+        marker.type !== "area" ||
+        !marker.points ||
+        marker.points.length < 3
+      ) {
+        return false;
+      }
+
+      return isPointInPolygon(point, marker.points);
+    });
+
+    if (area) {
+      return area;
+    }
+  };
+  const getPointerPosition = (event: React.PointerEvent | React.MouseEvent) => {
     if (!mapLayerRef.current) {
       return null;
     }
@@ -809,108 +1049,433 @@ function MapMarkerLayer({
   return (
     <Box
       ref={mapLayerRef}
+      onContextMenu={(event) => {
+        event.preventDefault();
+
+        if (drawingState) {
+          return;
+        }
+
+        const position = getPointerPosition(event);
+
+        if (!position) {
+          return;
+        }
+
+        const marker = getMarkerAtPosition(position.x, position.y);
+
+        onOpenMarkerMenu({
+          event,
+          x: position.x,
+          y: position.y,
+          markerId: marker?.id,
+        });
+      }}
+      onPointerDown={(event) => {
+        if (!drawingState) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const position = getPointerPosition(event);
+
+        if (!position) {
+          return;
+        }
+
+        onAddDrawingPoint([position.x, position.y]);
+      }}
       sx={{
         position: "absolute",
         inset: 0,
-        pointerEvents: "none",
+        pointerEvents: "auto",
+      }}
+      onPointerMove={(event) => {
+        if (drawingState) {
+          setHoveredMarker(null);
+          return;
+        }
+
+        const position = getPointerPosition(event);
+
+        if (!position) {
+          setHoveredMarker(null);
+          return;
+        }
+
+        const marker = getMarkerAtPosition(position.x, position.y);
+
+        if (!marker?.tooltip) {
+          setHoveredMarker(null);
+          return;
+        }
+
+        setHoveredMarker({
+          marker,
+          x: position.x,
+          y: position.y,
+        });
+      }}
+      onPointerLeave={() => {
+        setHoveredMarker(null);
+      }}
+      onClick={(event) => {
+        if (drawingState || didDragRef.current) {
+          return;
+        }
+
+        const position = getPointerPosition(event);
+
+        if (!position) {
+          return;
+        }
+
+        const marker = getMarkerAtPosition(position.x, position.y);
+        if (!marker) {
+          return;
+        }
+
+        if (marker.linked_map) {
+          onOpenMap(marker.linked_map);
+        } else if (marker.entity_id) {
+          onOpenEntity(marker.entity_id);
+        }
       }}
     >
-      {visibleMarkers.map((marker) => {
-        const isMapMarker = Boolean(marker.linked_map);
+      {hoveredMarker && (
+        <Box
+          sx={{
+            position: "absolute",
+            left: `${hoveredMarker.x}%`,
+            top: `${hoveredMarker.y}%`,
+            transform: "translate(12px, 12px)",
+            zIndex: 150,
+            maxWidth: 280,
+            px: 1.25,
+            py: 0.75,
+            borderRadius: 1,
+            backgroundColor: "grey.900",
+            color: "common.white",
+            fontSize: "0.8rem",
+            lineHeight: 1.4,
+            boxShadow: 3,
+            pointerEvents: "none",
+          }}
+        >
+          {hoveredMarker.marker.tooltip}
+        </Box>
+      )}
+      {/* Area overlays */}
+      <Box
+        component="svg"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        sx={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "auto",
+          zIndex: 10,
+        }}
+      >
+        {visibleMarkers
+          .filter(
+            (marker) =>
+              marker.type === "area" &&
+              marker.points &&
+              marker.points.length >= 3,
+          )
+          .map((marker) => (
+            <polygon
+              key={marker.id}
+              points={marker.points?.map(([x, y]) => `${x},${y}`).join(" ")}
+              fill={marker.fill_color ?? "#1976d2"}
+              fillOpacity={marker.fill_opacity ?? 0.2}
+              stroke={marker.fill_color ?? "#1976d2"}
+              strokeOpacity={0.8}
+              strokeWidth={2}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+      </Box>
+      {visibleMarkers
+        .filter(
+          (marker) =>
+            marker.type === "area" &&
+            marker.points &&
+            marker.points.length >= 3 &&
+            marker.label &&
+            !marker.hide_label,
+        )
+        .map((marker) => {
+          const centerX =
+            marker.points!.reduce((sum, [x]) => sum + x, 0) /
+            marker.points!.length;
 
-        return (
-          <Box
-            key={marker.id}
-            onContextMenu={(event) => {
-              event.stopPropagation();
+          const centerY =
+            marker.points!.reduce((sum, [, y]) => sum + y, 0) /
+            marker.points!.length;
 
-              onOpenMarkerMenu({
-                event,
-                markerId: marker.id,
-              });
-            }}
-            sx={{
-              position: "absolute",
-              left: `${
-                draggingMarkerId === marker.id && dragPosition
-                  ? dragPosition.x
-                  : marker.x
-              }%`,
-              top: `${
-                draggingMarkerId === marker.id && dragPosition
-                  ? dragPosition.y
-                  : marker.y
-              }%`,
-              width: 0,
-              height: 0,
-              pointerEvents: "auto",
-              zIndex: 100,
-              cursor: draggingMarkerId === marker.id ? "grabbing" : "grab",
-            }}
-            onPointerDown={(event) => handleMarkerPointerDown(event, marker)}
-            onPointerMove={handleMarkerPointerMove}
-            onPointerUp={handleMarkerPointerUp}
-            onPointerCancel={handleMarkerPointerUp}
-            onClick={() => {
-              if (didDragRef.current) {
-                return;
-              }
+          return (
+            <Typography
+              key={`area-label-${marker.id}`}
+              variant="caption"
+              sx={{
+                position: "absolute",
+                left: `${centerX}%`,
+                top: `${centerY}%`,
+                transform: "translate(-50%, -50%)",
+                px: 0.75,
+                py: 0.5,
+                borderRadius: 0.75,
+                backgroundColor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                whiteSpace: "nowrap",
+                boxShadow: 1,
+                pointerEvents: "none",
+              }}
+            >
+              {marker.label}
+            </Typography>
+          );
+        })}
+      {/* Path overlays */}
+      {visibleMarkers
+        .filter(
+          (marker) =>
+            marker.type === "path" &&
+            marker.points &&
+            marker.points.length >= 2 &&
+            marker.label &&
+            !marker.hide_label,
+        )
+        .map((marker) => {
+          const middlePoint =
+            marker.points![Math.floor(marker.points!.length / 2)];
 
-              if (marker.linked_map) {
-                onOpenMap(marker.linked_map);
-              } else {
-                onOpenEntity(marker.entity_id);
-              }
-            }}
-          >
-            <Tooltip title={marker.tooltip ?? ""}>
-              <IconButton
-                size="small"
-                aria-label={marker.label ?? "Map location"}
-                sx={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  transform: "translate(-50%, -100%)",
-                  pointerEvents: "auto",
-                  color: "primary.main",
-                  backgroundColor: "background.paper",
-                  border: 1,
-                  borderColor: "divider",
-                  boxShadow: 2,
-                  "&:hover": {
+          return (
+            <Typography
+              key={`path-label-${marker.id}`}
+              variant="caption"
+              sx={{
+                position: "absolute",
+                left: `${middlePoint[0]}%`,
+                top: `${middlePoint[1]}%`,
+                transform: "translate(-50%, -50%)",
+                px: 0.75,
+                py: 0.25,
+                borderRadius: 0.75,
+                backgroundColor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                whiteSpace: "nowrap",
+                boxShadow: 1,
+                pointerEvents: "none",
+                zIndex: 30,
+              }}
+            >
+              {marker.label}
+            </Typography>
+          );
+        })}
+      <Box
+        component="svg"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        sx={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "auto",
+          zIndex: 20,
+        }}
+      >
+        {visibleMarkers
+          .filter(
+            (marker) =>
+              marker.type === "path" &&
+              marker.points &&
+              marker.points.length >= 2,
+          )
+          .map((marker) => (
+            <polyline
+              key={marker.id}
+              points={marker.points?.map(([x, y]) => `${x},${y}`).join(" ")}
+              fill="none"
+              stroke={marker.fill_color ?? "#1976d2"}
+              strokeOpacity={0.9}
+              strokeWidth={6}
+              pointerEvents="visiblePainted"
+              vectorEffect="non-scaling-stroke"
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                onOpenMarkerMenu({
+                  event,
+                  markerId: marker.id,
+                });
+              }}
+            >
+              {marker.tooltip && <title>{marker.tooltip}</title>}
+            </polyline>
+          ))}
+      </Box>
+      {drawingState && drawingState.points.length > 0 && (
+        <Box
+          component="svg"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: 50,
+          }}
+        >
+          {drawingState.type === "area" && drawingState.points.length >= 3 && (
+            <polygon
+              points={drawingState.points
+                .map(([x, y]) => `${x},${y}`)
+                .join(" ")}
+              fill="#1976d2"
+              fillOpacity={0.15}
+              stroke="#1976d2"
+              strokeWidth={.5}
+              strokeOpacity={0.9}
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+
+          {drawingState.type === "path" && drawingState.points.length >= 2 && (
+            <polyline
+              points={drawingState.points
+                .map(([x, y]) => `${x},${y}`)
+                .join(" ")}
+              fill="none"
+              stroke="#1976d2"
+              strokeWidth={.5}
+              strokeOpacity={0.9}
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+
+          {drawingState.points.map(([x, y], index) => (
+            <circle
+              key={`${x}-${y}-${index}`}
+              cx={x}
+              cy={y}
+              r=".6"
+              fill="#1976d2"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </Box>
+      )}
+      {/* Point markers */}
+      {visibleMarkers
+        .filter((marker) => marker.type !== "area" && marker.type !== "path")
+        .map((marker) => {
+          return (
+            <Box
+              key={marker.id}
+              onContextMenu={(event) => {
+                event.stopPropagation();
+
+                onOpenMarkerMenu({
+                  event,
+                  markerId: marker.id,
+                });
+              }}
+              sx={{
+                position: "absolute",
+                left: `${
+                  draggingMarkerId === marker.id && dragPosition
+                    ? dragPosition.x
+                    : marker.x
+                }%`,
+                top: `${
+                  draggingMarkerId === marker.id && dragPosition
+                    ? dragPosition.y
+                    : marker.y
+                }%`,
+                width: 0,
+                height: 0,
+                pointerEvents: "auto",
+                zIndex: 1000,
+                cursor: draggingMarkerId === marker.id ? "grabbing" : "grab",
+              }}
+              onPointerDown={(event) => handleMarkerPointerDown(event, marker)}
+              onPointerMove={handleMarkerPointerMove}
+              onPointerUp={handleMarkerPointerUp}
+              onPointerCancel={handleMarkerPointerUp}
+              onClick={() => {
+                if (didDragRef.current) {
+                  return;
+                }
+
+                if (marker.linked_map) {
+                  onOpenMap(marker.linked_map);
+                } else if (marker.entity_id) {
+                  onOpenEntity(marker.entity_id);
+                }
+              }}
+            >
+              <Tooltip title={marker.tooltip ?? ""}>
+                <IconButton
+                  size="small"
+                  aria-label={marker.label ?? "Map location"}
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    transform: "translate(-50%, -100%)",
+                    pointerEvents: "auto",
+                    color: "primary.main",
                     backgroundColor: "background.paper",
-                  },
-                }}
-              >
-                <MarkerIcon icon={marker.icon} />
-              </IconButton>
-            </Tooltip>
-            {marker.label && !marker.hide_label && (
-              <Typography
-                variant="caption"
-                sx={{
-                  position: "absolute",
-                  left: 0,
-                  bottom: 32,
-                  transform: "translateX(-50%)",
-                  px: 0.75,
-                  py: 0.25,
-                  borderRadius: 0.75,
-                  backgroundColor: "background.paper",
-                  border: 1,
-                  borderColor: "divider",
-                  whiteSpace: "nowrap",
-                  boxShadow: 1,
-                  pointerEvents: "none",
-                }}
-              >
-                {marker.label}
-              </Typography>
-            )}
-          </Box>
-        );
-      })}
+                    border: 1,
+                    borderColor: "divider",
+                    boxShadow: 2,
+                    "&:hover": {
+                      backgroundColor: "background.paper",
+                    },
+                  }}
+                >
+                  <MarkerIcon icon={marker.icon} />
+                </IconButton>
+              </Tooltip>
+
+              {marker.label && !marker.hide_label && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    bottom: 32,
+                    transform: "translateX(-50%)",
+                    px: 0.75,
+                    py: 0.25,
+                    borderRadius: 0.75,
+                    backgroundColor: "background.paper",
+                    border: 1,
+                    borderColor: "divider",
+                    whiteSpace: "nowrap",
+                    boxShadow: 1,
+                    pointerEvents: "none",
+                  }}
+                >
+                  {marker.label}
+                </Typography>
+              )}
+            </Box>
+          );
+        })}
     </Box>
   );
 }

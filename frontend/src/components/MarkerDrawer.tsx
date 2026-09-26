@@ -12,6 +12,7 @@ type MarkerDrawerProps = {
   mode: "create" | "edit";
   onClose: () => void;
   onSave: (marker: MapMarker) => void;
+  onStartDrawing?: (type: "area" | "path") => void;
 };
 
 function MarkerDrawer({
@@ -20,6 +21,7 @@ function MarkerDrawer({
   mode,
   onClose,
   onSave,
+  onStartDrawing,
 }: MarkerDrawerProps) {
   const [formData, setFormData] = useState<MapMarker | null>(marker);
   const { entities } = useWorldData();
@@ -27,7 +29,28 @@ function MarkerDrawer({
     (field) => field.name === "markers",
   );
   const markerFields = markerDefinition?.fields ?? [];
+  const markerType = formData?.type ?? "point";
 
+  const visibleMarkerFields = markerFields.filter((field) => {
+    if (field.hidden) return false;
+    if (field.name === "icon") {
+      return markerType === "point";
+    }
+
+    if (field.name === "x" || field.name === "y") {
+      return markerType === "point";
+    }
+
+    if (
+      field.name === "points" ||
+      field.name === "fill_color" ||
+      field.name === "fill_opacity"
+    ) {
+      return markerType === "area" || markerType === "path";
+    }
+
+    return true;
+  });
   useEffect(() => {
     setFormData(marker);
   }, [marker]);
@@ -61,7 +84,7 @@ function MarkerDrawer({
             </Typography>
             <Stack spacing={2}>
               {formData &&
-                markerFields.map((field) => (
+                visibleMarkerFields.map((field) => (
                   <EntityField
                     key={field.name}
                     field={field}
@@ -74,7 +97,15 @@ function MarkerDrawer({
                   />
                 ))}
             </Stack>
-
+            {formData &&
+              (formData.type === "area" || formData.type === "path") && (
+                <Button
+                  variant="outlined"
+                  onClick={() => onStartDrawing?.(formData.type)}
+                >
+                  Draw on Map
+                </Button>
+              )}
             <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
               <Button
                 variant="contained"

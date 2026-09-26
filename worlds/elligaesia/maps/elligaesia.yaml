@@ -17,8 +17,10 @@ dm_notes: null
 markers:
 - id: northern-road-marker
   entity_id: northern-road
-  x: 78.8
-  y: 56.2
+  type: point
+  points: []
+  x: 78.74344199256824
+  y: 58.47118759651333
   label: Northern Road
   linked_map: null
   visible: true
@@ -26,8 +28,12 @@ markers:
   tooltip: Northern Road
   hide_label: true
   icon: null
+  fill_color: null
+  fill_opacity: 0.2
 - id: afaddd8e-c545-47a4-bb47-d674a91a702a
   entity_id: ''
+  type: point
+  points: []
   x: 43.27485380116959
   y: 29.058639466840052
   label: The Shifting Sands
@@ -37,8 +43,12 @@ markers:
   tooltip: null
   hide_label: true
   icon: null
+  fill_color: null
+  fill_opacity: 0.2
 - id: sho-dar-map-marker
   entity_id: shodar
+  type: point
+  points: []
   x: 57.6674552456445
   y: 92.42805312296815
   label: Sho Dar
@@ -48,21 +58,14 @@ markers:
   tooltip: City of Sho Dar
   hide_label: false
   icon: null
-- id: a1a1aea7-578c-4a03-b3c8-7c35ab535437
-  entity_id: ''
-  x: 57.10632443195662
-  y: 37.875671783566325
-  label: Mortiz
-  linked_map: null
-  visible: true
-  dm_only: false
-  tooltip: null
-  hide_label: false
-  icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: reqrun-map-marker
   entity_id: reqrun
-  x: 83.1587109184637
-  y: 66.49776304961802
+  type: point
+  points: []
+  x: 82.85176238121345
+  y: 66.97190065222692
   label: Reqrun
   linked_map: reqrun-map
   visible: true
@@ -70,10 +73,14 @@ markers:
   tooltip: City of Reqrun
   hide_label: false
   icon: map
+  fill_color: null
+  fill_opacity: 0.2
 - id: west-town-map-marker
   entity_id: west-town
-  x: 67.1
-  y: 72.0
+  type: point
+  points: []
+  x: 67.25717288011695
+  y: 72.19358922911249
   label: West Town
   linked_map: null
   visible: true
@@ -81,19 +88,12 @@ markers:
   tooltip: City of West Town
   hide_label: false
   icon: city
-- id: easton-map-marker
-  entity_id: easton
-  x: 88.95172059652168
-  y: 77.49320279482282
-  label: Easton
-  linked_map: null
-  visible: true
-  dm_only: false
-  tooltip: City of Easton
-  hide_label: false
-  icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: baldons-map-marker
   entity_id: baldon
+  type: point
+  points: []
   x: 49.19065955089547
   y: 81.50985578876788
   label: Baldon
@@ -103,8 +103,12 @@ markers:
   tooltip: Capital of Batik
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: colkirk-map-marker
   entity_id: colkirk
+  type: point
+  points: []
   x: 36.0
   y: 75.8
   label: Colkirk
@@ -114,8 +118,12 @@ markers:
   tooltip: City of Colkirk
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: ole-hythe-map-marker
   entity_id: ole-hythe
+  type: point
+  points: []
   x: 47.23815323084186
   y: 69.46837347102569
   label: Ole Hythe
@@ -125,8 +133,12 @@ markers:
   tooltip: City of Ole Hythe
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: larton-map-marker
   entity_id: larton
+  type: point
+  points: []
   x: 31.570375081856117
   y: 69.28110903974317
   label: Larton
@@ -136,8 +148,12 @@ markers:
   tooltip: City of Larton
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: halfington-map-marker
   entity_id: halfington
+  type: point
+  points: []
   x: 5.679071437545687
   y: 67.8588549709444
   label: Halfington
@@ -147,10 +163,14 @@ markers:
   tooltip: City of Halfington
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: f90d3c7c-06a5-436d-8deb-1e6cdc7bc0dd
   entity_id: serenno-city
-  x: 20.38536146137914
-  y: 42.2996491232526
+  type: point
+  points: []
+  x: 20.27264273422271
+  y: 42.884808802015606
   label: Serenno
   linked_map: null
   visible: true
@@ -158,10 +178,14 @@ markers:
   tooltip: null
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: 19d3e480-3489-4ac5-b752-02ebcbaf683e
   entity_id: ''
-  x: 19.069631476151315
-  y: 35.09037330339727
+  type: point
+  points: []
+  x: 19.173754121360258
+  y: 35.351689491222366
   label: Umbara
   linked_map: null
   visible: true
@@ -169,8 +193,12 @@ markers:
   tooltip: null
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: 9f31b1e9-d5c0-405f-9ec4-46c9de1162c8
   entity_id: ''
+  type: point
+  points: []
   x: 14.827301441809821
   y: 27.644258853828024
   label: Teth
@@ -180,8 +208,12 @@ markers:
   tooltip: null
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
 - id: f0f38475-1527-4789-9320-c6bd1c269ac6
   entity_id: null
+  type: point
+  points: []
   x: 74.3
   y: 22.0
   label: Nevarro
@@ -191,6 +223,131 @@ markers:
   tooltip: null
   hide_label: false
   icon: city
+  fill_color: null
+  fill_opacity: 0.2
+- id: 3b4019dd-eedc-46ab-8376-cbe882772423
+  entity_id: ''
+  type: area
+  points: []
+  x: 48.343079922027286
+  y: 74.44225455136541
+  label: null
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: location
+  fill_color: null
+  fill_opacity: 0.2
+- id: easton-map-marker
+  entity_id: easton
+  type: point
+  points: []
+  x: 88.95172059652168
+  y: 77.49320279482282
+  label: Easton
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: City of Easton
+  hide_label: false
+  icon: city
+  fill_color: null
+  fill_opacity: 0.2
+- id: a1a1aea7-578c-4a03-b3c8-7c35ab535437
+  entity_id: null
+  type: point
+  points: []
+  x: 57.10632443195662
+  y: 37.875671783566325
+  label: Mortiz
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Mortiz
+  hide_label: false
+  icon: city
+  fill_color: null
+  fill_opacity: 0.2
+- id: 705efc50-6e2f-4bb5-99f6-8d1363436d00
+  entity_id: northern-road
+  type: path
+  points:
+  - - 76.25557525813231
+    - 47.75317605047139
+  - - 77.89425617537769
+    - 49.47865341047627
+  - - 77.72609420687134
+    - 50.95881547667426
+  - - 78.93595853511817
+    - 53.24770526861183
+  - - 78.93595853511817
+    - 54.760980296041936
+  - - 78.66535744471857
+    - 58.062990186118334
+  - - 79.01914719252558
+    - 60.06640371017555
+  - - 80.52866677326999
+    - 62.01778258086801
+  - - 81.67207059804458
+    - 63.97886040616873
+  x: 77.77777777777779
+  y: 52.01052503250976
+  label: Northern Road
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: north road
+  hide_label: false
+  icon: location
+  fill_color: '#cb5d98'
+  fill_opacity: 0.2
+- id: 8187c2a9-abeb-463a-823f-17f791371aa7
+  entity_id: ''
+  type: area
+  points:
+  - - 50.62255859375
+    - 54.97789717774707
+  - - 58.13073944627193
+    - 55.61572646598667
+  - - 62.24164163392422
+    - 56.252095355169054
+  - - 64.40392804657043
+    - 57.42719275743661
+  - - 63.82608097663864
+    - 58.86920983521618
+  - - 62.271457248263886
+    - 60.0795473016905
+  - - 58.11586733217593
+    - 61.56632878535435
+  - - 56.05198672408016
+    - 62.38456497886866
+  - - 53.26821250989888
+    - 62.442933319448954
+  - - 50.74776989674707
+    - 61.83969326540149
+  - - 49.556537353039715
+    - 60.96886683192457
+  - - 47.51647592288012
+    - 59.4860220761541
+  - - 46.658985517178365
+    - 58.33803729986183
+  - - 46.65328652305678
+    - 56.84009646253251
+  - - 49.03671532346491
+    - 55.50592668034785
+  x: 53.11890838206628
+  y: 58.252397594278285
+  label: Desert of Golem
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Desert of Golem
+  hide_label: true
+  icon: location
+  fill_color: '#e1c560'
+  fill_opacity: 0.2
 linked_map: null
 entity_id: null
 tooltip: null
