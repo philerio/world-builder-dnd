@@ -1,38 +1,695 @@
 id: the-unforgiven
 name: The Unforgiven
+description: 'The campaign centered on the strange disappearances in Reqrun, the awakening
+  of an ancient Aboleth, and the discovery of the sorcerer''s true identity.
 
-description: >
-  The campaign centered on the strange disappearances in Reqrun,
-  the awakening of an ancient Aboleth, and the discovery of the
-  sorcerer's true identity.
+  '
+created: '2026-10-05T13:48:18.556840'
+updated: '2026-10-05T13:48:18.556846'
+overview: 'Animals begin disappearing from Reqrun at night, followed by the disappearance
+  of the governor''s supposed son. The party investigates the town, follows clues
+  toward the northern lake, and becomes entangled in an ancient conflict involving
+  an Aboleth and a mysterious sorcerer.
 
-overview: >
-  Animals begin disappearing from Reqrun at night, followed by the
-  disappearance of the governor's supposed son. The party investigates
-  the town, follows clues toward the northern lake, and becomes
-  entangled in an ancient conflict involving an Aboleth and a
-  mysterious sorcerer.
-
+  '
 status: completed
-
 locations:
-  - reqrun
-
+- reqrun
 npcs:
-  - pattrice
-  - nedda
-  - frank
-  - shana
-  - emmyth-carfir
-  - dronath
+- pattrice
+- nedda
+- frank
+- shana - alatar
+- dronath
+- ann
+- fredrick
+- orivom
+- faela-logleragle
+- narle
+- bane
+player_characters:
+- harry
+- rowan
+- aerith
+outcome: 'The party uncovered the truth behind the disappearances and confronted the
+  sorcerer and the Aboleth.
 
-player_characters: []
+  '
+consequences: 'Reqrun was liberated from the sorcerer''s influence. The events surrounding
+  the Aboleth and the sorcerer''s past revealed deeper forces affecting the world.
 
-outcome: >
-  The party uncovered the truth behind the disappearances and
-  confronted the sorcerer and the Aboleth.
+  '
+story:
+  beats:
+  - id: meet-the-three-misfits
+    name: The Three Misfits Take the Case
+    description: The party is approached at a pub south of Reqrun and asked to investigate
+      the missing governor's son and the animals that have disappeared at night.
+    description_content:
+      nodes:
+      - type: text
+        text: 'The party is approached at a pub south of '
+      - type: entity_link
+        text: Reqrun
+        entity_id: reqrun
+      - type: text
+        text: ' and asked to investigate the missing governor''s son and the animals
+          that have disappeared at night.
 
-consequences: >
-  Reqrun was liberated from the sorcerer's influence. The events
-  surrounding the Aboleth and the sorcerer's past revealed deeper
-  forces affecting the world.
+          '
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 1
+    triggers:
+    - The party accepts the governor's request for help.
+    events: A disheveled messenger brings the case to the party. The town has searched
+      for Jackson for several days without success. The governor asks the party to
+      meet him at the old capitol building.
+    secrets: []
+    possible_approaches:
+    - Establish how the party knows one another before the case begins.
+    - Ask the messenger what the town has already investigated.
+    leads_to:
+    - arrive-in-reqrun
+    locations:
+    - reqrun
+    npcs:
+    - pattrice
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: arrive-in-reqrun
+    name: Arrive in Reqrun
+    description: 'The party reaches the fork in the road outside town, already feeling
+      watched. Their arrival time can shape whether they first visit the inn or begin
+      asking questions around town.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 2
+    triggers:
+    - The party follows the messenger to Reqrun.
+    events: 'Pattrice explains the disappearances and the search for Jackson. The
+      rebuilt capitol and his guarded tone may draw attention. If the party arrives
+      before sundown they can settle at Nedda''s inn; otherwise the governor points
+      them toward the farms and library.
+
+      '
+    secrets:
+    - Pattrice is the sorcerer the party is ultimately searching for.
+    - The missing-child story is part of Pattrice's attempt to gain the party's trust
+      and draw Aerith to Reqrun.
+    possible_approaches:
+    - Visit the inn and meet the people staying there.
+    - Start with the farms, library, or school instead.
+    - Press Pattrice about the capitol, the storm, or his son's disappearance.
+    leads_to:
+    - ask-around-reqrun
+    - investigate-frank-and-the-inn
+    locations:
+    - reqrun
+    npcs:
+    - pattrice
+    - nedda
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: ask-around-reqrun
+    name: Follow the Town's Leads
+    description: 'Farmers, Shana, and Alatar each offer partial accounts of the missing
+      animals and Reqrun''s disputed history. The players can pursue any lead in any
+      order.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 3
+    triggers:
+    - The party asks townspeople about the disappearances or the old lake story.
+    events: 'Ann, Fredrick, and Orivom report missing livestock. Shana knows of missing
+      pets and can recount the familiar story of a wizard defeating a necromancer
+      at the mountain lake. Alatar teaches healing magic and hints, if persuaded,
+      that the accepted history may be wrong.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Compare the farmers' accounts and ask about the timing of each loss.
+    - Ask Shana for the town's history and the old lake battle.
+    - Persuade Alatar to explain what he meant about the wizard.
+    - Follow the northern-road lead or investigate Frank first.
+    leads_to:
+    - investigate-frank-and-the-inn
+    - follow-the-northern-road
+    locations:
+    - reqrun
+    npcs:
+    - ann
+    - fredrick
+    - orivom
+    - shana
+    - alatar
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: investigate-frank-and-the-inn
+    name: Frank and the Mandolin
+    description: 'Frank''s late-night fishing story, strange noises from the northern
+      lake, and the inn''s suspiciously aggressive dwarf employee point toward the
+      road north of town.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 4
+    triggers:
+    - The party questions Frank, Nedda, or the farmers about suspicious activity.
+    events: 'A farmer saw Frank moving north on the night Jackson disappeared. Frank
+      says he was fishing at the northern lake and notes that fish have become scarce.
+      At the inn, one dwarf employee appears drunk and hostile, then attacks the party;
+      the other stops the fight. The attacker remembers nothing after waking.
+
+      '
+    secrets:
+    - Frank is under magical influence and is being made to help Dronath.
+    - A faint green glow in Frank's eyes is a clue to the influence.
+    - One of the inn's dwarf employees is also being influenced.
+    possible_approaches:
+    - Compare Frank's account with the farmer's sighting.
+    - Watch Frank for the green eye-glow.
+    - Calm or restrain the dwarf rather than killing him.
+    leads_to:
+    - follow-the-northern-road
+    locations:
+    - reqrun
+    - northern-road
+    npcs:
+    - frank
+    - nedda
+    - fredrick
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: follow-the-northern-road
+    name: The Northern Road Is Not Safe
+    description: 'The northern route is unnaturally quiet, creatures have green eyes,
+      and the road is closed while scouts and guards are missing. The party can turn
+      back, evade the guards, or continue north.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 5
+    triggers:
+    - The party follows clues toward the northern lake.
+    events: 'The party encounters green-eyed goblins and spiders. Guards warn that
+      mountain trolls have made the pass unsafe and order travelers back at daybreak.
+      Farther along, a scout is caught in a Shambling Mound near the road''s protective
+      boundary. Frank explains that old magic once kept dangerous creatures away from
+      the trade route.
+
+      '
+    secrets:
+    - Pattrice is draining the road's protective magic to power an altar and extend
+      his life. Storms weaken the road wards.
+    - The Shambling Mound does not cross the road's boundary because the old protective
+      magic still has some strength.
+    possible_approaches:
+    - Return to Reqrun and pursue another lead.
+    - Sneak past or negotiate with the guards.
+    - Continue north and decide whether to camp at an outpost.
+    leads_to:
+    - survive-the-outposts
+    - return-to-reqrun
+    locations:
+    - northern-road
+    npcs:
+    - frank
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: survive-the-outposts
+    name: The Road's Edge
+    description: 'Travel north brings attacks, eerie quiet, and signs that the magic
+      protecting the road is fading. The party may follow Frank onto an old path through
+      the forest or return to Reqrun.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 6
+    triggers:
+    - The party continues north past the guard post.
+    events: 'Wolves stalk the outpost during the night. Frank may be dragged away
+      and wounded. On the following day, the party finds the interwoven trees that
+      mark a hidden route toward the lake. A storm hangs over Reqrun while animals
+      flee north-to-south and a dragon hunts them.
+
+      '
+    secrets:
+    - The road's ward has two more storms of strength before it fails, according to
+      the adventure draft.
+    possible_approaches:
+    - Keep to the road and avoid the forest.
+    - Follow Frank's directions to the hidden path.
+    - Turn back when the road becomes too dangerous.
+    leads_to:
+    - the-hag-test
+    - investigate-the-northern-lake
+    - return-to-reqrun
+    locations:
+    - northern-road
+    npcs:
+    - frank
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: the-hag-test
+    name: The Forest Tests the Party
+    description: 'Voices and lights lure travelers off the hidden path. Following
+      them brings the party to a Green Hag who tests whether they can face the danger
+      at the lake.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 7
+    triggers:
+    - A party member leaves the path to investigate the voices or lights.
+    events: 'The forest clouds the party''s sense of direction. A disguised Green
+      Hag questions them and may attack if she judges them unworthy. The draft''s
+      encounter notes specify one Green Hag and three Will-o''-Wisps; defeating her
+      reveals a route back to the lake path.
+
+      '
+    secrets:
+    - The forest coven is constrained by a powerful presence connected to Dronath
+      and is testing travelers who might defeat him.
+    possible_approaches:
+    - Ignore the lure and remain on the path.
+    - Speak with the hag and explain why the party seeks the lake.
+    - Fight the hag and wisps if the test turns hostile.
+    leads_to:
+    - investigate-the-northern-lake
+    locations:
+    - northern-road
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: investigate-the-northern-lake
+    name: The Corrupted Lake
+    description: 'Dead fish, poisoned water, and a hidden cave entrance connect the
+      missing animals to something beneath the lake.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 8
+    triggers:
+    - The party reaches the northern lake.
+    events: 'The party finds dead fish and a foreign substance in the water. The outflowing
+      rivers may connect the lake to Reqrun. A concealed cave entrance lies across
+      the lake; a faded fire symbol reveals a bridge. Skum may attack anyone who falls
+      into the water.
+
+      '
+    secrets:
+    - Dronath has been taking animals to regain his strength and his slime is poisoning
+      the water.
+    - Dronath is holding Jackson to draw Pattrice back to face him.
+    possible_approaches:
+    - Search the western shore and investigate the carved symbol.
+    - Test the water and trace the river toward town.
+    - Cross the lake carefully and avoid or fight the Skum.
+    leads_to:
+    - enter-the-cave
+    locations:
+    - northern-road
+    npcs:
+    - dronath
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: enter-the-cave
+    name: The Enchanted Door
+    description: 'The cave''s rooms and enchanted locks suggest that someone built
+      a controlled route through an older lair.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 9
+    triggers:
+    - The party finds and enters the hidden cave.
+    events: 'The party reaches a stone chamber with four symbol-marked keys. The correct
+      sequence uses the Enchantment key on the door they entered through after opening
+      the opposite door. Wrong keys trigger distinct magical hazards.
+
+      '
+    secrets:
+    - The room's puzzle reflects the sorcerer's fixation on control.
+    - A captive pulled beneath the lake may awaken beyond the enchanted door.
+    possible_approaches:
+    - Study the room and reason out the key sequence.
+    - Experiment with keys and deal with the resulting hazards.
+    leads_to:
+    - meet-dronath
+    locations: []
+    npcs:
+    - frank
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: meet-dronath
+    name: Dronath's Bargain
+    description: 'Dronath explains why the animals are disappearing and offers a deal:
+      bring him the sorcerer, or he will destroy Reqrun while searching for him.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 10
+    triggers:
+    - The party reaches the deep pool in the cave.
+    events: 'Dronath speaks telepathically, identifies himself, and shares memories
+      of his mother, the ancient battle, and the cave''s collapse. He offers four
+      wolves for the return journey. If the party accepts his deal, they must meet
+      him where the river first reaches the lake within three days.
+
+      '
+    secrets:
+    - The adventure draft spells the creature "Abeloth" in places; the structured
+      world record names him Dronath and classifies him as an Aboleth.
+    - Dronath mistakes the party's investigation for a mission from the sorcerer until
+      he probes their minds.
+    possible_approaches:
+    - Accept the bargain and return to Reqrun with the deadline.
+    - Refuse and fight, flee, or seek another way to protect the town.
+    - Ask Dronath about the sorcerer, Jackson, or the town's history.
+    leads_to:
+    - return-to-reqrun
+    locations:
+    - northern-road
+    npcs:
+    - dronath
+    player_characters: []
+    consequences:
+    - id: dronath-deal-deadline
+      description: Dronath attacks Reqrun if the party fails to meet him.
+      trigger: The party accepts Dronath's bargain.
+      player_action: null
+      timing: Within three days of accepting.
+      status: pending
+      leads_to: []
+    world_events: []
+  - id: return-to-reqrun
+    name: Storms Over Reqrun
+    description: 'Returning to town brings the party into a changed political situation:
+      storms have damaged Reqrun, the king''s guards are suspicious, and Pattrice
+      offers help while steering attention toward Alatar.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 11
+    triggers:
+    - The party returns from the north or abandons the road.
+    events: 'A localized storm blocks or complicates the return. Guards may detain
+      the party, though Pattrice can intervene. A wanted notice accuses a human mercenary
+      and an elf of Faela''s death. Pattrice asks what the party learned about Jackson
+      and Dronath.
+
+      '
+    secrets:
+    - Pattrice is steering the party toward suspicion of Alatar.
+    - Storm activity is tied to Pattrice's use of the road's magic.
+    possible_approaches:
+    - Explain the northern discoveries to Pattrice.
+    - Avoid the guards or negotiate their release.
+    - Rest, follow the wanted notice, or confront Alatar.
+    leads_to:
+    - question-alatar
+    - confront-pattrice
+    locations:
+    - reqrun
+    npcs:
+    - pattrice
+    - narle
+    - faela-logleragle
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: question-alatar
+    name: The Healer's Past
+    description: 'Alatar is a pacifist healer, not the fighter the party may expect.
+      He can help if approached without violence and knows that his own past does
+      not make sense.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 12
+    triggers:
+    - The party investigates the town's wizard or follows Pattrice's suggestion.
+    events: 'Alatar denies taking Jackson and explains that an enchanted basement
+      door in his hut has resisted his attempts to open it. If treated peacefully,
+      he is more willing to help against Dronath.
+
+      '
+    secrets:
+    - Alatar's old memories connect to the sorcerer, but he is not the current governor-sorcerer
+      the party seeks.
+    possible_approaches:
+    - Hear Alatar out and enlist his help.
+    - Accuse or attack him, risking the loss of a potential ally.
+    - Continue investigating Pattrice and the capitol.
+    leads_to:
+    - confront-pattrice
+    locations:
+    - reqrun
+    npcs:
+    - alatar
+    player_characters: []
+    consequences:
+    - id: deliver-alatar-to-dronath
+      description: Dronath becomes enraged and attacks if the party brings him Alatar
+        as the sorcerer.
+      trigger: The party brings Alatar to Dronath.
+      player_action: null
+      timing: null
+      status: pending
+      leads_to:
+      - confront-pattrice
+    world_events: []
+  - id: confront-pattrice
+    name: The Governor Is the Sorcerer
+    description: 'The party''s investigation leads to Pattrice''s true identity and
+      a confrontation at the river or new capitol.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 13
+    triggers:
+    - The party identifies Pattrice or the Dronath deadline forces a confrontation.
+    events: 'Pattrice reveals himself when Harry attacks or when the party brings
+      Dronath and the guards together. He attempts to turn the guards against the
+      party, then offers Dronath the same choice he once offered his mother: submit
+      or be destroyed.
+
+      '
+    secrets:
+    - Pattrice is the ancient sorcerer, surviving through a ritual that transfers
+      his consciousness into related bodies.
+    - His work on the capitol disturbed Dronath's home; his false story about a missing
+      child was meant to lure Aerith to Reqrun.
+    possible_approaches:
+    - Expose Pattrice to the guards and townspeople.
+    - Bring Dronath to the meeting place and decide whether to aid him.
+    - Try to stop the confrontation or protect the town by another means.
+    leads_to:
+    - aftermath-and-the-journals
+    locations:
+    - reqrun
+    npcs:
+    - pattrice
+    - dronath
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: aftermath-and-the-journals
+    name: The Journals Beneath the Hut
+    description: 'After the confrontation, the town''s memory is unsettled and Alatar''s
+      hidden journals reveal Pattrice''s past lives, Bane''s influence, and the altar''s
+      purpose.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 14
+    triggers:
+    - The party survives or resolves the confrontation with Pattrice and Dronath.
+    events: 'The party finds a hidden study beneath Alatar''s hut. Journals describe
+      Pattrice''s lost memories, attempts to leave town, his rise to governor, and
+      experiments with the road''s magic and an altar.
+
+      '
+    secrets:
+    - The journal passages are DM-facing reveals; do not expose them before the party
+      finds and reads the journals.
+    - Pattrice's journals suggest a history involving Bane and a continuing cycle
+      of bodies and memories.
+    possible_approaches:
+    - Read the journals in chronological order.
+    - Compare the journal history with the cave and road clues.
+    - Investigate the altar and decide whether to pursue it.
+    leads_to:
+    - the-altar-and-stratos
+    locations:
+    - reqrun
+    npcs:
+    - alatar
+    - bane
+    player_characters: []
+    consequences: []
+    world_events: []
+  - id: the-altar-and-stratos
+    name: The Altar and the Flying City
+    description: 'Optional transition hook: the altar can lead Aerith to Stratos and
+      open the next campaign''s story. The source document labels this as a flying-city
+      ending and next-campaign material.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 15
+    triggers:
+    - The party investigates or activates the altar after discovering the journals.
+    events: 'The altar is tied to Aerith''s bloodline and can transport the party
+      to the floating city of Stratos, where mechanized golems control the population.
+      Treat the city exploration and golem deactivation as a future-campaign handoff
+      rather than a required resolution of Reqrun''s crisis.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Leave the altar dormant and close the Reqrun story.
+    - Activate it and begin the Stratos storyline.
+    leads_to: []
+    locations: []
+    npcs: []
+    player_characters:
+    - aerith
+    consequences: []
+    world_events: []
+  current_beat: meet-the-three-misfits
+  player_actions:
+  - id: 12e63331-c7d8-427f-9144-edeb3feaf3dd
+    description: Test
+    session: null
+    story_beat: meet-the-three-misfits
+    consequence_ids: []
+    notes: null
+  world_clocks:
+  - id: animals-attack-reqrun
+    name: Dronath's Animal Threat
+    description: 'Dronath grows stronger as the disappearances continue. Keep paused
+      until the DM starts the campaign timeline; advance as nights pass.
+
+      '
+    current: 1
+    maximum: 3
+    stages:
+    - 'First night: disappearances continue.'
+    - 'Second night: Dronath''s influence spreads to more creatures.'
+    - 'Third night: animals attack Reqrun.'
+    completion: Animals attack Reqrun under Dronath's influence.
+    status: active
+  - id: north-road-wards-fail
+    name: The Northern Road Wards Fade
+    description: 'The adventure draft says two more storms will exhaust the road''s
+      protective magic. Advance when a storm occurs after this clue is found.
+
+      '
+    current: 0
+    maximum: 2
+    stages:
+    - First additional storm weakens the road's protection.
+    - Second additional storm exhausts the wards and frees creatures to roam the road.
+    completion: Creatures can roam the northern road freely.
+    status: paused
+  - id: dronath-three-day-deadline
+    name: Dronath's Three-Day Deadline
+    description: 'Start this clock only if the party accepts Dronath''s bargain. He
+      waits where the river first reaches the lake.
+
+      '
+    current: 0
+    maximum: 3
+    stages:
+    - Day 1 after accepting the bargain.
+    - Day 2 after accepting the bargain.
+    - 'Day 3: Dronath expects the sorcerer to be delivered.'
+    completion: Dronath attacks Reqrun if the party fails to meet him.
+    status: paused

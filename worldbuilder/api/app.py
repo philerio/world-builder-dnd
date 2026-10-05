@@ -1,7 +1,10 @@
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
-from worldbuilder.relationships import get_related_entities
+from worldbuilder.relationships import (
+    get_campaign_related_entities,
+    get_related_entities,
+)
 from worldbuilder.loaders.world_loader import load_world_registry
 from pydantic import ValidationError
 from worldbuilder.config.entity_types import (
@@ -80,6 +83,10 @@ def get_world() -> dict:
         "locations": [
             location.model_dump(mode="json") for location in registry.locations.values()
         ],
+        "world_stories": [
+            story.model_dump(mode="json")
+            for story in registry.world_stories.values()
+        ],
     }
 
 
@@ -125,6 +132,7 @@ def list_entities() -> list[dict[str, str]]:
         registry.artifacts,
         registry.maps,
         registry.locations,
+        registry.world_stories,
     ]
 
     for collection in collections:
@@ -138,6 +146,26 @@ def list_entities() -> list[dict[str, str]]:
             )
 
     return entities
+
+
+@app.get("/campaigns/{campaign_id}/references")
+def get_campaign_references(campaign_id: str) -> list[dict[str, str]]:
+    registry = load_world_registry(WORLD_PATH)
+    if campaign_id not in registry.campaigns:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Campaign not found: {campaign_id}",
+        )
+
+    references = get_campaign_related_entities(registry, campaign_id)
+    return [
+        {
+            "id": reference.id,
+            "entity_type": reference.entity_type,
+            "name": registry.get_entity(reference.id).name,
+        }
+        for reference in references
+    ]
 
 
 @app.get("/entities/{entity_id}/related")

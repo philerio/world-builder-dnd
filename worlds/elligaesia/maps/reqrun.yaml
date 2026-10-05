@@ -32,8 +32,8 @@ markers:
   entity_id: ''
   type: point
   points: []
-  x: 15.118974797865924
-  y: 41.34415409482759
+  x: 14.5
+  y: 40.0
   label: Capitol Building
   linked_map: null
   visible: true
@@ -47,16 +47,16 @@ markers:
   entity_id: ''
   type: area
   points:
-  - - 33.994276383343866
-    - 48.33969221443966
-  - - 35.81927243401022
-    - 36.464405980603445
-  - - 43.8995080835679
-    - 37.525828394396555
-  - - 46.21835596421185
-    - 43.338328394396555
-  - - 47.62903101303998
-    - 48.78955078125
+  - - 33.58995774213005
+    - 48.746228448275865
+  - - 35.8759319081026
+    - 36.2451171875
+  - - 44.18597501866957
+    - 37.44017712823276
+  - - 46.35752509622013
+    - 43.730889682112064
+  - - 47.398612078498395
+    - 48.998333108836206
   x: 39.24632352941176
   y: 44.68426724137931
   label: Market District
@@ -67,6 +67,21 @@ markers:
   hide_label: true
   icon: location
   fill_color: green
+  fill_opacity: 0.2
+- id: a73c5e3e-c7b7-4962-abc5-3c58571cbbc4
+  entity_id: ''
+  type: area
+  points: []
+  x: 39.24632352941176
+  y: 26.132543103448274
+  label: null
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: location
+  fill_color: null
   fill_opacity: 0.2
 linked_map: null
 entity_id: reqrun

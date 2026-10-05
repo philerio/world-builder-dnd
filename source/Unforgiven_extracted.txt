@@ -1,0 +1,506 @@
+Unforgiven
+
+The small town of Reqrun has been having incidents of animals going missing over the past few months. There doesn’t seem to be a pattern in these disappearances other than the animals always go missing at night. Things took a turn for the worse when the son of the town’s governor also went missing. The whole town banded together to try and find the child, but it was to no avail. After several days of search, the governor decides to employ the 3 well known detectives who are known as the 3 Misfits. 
+
+
+The 3 Misfits may not call themselves this, but due to their unorthodox methods, and just how they behave, they started to be known as that. The party consists of a halfling (Harry), a Wood Elf for the Northern Woods of Weshire, and a human with her familiar named Moose. They are quite effective in their detective skills, and are very well known. 
+
+**Give background on how characters meet
+
+Our journey starts with the 3 Misfits at a pub South of the town of Reqrun. 
+They are relaxing for the evening when a disheveled elf comes in looking for them. Telling them of the missing child and animals
+Town originally thought it was a troll, but none have been seen in centuries
+Told to meet the governor at the old capitol building in Reqrun
+
+They head towards town. And come upon the split in the road. They feel like they’ve been followed for a while when they come upon the split
+
+Characters:
+
+Governor: Pattrice (Human)
+Well respected and liked. Has been governor for many years. Takes care of his people, and has led them into a small golden age for the town. Trade is good, no one goes hungry, and everyone has a place to live 
+Capital building is having to be rebuilt after a fire broke out several months ago from the storm
+Paths
+If party makes it to town before sundown - Inn	
+Else
+Mentions going to the farms around town to see if they know anything
+Go to library to get some history on the town
+Pattrice gives a weird tone as if the is some great secret (perception from Lauren
+Governor’s Son: Jackson (Human)
+Inn Keeper: Nedda (Halfling)
+Inherited the Inn from her father. Has been around for generations. Runs a tight ship, and doesn’t take any nonsense.
+Has 2 Dwarf barbarians on staff to help keep trouble out. 
+1 Dwarf is under the influence of necromancer
+Party will just think he doesn’t like elves, and halflings
+And appears to be drunk
+Will attempt to fight party at night
+Other dwarf stops fight before he is killed
+Last hit will knock him out. When he awakes, he will not remember anything. 
+Blacksmith: Frank (Elf)
+Generally makes farm equipment for the animals in town. 
+Secretly working for necromancer
+Need to have the party talk to him
+Before they leave, the elf character almost catches green in his eyes
+Will tell them of some strange noises coming from the mountain at the end of the north road. 
+Very well liked by community. 
+A farmer saw him sneaking around in the evening Jackson disappeared. Possibly heading north.
+If asked about it by party, says he likes to go fishing in the evening after getting off late. In particular that evening he ended up work super late. Goes to the north lake. Mentions how lately there has been a lot less fish in the lake, and he’s not sure why. Suggests the party go check it out
+Farmer 1: Ann (Human) - Lost Goat (4)
+Mention librarian if party hasn’t already talked to her
+Says the town was once thought to be cursed
+Farmer 2: Fred (Human) - Lost Dog (2) cows (3)
+Farmer 3: Orivom (Dwarf) - Lost horse, Lost Donkey, Lost Sheep (3)
+ 
+If they don’t ask the right questions, a farmer will come to them the morning they wake up in the inn, and tell them about the blacksmith. 
+All farmers seem to blame farmer 4 or the wizard 
+
+Librarian: Shana - Lost Dog at friends house. Knows of other disappearances throughout town. Mainly pets. 
+Talk about history of the town (if asked)
+Great battles broke out over town control due to it being a key stopping point for trade into the western cities. Travelers have to go through town to get to the mountain pass
+There was even a great battle between a wizard and a necromancer up in the mountain lake. No one knows why they were fighting, but the wizard ended up victorious. The town is named after the wizard.
+Many trolls were rooted out of the woods by the wizard, which allowed safe passage over the mountain pass
+An Abeloth was even seen once while the wizard was still around, but it was defeated shortly after. 
+Once the wizard left the town seemed to go back to a normal town. 
+Teacher/Wizard: Emmyth Carfir (Elf)
+Town is known for school of magic. Teaches healing magic
+Some town folk blame wizard for disappearances 
+Teacher has know idea why all the animals are going missing
+Mentions that the history of the town has been debated. appears to have spoken out of turn at this point.  (Only if persuaded to give more info) That the great wizard wasn’t who he seemed to be. 
+Mentions getting more info from library due to having to run out somewhere on the south road
+
+Path north:
+Everything is very quiet. Party will only notice after a perception check
+Get attacked by some goblins with green eyes
+
+
+Cause of disappearances:
+Abeloth whose home was disturbed by the construction of the new capitol building
+Lives in the lake north of the larger lake
+Has been taking animals to regain it’s strength
+Slowly starting to take over the town with its mind
+Taking control of more and more creatures
+Will start using animals attack the town by third night
+Poisons the river up north due to slime
+Animals get sick from it
+Does not wish to fight the party
+Old wizard was actually the necromancy who tried to trap the Abeloth under his spell. But when he failed the wizard put it in a deep sleep. 
+Holding the son hostage unless the necromancer comes back to face him.
+Abeloth thinks the Necromancer is still in the town. Can smell his stench from here. 
+Necromancer is actually the Governor, but the party should be made to think it’s the wizard
+
+Party confronts the wizard in town. Can choose to fight him, but he gives up instantly (healer not a fighter)
+If they bring the wizard to the Abeloth, the Abeloth gets very upset and chooses to fight them
+If the party will almost dies
+Wizard will sacrifice himself
+The wizard will die. Abeloth uses his magic to restore his strength.
+ Abeloth escapes and heads toward the town to find the necromancer 
+If party defeats Abeloth, the wizard reveals that the mention of the necromancy confirmed something about the town. That the necromancer never left. And he has a strong influence in the town, but he’s never been able to confirm it.
+
+
+
+The northern road
+    After defeating the hoard of spiders, there heroes must make a decision on where to make camp. From what they can tell (perception check) there are no other spiders in the area. If they decide to stay there and make camp, which the blacksmith will suggest, a group of guards will show up within an hour.
+There are 4 guards. They have come to switch shifts with the guards who were attacked by the spiders. 
+ The guards will ask what happened. 
+After being told about the battle, the guards will say the following: It is not safe for travels to walk the northern road. The passage through the mountains have been overtaken by mountain trolls. The kingdoms have decided to block all travel until the danger is taken care of. At day break, please head back to the city of Reqrun. We are still waiting for the last scout to let us know all travels have returned. 
+
+
+The party can choose to sneak away early the next morning. They can attempt to knock out the guards. 
+If they fail, the guards will attempt to detain them. 
+After 2 of the 4 guards go down, the remaining 2 will let the party go on their way
+
+
+If the party decide to head back towards town skip the next section
+Day 2 on the northern path:
+
+Grog will ask, “Who’s bright idea was it not to get horses…” 
+
+If at any point a party member goes off the path, they will feel the strong feeling of dread. If they are off the path too long they will start to forget their way back. 
+
+The road they are traveling on is very well maintained. Hardly any overgrowth is seen on the path. A stone railing lines both sides of the path. It appears to be in place to prevent people from wandering off the path. One thing the party notices (D10 perception) is just how quiet everything is. It’s as if the forest seems to dampen the sound of the outside world. 
+
+As they journey onward not a single person will be seen. 
+
+Harry will feel like something is watching them in the forest, but can’t quite make out why. 
+After a couple hours pass by, you guys all start getting hungry so you take a quick break to have some rations. (roll perception, have party select color die to determine who hears it first) he party will start to hear branches cracking in the forest. It will get louder and louder. 
+A horse will break through the tree line, running frantically forwards town. D10 perception will determine who sees that It has the crest of the kingdom on it. They will also hear a very loud scream Coming from the direction the horse came from. 
+One of the party members can roll to see if they realize it belongs to the scout
+After a minute or 2, they hear large footsteps approaching. 
+A monstrous creature Shambling Mound will appear right along the tree line, but come no further (rolling knowledge may let them know what it is). Describe creature. The creature will have the scout buried inside it’s vines, slowly disappearing. If the party attempts to attack, Grog will warn them of this creature, and how the scout is already gone. If this creature gets a hold of you, there is no getting free. However, he is not sure why it’s not attacking
+
+The party can choose to attack it, however after stand past the railing, their minds will start to become cloudy. 
+
+The blacksmith will explain that long ago, the kingdoms forged this road together in order to open a trade route, and a great magic was placed on it to ward off evil creatures. However, this creature should not be able to get this close. The magic must be fading. 
+
+Do not read to the party: the reason the magic is fading is due to the sorcerer draining the magic and order to power the enchantment table, and keep himself alive. So, whenever a storm appears, the magic will be weaker. Two more storms and the magic will be gone, and the creatures will be free to roam the road.
+
+The creature will continue to stare at them. Then slowly back away into the tree line never taking its eyes? off them. 
+
+As they continue down the path, they will hear a large thumping sound. It will be coming from the direction of the mountain. As it gets closer, the party will start to hear a lot of movement coming from the trees. Animals and all sorts of creatures burst through the trees and sprint across the road. Right as they do, a massive Green dragon appears overhead going the same direction as the animal. The faint sound of bells can be heard coming from the direction of the town. 
+
+After the dragon passes them the party will see in front of them, a very large wolf staring at them on the road. It attempts to take a step forward, but it starts to get dragged by some onsen force. Its claws scratch the ground as it is forced off the road. Never taking it’s eyes off of them. 
+
+They hear the dragon land, then take off again flying back the way it came with 2 large bears in its claws(the same size as the bear they fought before)
+
+ The blacksmith goes, That dragon’s hunting grounds must have changed due to all the animals going further south. Why I do not know. The woods go back to their eerie quiet
+
+
+
+
+No guards will be at the next outpost. It doesn’t look like anyone’s been here for a few days. It’s relatively quite, and if the party decides to do a perception check/listening/animal check no animals will be detected. The blacksmith says that this is not unusual especially with them shutting down the north road. 
+
+The outpost will look exactly like the previous one. There will be trees around the center that have spots for guards to take watch. As well as some tents setup, that appear to be used for travelers who do not have tents. These tents are old and have patches in the fabric. 
+
+The party feels like this is a safe spot to sleep. Grog says he will take the first watch. 
+
+If not Skip Attack in the outpost
+
+
+
+After surviving the battle, Harry will have a vision as he goes to sleep from the ring about a stone door with a triangle key. Resembles very closely to the one in the cleric’s home.
+
+Aerith will also have a dream about being back in a large room. Similar to the one she was in before, but there are now turning gears throughout, and the faint sound of heavy machinery in the background. The soldiers that were lined up are now facing the entrance with her weapons drawn. She will hear loud methodical banging on the doors, After about 5 or so bangs, the door is broken down. She is then grabbed by a man who she cannot see the face of to a room in the back of the hall. As he opens the door, Aerith turns back to several large hulking figures move their way into the hall. She turns back to see a blue glow in the room that the man has opened. As she enters the room, she is woken up by Grog. 
+
+Attack in the outpost
+
+Grog says he hears movement in the woods. He will quietly go to each party member and wake them up, and asking them to stay quiet.
+
+Listening check D10 will let the part hear branches snapping in the woods. Aerith will be able to see movement at the far end of camp. 
+
+Grog suggestions going up in the trees if no one else does. 
+
+4 Wolves (D13 will let the party see reddish fur on their tails) will enter the clearing slowly and carefully, as if stalking some prey. 
+If party decides to wait them out, they will need to do a sneak check to make sure wolves do not detect their scent. 
+
+If the party remains undetected, several minutes will pass with the wolves just sniffing around the camp. As they are getting ready to leave the encampment, a much larger wolf will enter the camp. It will growl and bark at the wolf pack, then look straight at the party in the trees. Slowly all the other wolves will look up and growl. 
+
+Initiative will need to be made at this point if it hasn’t already. 
+
+
+
+Attack on the road
+
+During Aerith’s turn for watch, the blacksmith will get up to use the restroom. 
+He decides to go behind the post that leads into the outpost, since there is some light there.
+Aerith will hear the blacksmith goes “Oh no” then scream. If Aerith looks immediately in his direction, she will see him being dragged into the outpost by a wolf.
+
+By the time the party runs after him, the blacksmith will be in one of the trees (perception will let the party see that he is bleeding, and one of his arms look limp)
+
+A deep large growl will be heard from the woods, and a large wolf will slowly make it’s way from the darkness. All wolves will have reddish tails, and a red red stripe along their back
+
+Roll initiative
+
+
+
+
+The next morning the blacksmith goes: all right we’re about an hour out now. If things go well, we will be able to make it to the lake before midday. 
+Grog Will ask: if this path is off the main road, then won’t we be exposed to monsters?
+The blacksmith will say, I’m not really sure why this path is safe, I think it was created along with the north road but was overgrown. I have never had a problem walking through it and I have yet to run into any creatures
+Grog doesn’t trust it. 
+
+The blacksmith says: Now, we are looking for 4 trees intertwined, with angry eyes. That’s the best way I can describe them. You’ll see what I mean when we get there. 
+
+As they enter the main road, thunder will be heard back towards the city. When they look back, a massive storm will be seen hovering over the city. They can see strikes of lightning, and heavy rainfall. The storm does not appear to be moving, and it appears to just be focused directly on the town. 
+
+This is the first time I’ve seen one of these storms from a distance. It doesn’t look that bad from here. The blacksmith says. The storm does look very bad. None of the party has seen such a large storm focused over a single point before. 
+
+The party walks for about an hour, and suddenly the blacksmith goes:  there it is!
+On the right side of the road there are four trees with a gap between them. The gap is about the size of a normal person and the two middle trees enter twine to make an X above it. 
+Blacksmith: all right so we just walk between those trees and continue straight through there. Who wants to go first?
+
+When the party crosses between the two trees, they see a wide path that is slightly overgrown before them. It’s not as wide as the main road, but they can clearly see that it is definitely a road. There is also much more daylight than to be expected. The sun seems to perfectly line the path into the distance
+
+
+The journey down the path will take a few hours. About halfway through, one of the party members (Perception check d12) will see 1 a light looking similar to a lantern to the left of the path. They will hear a little girl say “Please, help” coming from the direction of the lamp. 
+As well as an older voice saying: “Is someone there, please we are lost” 
+
+The party will need to make a wisdom saving throw of a D12 to see if they resist being pulled off the road. 
+
+If the party chooses not to go closer, the voices will get more panicked. Please we have been lost for days, and can't find the path.
+The girl will say again, I don’t think anyone is there. I’m so hungry. 
+
+If the party still doesn’t go off the path, large stomping sounds will be heard.
+And then the light goes out with screams heard from the direction of the lamp.  
+
+Else if they do go off:
+They will get pulled far enough off the path to not be able to find their way back right away. 
+Their minds will become a little hazy, and they can’t quite remember where they are going. 
+
+A Green hag  disguised as an elf will confront one of the party members. The hag along with 4 others are has been tasked with protecting the forest from any invaders,
+The Abeloth has upset the balance of the forest. She is not pleased with this, but has no choice due to not being strong enough to defeat the Abeloth. He always is at the edge of her mind, so she cannot give too much information without being punished. She’s been testing travelers to see if they can defeat the Abeloth. She will test anyone who goes off the path. (The scout who was eaten by the mound was not worthy)
+She will say, you know it’s dangerous to travel off the main path. 
+We maintain balance in this forest. We must fulfill our duty
+Are you a warrior? 
+What business do you have with the LakeTuath ?
+We’ve been watching your party since you started your journey north
+A great evil has awoken in these lands. He sees everything. Knows everything. I’m sure he’s watching us right now. Always watching…
+No. You’re not up to it. We cannot betray him. But the other’s plan must come into fruition. Then we all will be free. 
+He doesn’t realize it’s not enough. 
+I’ve said too much. Hmm… Perhaps you are worthy. You and your friends. Prove it to me
+
+If she deems them not worthy, she will attempt to kill them, and says. Or maybe I should just eat you
+
+Battle: 1 Green Hag, 3 Will O Wisps
+
+Right before the party defeats her, she will say: Perhaps you are worthy. She reveals a path back to the hidden path to the lake. Also, if she is defeated before the wisps. The wisps will disappear. After she is defeat the forest almost seems to brighten slightly. 
+
+
+
+
+After making it back on the path, they can choose to continue down the path. 
+
+The Lake:
+
+Upon approaching the lake the party will start to smell a distinct smell of decay (dead fish). The closer they get, the stronger the smell. When they reach the clearing where the lake is, the party will see dead fish lining the lake. Grog can do a detect magic on the lake to see if it’s cursed/poisoned. He will detect the faint presence of a foreign substance he can’t identify. 
+
+The blacksmith will drop to his knees when he sees all the fish.
+A vomit D7 CON check will need to be made to see if any of the party members will throw up due to the smell.
+The lake itself is a decently sized lake (size of the lake in Fort Mountain). To the north is a waterfall that flows into the lake from mountains
+The south will have 2 out flowing rivers as well. (Perception check/ Problem solving) The party can assume one of them is the stream that goes through town. 
+
+The blacksmith goes, Something must be poisoning the water. This must be why we are seeing many different animals going further south. There have been Psy-Bears seen in the Western woods.
+
+The party will need to ask the blacksmith where he heard the sound of weird noises.
+He will point across the lake towards a rocky cliff with a slim shore at the base. 
+
+It will be hard to see from this angle, perception(D10) but if they decide to go around the lake from the west they will see a slit in the rocky face. Looks like some rocks have collapsed in front of it 
+
+However there does not seem to be a way across. If they explore the shore, one of them D12 will find a oddly placed rock with a faded symbol etched into it. Magical symbol for fire. If they use fire, a bridge will appear in the lake. 
+
+A D15 perception check can be made. The party members that roll high enough will see something go underwater near the far end of the shore. The most that they can see is that it looked a deformed fish was sticking it’s head out of the water.
+
+The bridge is very old. Pieces of it fall apart as it is exposed to the sunlight. The party will need to step carefully to cross it.
+Forcing water aside as it lifts up. Marching order is important. When the party walks across it, the bridge will be slippery. As if some sort of slimy substance is on it. For all party members, except for Aerith, they will need to do a balance check (DEX 7). Aerith will need to roll twice.
+
+If anyone falls in, roll percentage dice ask highs or lows for the first person who falls in. As they are climbing out, a tentacle wraps around their leg from a Skum. All the person will feel is something wrapping around their leg. Everyone will need to get together to attempt to pull them out. Strength check of D15 for the person getting out. If they fail, the party will need to succeed on a D15 but with their combined modifiers.
+ After 3 failed attempts, the person will be pulled under. They can attempt to make a few grapple checks to try and break free. Otherwise, they will go unconscious (they will be taken to the Abeloth. They will wake up after the party makes it through the enchanted door)
+
+A successful attempt, everyone will need to make one more balance check. This time only a D7 +DEX
+
+
+Abeloth cave:
+
+As the party enters the cave, they make their way through some rubble. Before them is a decently dark cave, but the sunlight from outside gives them just enough light to see. The party can hear water dripping in the distance. As they journey down the cave, the party sees up ahead a hallway that does not look natural. As they enter the hallway a lantern lights up on the wall lighting their path ahead. As they move further along, another lights up and another. As if the lanterns are reacting to their presence. After about walking down the hallway for about 5 minutes they see an open door up ahead that leads into a room. The room is well lit. 
+
+When the party enters the chamber, it is completely made of stone. There is a closed door directly across from the door they just walked through. In the center is what appears to be a well of sorts. On the 2 walls to the left and right of the doors there are 4 keys. Each with a symbol etched above them
+If the party attempts to  open the door opposite of the  door they walk in, the door behind subtly closes (d20 to notice). If the party moves forward, they will be led down a dark hallway, that eventually turns into a cave. They will see a bright light up ahead. It will turn out to be the entrance of the cave they just came in. 
+
+D12 will determine if someone in the party was paying attention to what the cleric has mentioned about the sorcerer in question. The sorcerer loved control 
+
+In order to beat this riddle, the party will need to open the door across from the other door, then open the door they originally came in with the key of enchantment.
+
+If they use the wrong key, then one of the following will happen:
+Evocation: 4 fire balls 2d8 will be launched (D15 Dex) to dodge
+Conjuration: 2 Flying swords will appear in the center of the room and attack
+Illusion: The door opens. However, they end up back outside again.
+
+As they make their way into a cave, they suddenly hear a voice.
+Who enters my cave? Why are you here?
+The voice will be coming from inside their mind telepathically, so they will not be able to tell where it’s coming from. 
+If they decide to proceed further into the cave the voice will repeat itself, why are you here
+
+As they go down the hallway there are also ancient statues of monsters and various deities that have been worn away due to the elements.
+ D12 will have the party recognize one of the statues belonging to Bane. It is a statue of a man with a long cloak. A gauntlet is on his right hand. Writing has been worn away. 
+The person who recognizes the statues may also know the history of the Bane, and how he has cult followers throughout the kingdom. Bane seeks to control everyone and everything. He is slow and methodical. 
+The seal of bane is seen throughout the hallway as well. A closed hand with green light shining out of it Someone may remember seeing the seal in some places throughout town
+
+There are what looks to be rooms carved out of the walls as well. They will be able to tell that this may have belong to someone long ago but has since been abandoned. They can make out the remains of stone chairs and benches, and a place that looks like it was once a library.
+Eventually, the hallway opens up and a stone circle is seen before them. Problem solving/perception can make it out to be some sort of ritual circle. 
+Problem solving can go further to determine that this may be the sorcerer's lair.  
+
+At the very back of the cave is a deep pool of water, and they will see ripples flowing through the water
+
+The great Abeloth will appear from the depths of the water, but not attack
+
+Depending on what the party says will determine when the conversation reaches this part. 
+Also, the blacksmith is working for the Abeloth. He purposefully brought the party here. However, the Abeloth is disappointed in the blacksmith for not informing him of the half-orc. And will eat the blacksmith due to this. 
+
+I know of no missing Child. I know better than to harm you humanoids. but the missing animals are due to me feeding to regain my strength. My minions have been harvesting the livestock of the town you call Reqrun
+If no one asks, Grog will ask, what do you mean regain your strength
+I have been stuck for 1000 years in a hole under your town. 
+Did he send you? You reek of his stench. Ah, no I don’t think he did. It appears you are just investigating the disappearances. The blacksmith appears to hold you in high regard, as do the rest of the townsfolk. You may be of some use to me. 
+
+The sorcerer who killed my mother, and trapped lives in that town, and I don’t know how he survived but he did. 
+
+At some point in the conversation the Abeloth will probe the parties mind, and determine that they were not sent for the abeloth. The atlas will then retail his tail of what happened to his mother
+The Apple S will start sending pictures to the parties mind and this is what they see
+A large cavern is seen before them, there are columns, stalagmites stalagmites, dripping with water all around. In front of you you see two beings fighting each other with magic. (Problem solving/perception will let the party know they are viewing this battle from the eyes of an abeloth) you realize that this creature is much larger than the one you see before you. And every now and then you see tentacles lash out and hit the two beings fighting. 
+The Abeloth will start talking:
+I am Dronath. My mother lived in the cave under the great lake. She ruled the lake, and all who lived in the city above. A sorcerer that lived in the northern mountains thought he could control my mother, and a wizard sought to destroy her. As the battle before you came to an end the wizard fell. My mother took this opportunity to devour him. The sorcerer was badly wounded and  escaped. 
+My mother needed to regain her strength and foolishly stayed in the caves. She wanted to recount this wizards memories. 
+The party will then see images of hands healing a small child in what looks to be a battlefield 
+You see we can view the memories of all those that we have devoured.  The wizard was a good rman, whose memories were so pure, that my mother decided to go into a deep sleep reliving his memories for the rest of her days. As she was going deep into his memories the sorcerer came back. 
+Images of the cave return, and the party sees the sorcerer in front of them. His face is shadowed.
+He had regained his strength and was ready to fight her again. She refused to be controlled and she dealt a damaging blow severing a limb from the sorcerer. The sorcerer became angry and shot a massive fireball straight towards my mother, collapsing the cave on top of her and crushing her. I thought he too had been crushed but apparently not. 
+
+I was in the depths near the cave exit when the sorcerer attacked. The cave entrance collapsed along with the cave itself, so I was all but trapped. 
+
+It wasn’t until the storms started up here that I was freed. The governor foolishly and without realizing detonated explosions over the cave to make room for his new capital building. By doing that, I was awoken and managed to free myself. I started feeding off the livestock in order to regain my strength and that’s when I found out that the sorcerer still lived. 
+
+There minds are released and they see the Abeloth in front of them again
+
+So, now I will give you this deal. Bring me the sorcerer, and I promise to leave the town alone. I want nothing but revenge. If you fail to deliver him, I will destroy the town to find him. No tricks
+
+If party agrees, the Abeloth says to meet him outside of town where the river first meets the lake. The Abeloth will be waiting there. He also gives them 3 days. 
+
+If you fail to show up, I will destroy the town. 
+
+Abeloth will offer 4 wolves as mounts to ride back to town to shorten their journey. He will recommend getting off of them before getting too close to town. Just in case. 
+
+On wolf back, the party can see the town in the distance as the sun is setting
+
+The wolves will run away as soon as the party dismounts. 
+
+All the outposts will appear empty on their journey home
+
+SKIP Back to town (if party stopped heading north):
+
+ The next morning as they head back to town nothing eventful happens except they see a storm appear out of nowhere in front of them right before they get to the gates. It is a heavy downpour with strong gust of wind. Behind them they can see sunshine and not a single raindrop on the path. Lightning strikes right in front of them, and they can feel the heat from the strike. If the party decides to head towards the gates, they are going to start to need to roll reflex saves to avoid being struck by lightning. If they had towards the sunshine they will need to Dodge some trees from falling. 
+Either way a tree will fall on the path away from town due to the wind. 
+The guards on the gate will need to also roll reflex saves to attempt to open the gate for the party, as well as not get struck by lightning. 
+
+Successful saves for the guards for allow them to open up the gate. Once inside the party should try and find the nearest building to hunker down. They  Well just have to go successful roll to see if someone opens the door. 
+After a few hours pass, the storm disappears and the sun comes out. Heavy debris will be throughout the streets, and a few trees will be seen to have fallen down. 
+
+
+Back in town - after party makes horses run back. 
+
+One of the guards will be manning the gate, slowing their entering. 
+A guard will yell down: “What business do you have entering Reqrun”
+
+A perception check  D10 will determine whether or not the party recognizes the guard from the outpost.
+
+The guard will recognize them, and whisper to a guard next to him. 
+
+When the gate opens, several guards will be standing on the other side of the gate.
+The captain that was at the outpost will be seen walking up. His armor will be badly damaged, and he will also look very ill. Perception D8 will allow the party to recognize spider bites on his neck. 
+
+He will approach the party: I see you have returned. Care to explain what happened to you, and why our horses were missing when we woke up? 
+He will go on to say after the party's response: We were ambushed by spiders around the time a storm appeared over the town on our way back. I lost 2 of my men. We managed to fend them off
+
+Depending on whether or not the captain believes them will cause the following:
+Persuasion: D12 or higher
+Success the guard will let the party go, but keep a close eye on them. 
+Failure: The party will be detained, and taken into questioning. Will also have to pay a fine. As they are being escorted, the governor will approach and demand the guards release them at once. At first the captain will not listen to him, saying “These adventurers are responsible for the loss of 2 of my men. They are now the property of the the king, unless I say otherwise” 
+The governor will get a very dark expression over his face, and then whisper something in the captain’s ear.
+The captain will immediately ask his guard to release them
+After being released the captain will order the guard to go back to their posts, and he will leave as well. 
+The governor will say, Well you 3? Have gotten into some trouble I see? Looks like you picked up a new member. Ah, and hello Frank what did the Misfits drag you into?
+Well anyway it’s not important, please come with me before the captain changes his mind. 
+Frank will ask the party if they still need him because he could use a rest after the past few days.
+
+
+				Inside the town Not arrested
+The party can see fresh damage from the storms. Some debri remains, as well as some homes have their roofs patched up. A strong presence of kings guard will be walking through the town. Looks like they are preparing for something. 
+As they continue into town and get closer to the center, a wanted poster will be placed on a few street corners. It will be a picture of a human female (will look somewhat like Rowan). It will say:
+WANTED: 
+Human mercenary for the murder of Faela Logleragle. The owner of the local Enchantments and More. Speak to Narle who saw the culprit leaving the shop. She may have an accomplice. An elf.
+100 Gold
+
+No one will seem to put together that Rowan is the person in the picture. 
+As they’re walking the governor asks them how they’re quest is going. He will say: I was afraid that you had left town. You have not checked in for several days and no one has heard from you. I was told you were seen approaching from the north. Any news of where my son could be?
+
+If the party tells them about the abolith, his face will get super serious and he will say, did you say Abeloth? There hasn’t been one spotted here in over 800 years. This is not good. Did you speak with this creature and make it out alive?
+
+The governor will offer help to defeat this creature. If the party mentions the wizard, he will say the following:
+I knew there was something odd about the cleric. He came to this town a few years ago without any memory of who he was. He has always been so nice, but I feel that he has always held some dark secret behind that smile. If there is anything I or the town of reqrun can do to help, please let me know. Though I am limited due to the king taking over my town’s guard. Do you believe the cleric has my son?
+
+Do what you must to save this town. I will see about gathering some men to investigate his belongings for clues. Thank you all so much. I promise you all will be greatly rewarded at the end of this. 
+
+The governor will walk off towards the center of town. 
+
+The party can choose to confront the wizard or take a rest at the inn. 
+
+If they choose to confront the wizard, he will be eating when they arrive. 
+He will say: hello welcome back. What’s the journey up north of any use? Hopefully that blacksmith of ours helped you out.
+
+Depending on what the party does, the wizard does not plan on fighting back. He is a pacifist. He also always thought something about his past was a little off, so he was always afraid something like this would happen. If the party does not attack him and takes it willingly, the wizard will be much more willing to help them in upcoming battles. The wizard will swear that he has no idea where the son of the governor is, and he will also mention how he’s never been able to get into that basement. He has no idea who has the key to it, however someone has opened in the past while he’s lived there. He had a table in front of it, because he had no use for it. And one day when he came home the table was slightly moved over as if someone had open and close the door and move the table back. There’s an unbreakable enchantment on the door that prevents me from being able to get in there without the key. 
+
+The party split up and Rowan and Harry went to the governor’s new building, while Aerith went with Grog to gather the city guard to face the Abeloth.
+Harry stabs the governor suspecting him to be the sorcerer. The governor throws harry, and knocks him out. Rowan and the governor head to where Aetith and Grog are to “help”.
+
+Aerith and Grog are shooting at Skum in the water when the governor arrives. The governor tells the guards that the Misfits are actually working for the Abeloth. 
+
+The guards will look confused, but a few will surround the remaining party. He tells the guards to detain them before they face the Abeloth. 
+The Abeloth will surface and say: “Hello sorcerer. I was wondering if we’d ever meet. You were supposed to be dead”
+The governor will say, “And here I thought the same about you.”
+Abeloth: That was my mother that you crushed
+Governor: Ah… Then I will give you the same choice I gave her, Join me, and this town along with all of it’s people will be yours. Fight me, and I will either bend you to my will, or destroy you.
+Abeloth: I’m only here for one thing, and it’s your death. 
+The Abeloth will then turn to party: If you 3 promise to help me, I will keep my promise and not destroy this town. You have failed me once, do not do it again. 
+
+After the battle (hopefully the Abeloth wins) if not the party will be locked away in the basement
+
+After the battle the party asked more information on the governor. The Abeloth stated that the governor was not who he appeared to be, and that his memory is very fuzzy 
+
+As the party head towards the old clerics hutt, the citizens of the city all appear dazed and confused. 
+(If a party member goes to talk to someone, the citizen will be like, who are you. Where am I? Is this a dream?)
+
+As they continue onward, the party will notice a man staring at them. (It’s the man who Rowan lied to in the alley way) he walks up to the party and says, “I recognize you, but from where. Do you know what’s going on? I feel like I’ve been dreaming and I just woke up.”
+
+When the party makes it to the hutt, the basement door will be wide open. Downstairs will be a study. A candle is lit. Before the party is room lined with bookshelves. Each bookshelf appears to contain personal journals. As you look around m, you notice that some journals are fairly new, while others seem to be hundreds of not thousands of years old. They do appear to be ordered chronologically. 
+
+If the party grabs the first book, it will have “
+who am I? Why do I not recognize myself. Someone who seemed to know me, but I not them told me to start writing down my thoughts to try and remember. Do I have some sort of illness. 
+
+As they continue 
+
+I had a dream. I’m starting to remember? I’m not who everyone thinks I am. However, everyone thinks I’m crazy. People are starting to worry. I moved into this hutt. Seemed very familiar. Like someone in my past life lived here
+ 
+They are outside. I don’t feel safe. It was an accident. I think. Oh well. I’m going to keep this place locked to where only I can get in. I just heard glass break. 
+
+The book will have dates from over 1000 years ago written at the top. 
+
+In another book
+
+I am able to remember my past lives by reading these journals. It’s as if the memory is unlocked with each page. Since I started writing these I have been through 3, no 4 lives. Why I am meant to endure this? I need answers. 
+
+Today I attempted to leave the city. I was not able to go south. My body just stopped responding. Going to try the north road tomorrow. 
+
+Was not able to journey on the north road. However I felt a force push me off the road into the woods. It felt like home almost. Something was watching me but did not approach. I will need to investigate another day. A guard dragged me back to town scolding me about his dangerous it is. 
+
+Let’s say that guard is no longer a problem.. he followed me when I went north today. Can’t have someone following me hindering my progress. 
+
+Seems my previous self got a little carried away. No matter. I’m finally getting some answers. 
+
+I believe I’m an exile. Or I’ve been punished for something I did by the god known as Bane. The cursed woods are the way they are due to Bane. A Hag Coven in the woods approached me, and almost threw themselves at my feet. They said they will obey my every command. 
+
+Another guard is following me. I’m going to need to gain some power in the city if I’m to be able to do what I want. 
+
+I ran for governor, and won. However, an Abeloth has taken hold on this town. I fled to the northern lake where I will reside until I can figure out how to control this monster. 
+
+I want power. I crave it. The more memories I recall the more power I need. I wonder if I tried to dethrone a god, and that’s why I’m being punished. 
+
+The plan for the Abeloth did not work… a wizard ruined my plans. Will try again after I’ve healed up. Need to learn to right with my other arm now. 
+
+The Abeloth is dead, so there goes that idea. I’m running for governor again. Doubt I’ll since I have figured out a very powerful spell. My strength seems to grow in each body. 
+
+I have found that I no longer have to worry about keeping journals to remember. I discovered a ritual to where I can transfer my consciousness into another body, and it worked for the most part. Unfortunately it’s easiest if the body for transfer is related to me. Going to need to work on that.
+
+The Altar. Why is it here? It powerful. I may be able to use it to break free of this curse, and gain my memories back. I cannot die no matter how much I try. Now to figure out how to power it. 
+
+Destruction occurs whenever i use the altar. I found that I can manipulate the spell that keeps the northern road safe to power the altar. This may be my answer. 
+
+The road is running out of power. However I had a dream of who can solve this riddle of mine.  Now to lure her here without raising suspicion. 
+
+FLYING CITY: ending 
+Aerith is from the flying city of Stratos
+Stratos has been overrun with mechanized Golems created to enhance the elves lifestyles. 
+Aerith was sent away to protect her from the take over. It was the kings brother who took over the city. His plan is to improve the lives of everyone (by force) with the golems. Think Ultron
+The altar will take them there
+The sorcerer believes the altar will take him to a place to discover immortality. He’s been draining the magic from the road to keep himself alive, but it’s almost used up. So he’s been attempting to activate the portal using magic of the road. 
+A vision of Aerith came to him one night, which is why he made up the story about the missing child. He wanted to gain their trust, but things progressed too quickly. And the discovery of the Abeloth made things difficult. 
+
+When the party is taken there, only Aerith is conscious. (This will allow the party to determine if they want to change characters for the new game). The room will be too dark for even her dark vision to see anything. She does make out a light coming from a door. She goes to open it, and 3 iron golems are on the other side facing away from her. They immediately turn around and knock her out. 
+
+She will awake in a jail cell with a window. If she were to look out the window, she will see that wherever she is , she is floating in the sky 
+
+However, only a person of the bloodline can activate it.
+The party will be tasked with traveling to the center of the city deep within the ground, where they will need to deactivate the golems. There’s a power source located there that controls them. However, it is not an easy path since the path is guarded by creatures and puzzles. The first level that they enter will be the library.
+Next campaign will have a level in a library where the party will have to wear special armor. The armor will prevent poisonous gas from entering the suits that is believed to be in the library. The suits will be enchanted to where the party can communicate with each other. The party will be accompanied by other elves who are there to guide them to the center of the city. As they journey through the library. One of the elves will stop, and go “hey, who turned out the lights”
+Dr Who library episode where the shadows kill people. 
+
+Next chamber will be featuring weeping angels sort of. When touched the person is sent to another plane of existence, that will be similar to the upside down in stranger things. The person in the other plane will need to activate lights that will be shown in the normal plane
+
+Another chamber will be something to do with riddles. For each riddle they fail water will start to rise
+
+Another chamber will have a mirror with a reflection of the same room, but something is slightly different. There will also be a monster that is only visible in the mirror

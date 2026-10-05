@@ -16,6 +16,7 @@ from worldbuilder.models.campaign import Campaign
 from worldbuilder.models.continent import Continent
 from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.player_character import PlayerCharacter
+from worldbuilder.models.world_story import WorldStory
 
 
 def load_world_registry(path: Path) -> WorldRegistry:
@@ -75,5 +76,11 @@ def load_world_registry(path: Path) -> WorldRegistry:
         Lore,
     ):
         registry.add_lore(lore)
+
+    for story in load_yaml_directory(
+        path.parent / "world_stories",
+        WorldStory,
+    ):
+        registry.add_world_story(story)
 
     return registry

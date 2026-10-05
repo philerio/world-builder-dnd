@@ -11,6 +11,7 @@ import {
   IconButton,
   Stack,
   Typography,
+  Alert,
 } from "@mui/material";
 import { useEntityMaps } from "../hooks/useEntityMaps";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -19,11 +20,13 @@ import LocationCityIcon from "@mui/icons-material/LocationCity";
 import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
 import PublicIcon from "@mui/icons-material/Public";
+import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 import EntityForm from "./EntityForm";
 import type { EntityResponse, EntitySummary } from "../types";
 import useEntityIndex from "../hooks/useEntityIndex";
 import useRelatedEntities from "../hooks/useRelatedEntities";
 import { useWorldData } from "../context/WorldDataContext";
+import formatStatusLabel from "../utils/formatStatusLabel";
 
 type EntityDetailDrawerProps = {
   entityId: string | null;
@@ -48,7 +51,6 @@ function EntityDetailDrawer({
 }: EntityDetailDrawerProps) {
   const [data, setData] = useState<EntityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
@@ -59,7 +61,6 @@ function EntityDetailDrawer({
     updateEntity,
   } = useWorldData();
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsEditing(false);
   }, [entityId]);
   const sharedData = entityId ? getSharedEntity(entityId) : undefined;
@@ -98,7 +99,6 @@ function EntityDetailDrawer({
 
     let cancelled = false;
 
-    setLoading(true);
     setError(null);
 
     loadEntity(entityId)
@@ -111,11 +111,6 @@ function EntityDetailDrawer({
         if (!cancelled) {
           setError(err.message);
           setData(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
         }
       });
 
@@ -272,11 +267,51 @@ function EntityContent({
   getEntity: (id: string) => EntitySummary | undefined;
 }) {
   const entity = data.entity;
+  const { createEntity, updateEntity } = useWorldData();
+  const { entities: relatedEntities } = useRelatedEntities(data.id);
+  const [creatingTimelineRecord, setCreatingTimelineRecord] = useState(false);
+  const [timelineRecordError, setTimelineRecordError] = useState<string | null>(null);
+  const [createdTimeline, setCreatedTimeline] = useState<{ sourceId: string; timelineId: string } | null>(null);
+  useEffect(() => {
+    setTimelineRecordError(null);
+  }, [data.id]);
 
   const name = typeof entity.name === "string" ? entity.name : data.id;
   const { maps, loading: mapsLoading } = useEntityMaps(data.id);
   const description =
     typeof entity.description === "string" ? entity.description : null;
+  const existingTimelineId = (createdTimeline?.sourceId === data.id ? createdTimeline.timelineId : null)
+    ?? (typeof entity.timeline_event_id === "string" && entity.timeline_event_id
+    ? entity.timeline_event_id
+    : relatedEntities.find((item) => item.entity_type === "timeline_event")?.id);
+
+  const recordResolvedEvent = async () => {
+    if (data.entity_type !== "world_event" || entity.status !== "resolved") return;
+    setCreatingTimelineRecord(true);
+    setTimelineRecordError(null);
+    try {
+      const timeline = await createEntity("timeline_event", {
+        name,
+        description: description ?? undefined,
+        locations: getStringArray(entity.locations),
+        kingdoms: [],
+        characters: getStringArray(entity.characters),
+        campaigns: getStringArray(entity.campaigns),
+        consequences: getStringArray(entity.consequences),
+        world_stories: getStringArray(entity.world_stories),
+        world_story_threads: Array.isArray(entity.world_story_threads) ? entity.world_story_threads : [],
+        source_world_event_id: data.id,
+        dm_notes: typeof entity.dm_notes === "string" ? entity.dm_notes : undefined,
+      });
+      setCreatedTimeline({ sourceId: data.id, timelineId: timeline.id });
+      await updateEntity(data.id, { ...entity, timeline_event_id: timeline.id });
+      onOpenEntity?.(timeline.id);
+    } catch (error) {
+      setTimelineRecordError(error instanceof Error ? error.message : "Could not record this event in the timeline.");
+    } finally {
+      setCreatingTimelineRecord(false);
+    }
+  };
 
   return (
     <Stack spacing={3}>
@@ -314,6 +349,23 @@ function EntityContent({
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
+      {relatedEntities.length > 0 && (
+        <EntityReferenceListField label="Related records" entityIds={relatedEntities.map((item) => item.id)} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+      )}
+      {data.entity_type === "world_event" && entity.status === "resolved" && (
+        <Box>
+          {existingTimelineId ? (
+            <Button variant="outlined" onClick={() => onOpenEntity?.(existingTimelineId)}>
+              Open timeline record
+            </Button>
+          ) : (
+            <Button variant="outlined" onClick={() => void recordResolvedEvent()} disabled={creatingTimelineRecord}>
+              {creatingTimelineRecord ? "Recording…" : "Record in timeline"}
+            </Button>
+          )}
+          {timelineRecordError && <Alert severity="error" sx={{ mt: 1 }}>{timelineRecordError}</Alert>}
+        </Box>
+      )}
       <EntityMaps maps={maps} loading={mapsLoading} onOpenMap={onOpenMap} />
       {typeof entity.dm_notes === "string" && entity.dm_notes.trim() !== "" && (
         <>
@@ -490,6 +542,15 @@ function EntityDetails({
         />
       );
 
+    case "world_story":
+      return (
+        <WorldStoryDetails
+          entity={data.entity}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      );
+
     case "world_event":
     case "timeline_event":
       return (
@@ -516,6 +577,65 @@ function EntityDetails({
       return null;
   }
 }
+
+function WorldStoryDetails({
+  entity,
+  onOpenEntity,
+  getEntity,
+}: {
+  entity: Record<string, unknown>;
+  onOpenEntity?: (id: string) => void;
+  getEntity: (id: string) => EntitySummary | undefined;
+}) {
+  const threads = Array.isArray(entity.threads)
+    ? entity.threads.filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    : [];
+  const contributions = Array.isArray(entity.contributions)
+    ? entity.contributions.filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    : [];
+  const threadName = (id: string) => String(threads.find((thread) => thread.id === id)?.name ?? id);
+
+  return (
+    <DetailSection title="World Story" icon={<AutoAwesomeMotionIcon />}>
+      <ReferenceField label="Status" value={typeof entity.status === "string" ? formatStatusLabel(entity.status) : undefined} />
+      <TextField value={entity.overview} fallback="No overview recorded." />
+      <EntityReferenceListField label="Campaigns" entityIds={getStringArray(entity.campaigns)} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+      <EntityReferenceListField label="Characters" entityIds={getStringArray(entity.characters)} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+      <EntityReferenceListField label="World Events" entityIds={getStringArray(entity.world_events)} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+      {threads.length > 0 && (
+        <Stack spacing={1}>
+          <Typography variant="caption" color="text.secondary">STORY THREADS</Typography>
+          {threads.map((thread, index) => (
+            <Box key={`${String(thread.id ?? index)}`} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1 }}>
+              <Typography variant="subtitle2">{String(thread.name ?? "Untitled thread")}</Typography>
+              {typeof thread.status === "string" && <Typography variant="caption" color="text.secondary">{formatStatusLabel(thread.status)}</Typography>}
+              {typeof thread.description === "string" && <Typography variant="body2" sx={{ mt: 0.5 }}>{thread.description}</Typography>}
+            </Box>
+          ))}
+        </Stack>
+      )}
+      {contributions.length > 0 && (
+        <Stack spacing={1}>
+          <Typography variant="caption" color="text.secondary">CAMPAIGN CONTRIBUTIONS</Typography>
+          {contributions.map((contribution, index) => {
+            const campaignId = typeof contribution.campaign_id === "string" ? contribution.campaign_id : "";
+            const campaignName = campaignId ? getEntity(campaignId)?.name ?? campaignId : "Campaign";
+            return (
+              <Box key={`${campaignId}-${index}`} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1 }}>
+                {campaignId && <Button size="small" onClick={() => onOpenEntity?.(campaignId)} sx={{ px: 0, minWidth: 0 }}>{campaignName}</Button>}
+                {typeof contribution.connection_status === "string" && <Chip size="small" label={formatStatusLabel(contribution.connection_status)} sx={{ ml: campaignId ? 1 : 0 }} />}
+                <Typography variant="body2" sx={{ mt: 0.75 }}>{String(contribution.summary ?? "")}</Typography>
+                {getStringArray(contribution.thread_ids).map((threadId) => <Chip key={threadId} size="small" label={threadName(threadId)} sx={{ mt: 0.75, mr: 0.5 }} />)}
+                {typeof contribution.dm_notes === "string" && <Typography variant="caption" color="text.secondary">{contribution.dm_notes}</Typography>}
+              </Box>
+            );
+          })}
+        </Stack>
+      )}
+    </DetailSection>
+  );
+}
+
 type ContinentDetailsProps = {
   entity: Record<string, unknown>;
   onOpenEntity?: (id: string) => void;
@@ -970,7 +1090,7 @@ function CampaignDetails({
 
   return (
     <DetailSection title="Campaign" icon={<EventIcon />}>
-      <ReferenceField label="Status" value={entity.status} />
+      <ReferenceField label="Status" value={typeof entity.status === "string" ? formatStatusLabel(entity.status) : undefined} />
 
       <TextField
         value={entity.overview}
@@ -1015,14 +1135,23 @@ type EventDetailsProps = {
 function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
   const locations = getStringArray(entity.locations);
   const campaigns = getStringArray(entity.campaigns);
+  const worldStories = getStringArray(entity.world_stories);
+  const worldStoryThreads = Array.isArray(entity.world_story_threads)
+    ? entity.world_story_threads.filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    : [];
+  const timelineEventId = typeof entity.timeline_event_id === "string" ? entity.timeline_event_id : "";
+  const sourceWorldEventId = typeof entity.source_world_event_id === "string" ? entity.source_world_event_id : "";
   const characters = getStringArray(entity.characters);
   const kingdoms = getStringArray(entity.kingdoms);
+  const storySources = Array.isArray(entity.story_sources)
+    ? entity.story_sources.filter((source): source is Record<string, unknown> => typeof source === "object" && source !== null)
+    : [];
 
   return (
     <DetailSection title="Event" icon={<EventIcon />}>
       <ReferenceField label="Type" value={entity.type} />
 
-      <ReferenceField label="Status" value={entity.status} />
+      <ReferenceField label="Status" value={typeof entity.status === "string" ? formatStatusLabel(entity.status) : undefined} />
 
       <EntityReferenceListField
         label="Locations"
@@ -1037,6 +1166,46 @@ function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
+
+      <EntityReferenceListField
+        label="World Stories"
+        entityIds={worldStories}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+
+      {worldStoryThreads.length > 0 && (
+        <Stack spacing={0.5}>
+          <Typography variant="caption" color="text.secondary">WORLD STORY THREADS</Typography>
+          {worldStoryThreads.map((link, index) => {
+            const storyId = typeof link.world_story_id === "string" ? link.world_story_id : "";
+            const threadId = typeof link.thread_id === "string" ? link.thread_id : "";
+            const storyName = storyId ? getEntity(storyId)?.name ?? storyId : "World Story";
+            return <Button key={`${storyId}-${threadId}-${index}`} size="small" onClick={() => storyId && onOpenEntity?.(storyId)} sx={{ alignSelf: "flex-start", px: 0, minWidth: 0 }}>{storyName} · {threadId}</Button>;
+          })}
+        </Stack>
+      )}
+
+      <EntityReferenceListField label="Timeline record" entityIds={timelineEventId ? [timelineEventId] : []} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+      <EntityReferenceListField label="Source World Event" entityIds={sourceWorldEventId ? [sourceWorldEventId] : []} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+
+      {storySources.map((source, index) => {
+        const campaignId = typeof source.campaign_id === "string" ? source.campaign_id : "";
+        const campaignName = campaignId ? getEntity(campaignId)?.name ?? campaignId : "Campaign";
+        const consequenceDescriptions = getStringArray(source.consequence_descriptions);
+        const actionDescriptions = getStringArray(source.player_action_descriptions);
+        return (
+          <Box key={`${campaignId}-${String(source.consequence_id ?? index)}`}>
+            <Typography variant="caption" color="text.secondary">Created from campaign story</Typography>
+            <Stack spacing={0.25} sx={{ mt: 0.25 }}>
+              {campaignId && <Button size="small" onClick={() => onOpenEntity?.(campaignId)} sx={{ alignSelf: "flex-start", px: 0, minWidth: 0 }}>{campaignName}</Button>}
+              {typeof source.plot_point_name === "string" && <Typography variant="body2">Plot point: {source.plot_point_name}</Typography>}
+              {consequenceDescriptions.map((description, consequenceIndex) => <Typography key={`${consequenceIndex}-${description}`} variant="body2">Consequence: {description}</Typography>)}
+              {actionDescriptions.map((description, actionIndex) => <Typography key={`${actionIndex}-${description}`} variant="caption" color="text.secondary">Action: {description}</Typography>)}
+            </Stack>
+          </Box>
+        );
+      })}
 
       <EntityReferenceListField
         label="Characters"

@@ -1,0 +1,1328 @@
+{
+  "worlds": [
+    {
+      "id": "elligaesia-world",
+      "name": "Elligaesia",
+      "description": "A high fantasy world containing the continents of Elligaesia and Rendelle.\n",
+      "created": "2026-09-13T18:46:37.735488",
+      "updated": "2026-09-13T18:46:37.735494",
+      "version": "1.0",
+      "author": "Patrick",
+      "continents": [
+        "elligaesia",
+        "rendelle"
+      ]
+    }
+  ],
+  "continents": [
+    {
+      "id": "elligaesia",
+      "name": "Elligaesia",
+      "description": "A continent within the world of Elligaesia.\n",
+      "created": "2026-09-13T18:46:37.739119",
+      "updated": "2026-09-13T18:46:37.739122",
+      "details": null,
+      "dm_notes": null
+    },
+    {
+      "id": "rendelle",
+      "name": "Rendelle",
+      "description": "A continent within the world of Elligaesia.\n",
+      "created": "2026-09-13T18:46:37.739769",
+      "updated": "2026-09-13T18:46:37.739772",
+      "details": null,
+      "dm_notes": null
+    }
+  ],
+  "kingdoms": [],
+  "regions": [],
+  "cities": [
+    {
+      "id": "reqrun",
+      "name": "Reqrun",
+      "description": "A town in Batik that was liberated after the Aboleth Crisis and later became the site of the White Rabbit Incident.\n",
+      "created": "2026-09-13T18:46:37.736839",
+      "updated": "2026-09-13T18:46:37.736842",
+      "kingdom": null,
+      "region": null,
+      "population": null,
+      "details": null,
+      "dm_notes": null
+    },
+    {
+      "id": "stratos",
+      "name": "Stratos",
+      "description": "A High Elf city that was believed to have been lost. Stratos is suspended in the sky and is ruled by Dorith, whose control is enforced through mechanized golems.\n",
+      "created": "2026-09-13T18:46:37.738411",
+      "updated": "2026-09-13T18:46:37.738414",
+      "kingdom": null,
+      "region": null,
+      "population": null,
+      "details": "Stratos was originally a ground-based city ruled by High Elves. The city's ruling class remains High Elf, and Aerith is technically a High Elf. The city is currently suspended in the sky by ancient technology. The same system is connected to the mechanized golems that control the city.\n",
+      "dm_notes": "Aerick used ancient Dwarmar technology to lift Stratos into the sky. The technology sustaining Stratos is slowly draining life from the surrounding land, causing the desert to gradually expand.\nDorith, Aerith's maternal uncle, currently rules Stratos and controls the city through the mechanized golems.\nThe eventual solution is to disable the mechanism powering the city. Doing so will cause the golems to lose power, free the people trapped under Dorith's control, stop the desert from expanding, and cause Stratos to descend back toward the ground.\n"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "aerick",
+      "name": "Aerick",
+      "description": "A High Elf of Stratos and Aerith's father. Aerick was responsible for lifting Stratos into the sky using ancient Dwarmar technology.\n",
+      "created": "2026-09-13T18:46:37.746505",
+      "updated": "2026-09-13T18:46:37.746511",
+      "role": "Former Ruler of Stratos",
+      "city": "stratos",
+      "region": null,
+      "kingdom": null,
+      "details": "Aerick used ancient Dwarmar technology to lift Stratos from the ground and trap the city in the sky. He and Aerith disappeared approximately 400 years ago, and Stratos was subsequently believed to have been lost.\n",
+      "events": [],
+      "relationships": [
+        {
+          "character": "elorith",
+          "relationship": "spouse",
+          "notes": null
+        },
+        {
+          "character": "aerith",
+          "relationship": "daughter",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "id": "alatar",
+      "name": "Alatar",
+      "description": "A human wizard and teacher in Reqrun who specializes in healing magic and carries the scars of an ancient conflict he cannot initially remember.\n",
+      "created": "2026-09-13T18:46:37.749491",
+      "updated": "2026-09-13T18:46:37.749494",
+      "role": "school-wizard",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Alatar is an old human wizard who appears younger than his age. He is reserved, pacifistic, and complacent, and he teaches healing magic at the School of Reqrun.\nAlatar arrived in Reqrun years ago with no memory of his previous life. The people of the town welcomed him, and he eventually became a teacher.\nAlatar is missing an arm. As his memories begin to return, he recalls an ancient conflict with a powerful sorcerer. He believes he once had a vendetta against that sorcerer.\nThe Necromancer erased Alatar's memories in order to make him a scapegoat for the Necromancer's actions. The Necromancer had also been missing an arm and removed Alatar's arm as part of the deception.\nAlatar has researched the strange events surrounding Reqrun, including Aerith's history, the corruption affecting Harry, and the ancient sorcerer connected to the town's past.\n",
+      "events": [
+        {
+          "description": "Alatar arrived in Reqrun with no memory of his previous life and was welcomed by the townspeople.\n",
+          "campaign": null,
+          "location": "reqrun"
+        },
+        {
+          "description": "Alatar became a teacher of healing magic at the School of Reqrun.\n",
+          "campaign": null,
+          "location": "reqrun"
+        },
+        {
+          "description": "Alatar began researching the strange events surrounding Reqrun, including Aerith's history and the corruption affecting Harry.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Alatar revealed that the ancient sorcerer had experimented on creatures and was connected to the events surrounding Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Alatar's forgotten history was revealed: the Necromancer had erased his memories and removed his arm in order to use him as a scapegoat.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "albert",
+      "name": "Albert",
+      "description": "A Storm Mule associated with green lightning who wanders the land protecting those in need.\n",
+      "created": "2026-09-13T18:46:37.750805",
+      "updated": "2026-09-13T18:46:37.750808",
+      "role": "storm-mule",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Albert is a Storm Mule associated with green lightning. He does not maintain a permanent residence and instead wanders the land, protecting those in need. After the White Rabbit Incident, Albert became known as the Guardian of the Roads. This character will appear periodically in the story, providing assistance to the main characters during their journey.",
+      "events": [
+        "Struck by lightning and was given powers.",
+        "Ran away from his owner after a failed charisma check."
+      ],
+      "relationships": []
+    },
+    {
+      "id": "ann",
+      "name": "Ann",
+      "description": "A human farmer in Reqrun who is judgmental, untrusting, and convinced that she is better than those around her.\n",
+      "created": "2026-09-13T18:46:37.752382",
+      "updated": "2026-09-13T18:46:37.752384",
+      "role": "farmer",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Ann is a human farmer who lives on the north side of Reqrun, with the river to the west of her farm.\nShe is judgmental and untrusting, and can be difficult to deal with. Ann considers herself better than others in town.\nDuring the disappearances, four of Ann's cattle went missing. She believes that Orivom stole them to use for beard oil.\n",
+      "events": [
+        {
+          "description": "Four of Ann's cattle went missing during the disappearances around Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Ann accused Orivom of stealing her cattle to use for beard oil.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "bane",
+      "name": "Bane",
+      "description": "An ancient god who interfered with mortals and was punished by the other gods. Rather than destroy him, the gods imprisoned Bane within the body of a mortal sorcerer, stripping away much of his memory.\n",
+      "created": "2026-09-13T18:46:37.753042",
+      "updated": "2026-09-13T18:46:37.753044",
+      "role": "God",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Bane's influence continues to affect the world long after his banishment. His connection to the Power Sources and the ancient Dwarmar civilization remains a major mystery.",
+      "events": [],
+      "relationships": []
+    },
+    {
+      "id": "bill",
+      "name": "William \"Bill\"",
+      "description": "A farmer who recovered his family's greatsword and now protects Reqrun.\n",
+      "created": "2026-09-13T18:46:37.753792",
+      "updated": "2026-09-13T18:46:37.753794",
+      "role": "farmer",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "William \"Bill\" is a farmer who recovered his family's greatsword and now protects Reqrun.",
+      "events": [],
+      "relationships": []
+    },
+    {
+      "id": "dobby",
+      "name": "Dobby",
+      "description": "An elven farmer who owns the largest farm southwest of Reqrun.\n",
+      "created": "2026-09-13T18:46:37.755137",
+      "updated": "2026-09-13T18:46:37.755139",
+      "role": "farmer",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Dobby is an elf who operates the largest farm southwest of Reqrun. His farm produces grains and raises pigs, cows, and chickens.\nDuring the investigation into the missing animals, Dobby is away in Crossdale. Fredrick is caring for the farm in his absence.\nNone of Dobby's animals are reported missing during the events surrounding Reqrun.\n",
+      "events": [
+        {
+          "description": "Dobby left Reqrun for Crossdale, leaving Fredrick to care for his farm.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "The party investigated Dobby's farm and found that none of his animals were missing.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "dorith",
+      "name": "Dorith",
+      "description": "A High Elf and the current ruler of Stratos. Dorith is Aerith's uncle and maintains control of the city through its mechanized golems.\n",
+      "created": "2026-09-13T18:46:37.756271",
+      "updated": "2026-09-13T18:46:37.756274",
+      "role": "Ruler of Stratos",
+      "city": "stratos",
+      "region": null,
+      "kingdom": null,
+      "details": "Dorith is a member of Stratos's High Elf ruling class and currently controls the city through the mechanized golems.\n",
+      "events": [],
+      "relationships": [
+        {
+          "character": "elorith",
+          "relationship": "sister",
+          "notes": null
+        },
+        {
+          "character": "aerith",
+          "relationship": "maternal niece",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "id": "dronath",
+      "name": "Dronath",
+      "description": "An ancient Aboleth awakened beneath the northern lake after being trapped underground for centuries.\n",
+      "created": "2026-09-13T18:46:37.759110",
+      "updated": "2026-09-13T18:46:37.759114",
+      "role": "aboleth",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Dronath is the son of the ancient Aboleth that once ruled the lake and surrounding city. During the ancient conflict between his mother, the wizard, and the sorcerer, Dronath became trapped underground.\nDronath was eventually freed when storms and construction connected to Reqrun disturbed the area. After awakening, he began feeding on livestock to regain his strength and discovered that the sorcerer responsible for the ancient conflict was still alive.\nDronath seeks revenge against the sorcerer. He wants the sorcerer dead and initially uses the crisis surrounding Reqrun to force the party into confronting him.\nDronath remembers that the ancient wizard was consumed by his mother and that the wizard's memories became part of her. The sorcerer later damaged her memory during their conflict.\n",
+      "events": [
+        {
+          "description": "Dronath was awakened after storms and construction connected to Reqrun disturbed the area surrounding the northern lake.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Dronath began feeding on livestock to restore his strength.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Dronath discovered that the ancient sorcerer was still alive.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Dronath revealed the ancient history connecting his mother, the wizard, and the sorcerer.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Dronath demanded that the sorcerer be brought to him and offered to leave Reqrun alone if the party helped accomplish it.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Dronath confronted the sorcerer and sought his death.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "elorith",
+      "name": "Elorith",
+      "description": "A High Elf of Stratos and Aerith's mother. She was transformed into one of the mechanized golems that now serve Dorith.\n",
+      "created": "2026-09-13T18:46:37.762287",
+      "updated": "2026-09-13T18:46:37.762293",
+      "role": "Former member of the High Elf ruling class",
+      "city": "stratos",
+      "region": null,
+      "kingdom": null,
+      "details": "Aerith's mother was a member of the High Elf ruling class of Stratos before being transformed into a mechanized golem.\nHer identity is hidden behind her transformed state, leaving her family and the people of Stratos unaware of her true condition.\nElorith is the sister of Dorith and the mother of Aerith. She was among the people transformed into a mechanized golem during Dorith's control of Stratos.\n",
+      "events": [
+        "stratos-revealed"
+      ],
+      "relationships": [
+        {
+          "character": "aerick",
+          "relationship": "spouse",
+          "notes": null
+        },
+        {
+          "character": "aerith",
+          "relationship": "daughter",
+          "notes": null
+        },
+        {
+          "character": "dorith",
+          "relationship": "sister",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "id": "emmyth-carfir",
+      "name": "Emmyth Carfir",
+      "description": "An elven teacher and wizard in Reqrun who teaches healing magic and knows that the town's history may not be what it seems.\n",
+      "created": "2026-09-13T18:46:37.763760",
+      "updated": "2026-09-13T18:46:37.763763",
+      "role": "teacher/wizard",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Emmyth Carfir is an elf who runs a school of magic in Reqrun and teaches healing. Some people in town blame the wizard associated with Reqrun's history for past events.\nEmmyth believes the great wizard was not who people believed him to be. He directs the party toward the library to learn more about Reqrun's history and the ancient events surrounding the town.\n",
+      "events": [
+        {
+          "description": "Emmyth spoke with the party about the disappearances and suggested that the history of the great wizard was not what people believed.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Emmyth directed the party to the library to investigate Reqrun's history.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "faela-logleragle",
+      "name": "Faela Logleragle",
+      "description": "A woman who was placed under the sorcerer's magical influence during the events surrounding Reqrun.\n",
+      "created": "2026-09-13T18:46:37.765493",
+      "updated": "2026-09-13T18:46:37.765496",
+      "role": "unknown",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Faela Logleragle was under the sorcerer's mind control and was forced to act against her will. Those subjected to the sorcerer's control displayed a faint green glow in their eyes.\nWhile under the sorcerer's influence, Faela attacked Rowan. Rowan killed Faela while defending herself.\n",
+      "events": [
+        {
+          "description": "Faela Logleragle was placed under the sorcerer's mind control.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "While under the sorcerer's control, Faela attacked Rowan.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Rowan killed Faela while defending herself.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "frank",
+      "name": "Frank",
+      "description": "The blacksmith of Reqrun, a reserved and honest craftsman who was secretly forced to serve the sorcerer through mind control.\n",
+      "created": "2026-09-13T18:46:37.767596",
+      "updated": "2026-09-13T18:46:37.767599",
+      "role": "blacksmith",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Frank is a reserved, honest, and monotone blacksmith who has worked in Reqrun for years. He is well respected by the townspeople and produces equipment for local farmers as well as supplies for the town barracks.\nFrank regularly traveled to the northern lake to fish and spend time alone. During these trips he heard strange noises coming from across the lake.\nDuring the events surrounding the disappearances, Frank was placed under the sorcerer's magical influence. He was forced to assist with the sorcerer's plans against his will.\nThose under the sorcerer's control could be recognized by a faint green glow in their eyes.\nA farmer saw Frank sneaking around on the evening that Jackson was supposedly taken. Frank claimed that he had been fishing at the northern lake.\n",
+      "events": [
+        {
+          "description": "Frank continued working as the blacksmith of Reqrun while secretly being subjected to the sorcerer's mind control.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Frank was seen sneaking around on the evening that Jackson was supposedly taken and claimed that he had been fishing at the northern lake.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Frank was forced by the sorcerer's mind control to assist with the events surrounding the disappearances.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Frank's connection to the sorcerer's mind control was revealed.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "fredrick",
+      "name": "Fredrick",
+      "description": "A human farmer in Reqrun who is friendly but cautious and shy, and who became entangled in the Aboleth's influence.\n",
+      "created": "2026-09-13T18:46:37.769172",
+      "updated": "2026-09-13T18:46:37.769174",
+      "role": "farmer",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Fredrick is a human farmer who lives south and east of the river in Reqrun. He grows grain and raises pigs.\nFredrick is friendly, but cautious and shy. When questioned about the missing animals, he initially claims that only one of his pigs is missing. A closer examination reveals that many more animals, including dogs, have disappeared.\nFredrick was under the influence of the Aboleth during the events surrounding the disappearances. When pressed, the Aboleth's influence could cause him to become violent.\n",
+      "events": [
+        {
+          "description": "Fredrick reported that one of his pigs was missing during the investigation into the disappearances.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "The party discovered that many more animals, including dogs, had disappeared from Fredrick's farm.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Fredrick was revealed to be under the influence of the Aboleth.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "narle",
+      "name": "Narle",
+      "description": "A witness to the confrontation between Rowan and Faela during the events surrounding Reqrun.\n",
+      "created": "2026-09-13T18:46:37.770377",
+      "updated": "2026-09-13T18:46:37.770379",
+      "role": "unknown",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Narle witnessed Rowan escaping with Moose after Rowan killed Faela Logleragle.\nRowan's explanation and Charisma convinced Narle that Rowan was not responsible for what had happened to Faela.\n",
+      "events": [
+        {
+          "description": "Narle witnessed Rowan escaping with Moose after the confrontation with Faela Logleragle.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Rowan convinced Narle that she was not responsible for Faela's death.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "nedda",
+      "name": "Nedda",
+      "description": "The halfling innkeeper of The Mandolin in Reqrun, who runs her family's inn with a stern attitude and little tolerance for nonsense.\n",
+      "created": "2026-09-13T18:46:37.772097",
+      "updated": "2026-09-13T18:46:37.772099",
+      "role": "innkeeper",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Nedda is the owner of The Mandolin and inherited the inn from her father, who died during an Orc raid many years ago. Her family has operated the inn for generations.\nNedda is stern, judgmental, and welcoming, but does not tolerate nonsense. She is distrustful of Orcs, Elves, and Wizards.\nNedda employs two dwarf barbarians at the inn. If an argument becomes serious, she can whistle for them to arm themselves.\nNedda is the only halfling living in Reqrun. Her family originally came from Haffinton, though she has not returned there since she was a little girl.\nNedda knows the story of the Mad Halfling and the mysterious ring. Her family used the story to frighten her into eating her vegetables when she was young.\nNedda's inn suffered damage during a storm, including a tree falling onto the building. She is saving money to repair the leaky roof.\n",
+      "events": [
+        {
+          "description": "Nedda's inn served as a gathering place for the party while they investigated the disappearances in Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "One of Nedda's dwarf employees came under the sorcerer's mind control and attacked the party.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Nedda provided the party with information about the farmers and the disappearances occurring around Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "orivom",
+      "name": "Orivom",
+      "description": "A friendly dwarf farmer in Reqrun who loves fishing, good company, and cooking.\n",
+      "created": "2026-09-13T18:46:37.773891",
+      "updated": "2026-09-13T18:46:37.773894",
+      "role": "farmer",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Orivom is a friendly dwarf farmer who lives on the south side of Reqrun near the river. He enjoys fishing and spending time with other people, and is known as a great cook.\nOrivom is somewhat superstitious and is knowledgeable about the dangers surrounding the area. He warns travelers about the mountain lake north of Reqrun.\nOrivom has helped defend the town from Orcs in the past.\nDuring the disappearances, four of Orivom's prize goats went missing.\n",
+      "events": [
+        {
+          "description": "Four of Orivom's prize goats went missing during the events surrounding the disappearances.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Orivom warned the party about the mountain lake and the dangers surrounding it.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Orivom helped defend Reqrun from Orcs.\n",
+          "campaign": null,
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "pattrice",
+      "name": "Pattrice",
+      "description": "The respected human governor of Reqrun who secretly possesses a much darker identity.\n",
+      "created": "2026-09-13T18:46:37.776411",
+      "updated": "2026-09-13T18:46:37.776416",
+      "role": "governor",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Pattrice has governed Reqrun for many years and is well respected by its citizens. He helped lead the town into a period of prosperity, with strong trade, food, and housing for its people.\nBeneath this public identity, Pattrice is the sorcerer and necromancer responsible for manipulating events in Reqrun. He possesses the ability to transfer his consciousness into other bodies, allowing him to survive beyond a normal lifetime. He sought to use the ancient altar beneath the town to restore his strength and continue his existence.\nPattrice fabricated the story of his missing son in order to gain the party's trust and draw them into the events surrounding the Aboleth.\n",
+      "events": [
+        {
+          "description": "Pattrice employed the adventurers to investigate the disappearances occurring around Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Pattrice intervened when the party was detained by the town guards, appearing to help them while secretly manipulating the situation.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Pattrice's identity as the sorcerer behind the events in Reqrun was revealed.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Pattrice confronted Dronath and attempted to force the Aboleth to submit to his will.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "shana",
+      "name": "Shana",
+      "description": "The librarian of Reqrun who knows the town's history and the strange events surrounding the disappearances.\n",
+      "created": "2026-09-13T18:46:37.778624",
+      "updated": "2026-09-13T18:46:37.778629",
+      "role": "librarian",
+      "city": "reqrun",
+      "region": null,
+      "kingdom": null,
+      "details": "Shana is the librarian of Reqrun. She knows about the recent disappearances and has knowledge of the town's history, including the ancient conflict involving the wizard, the necromancer, and the Aboleth.\n",
+      "events": [
+        {
+          "description": "Shana provided the party with information about the disappearances and the history of Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Shana directed the party toward information concerning the ancient wizard and the Aboleth.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    }
+  ],
+  "player_characters": [
+    {
+      "id": "aerith",
+      "name": "Aerith",
+      "description": "A wood elf mercenary from West Wood who has always suspected that she does not truly belong to the family that raised her.\n",
+      "created": "2026-09-13T18:46:37.781253",
+      "updated": "2026-09-13T18:46:37.781256",
+      "role": "player-character",
+      "city": "stratos",
+      "region": null,
+      "kingdom": null,
+      "details": "Aerith was adopted by the rulers of West Wood and grew up in the great elven city. She never felt that she belonged there and has only fragmented memories of her early childhood, including bright flashes and a faint blue glow.\nAerith is unusually tall for a wood elf and was naturally gifted with a bow from a young age. Her adoptive parents eventually gave her a bow bearing ancient lettering, telling her that it belonged to her true family.\nAfter leaving the forest as soon as she was old enough, Aerith became a mercenary.\nAerith is technically a High Elf and is connected to the High Elf ruling class of Stratos.\nStratos was believed to have been lost before Aerith's connection to the city was revealed.\n",
+      "events": [
+        "stratos-revealed",
+        {
+          "description": "Aerith was adopted by the rulers of West Wood.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Aerith left the forest and became a mercenary.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Aerith joined the mercenary group that would eventually investigate the events in Reqrun.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": [
+        {
+          "character": "aerick",
+          "relationship": "father",
+          "notes": null
+        },
+        {
+          "character": "elorith",
+          "relationship": "mother",
+          "notes": null
+        },
+        {
+          "character": "dorith",
+          "relationship": "maternal uncle",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "id": "harry",
+      "name": "Harry",
+      "description": "A halfling scholar and aspiring fighter whose mysterious ring has gradually corrupted him while granting him strange abilities.\n",
+      "created": "2026-09-13T18:46:37.783790",
+      "updated": "2026-09-13T18:46:37.783792",
+      "role": "player-character",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Harry is a halfling from Haffinton and a scholar of animal studies. He discovered a mysterious ring after seeing a flash from the sky. Over the years, the ring corrupted him and he became known as the \"Mad Halfling,\" although Harry believes that he is completely sane.\nHarry originally wanted to become a fighter and spent time boxing in Larton, where he lost repeatedly. He eventually convinced a wizard to enchant a pair of gloves for him. The gloves grant him great strength but cannot be removed.\nThe mysterious ring fits over the gloves. After obtaining both, Harry began winning his fights and was eventually recruited by the mercenary leader.\n",
+      "events": [
+        {
+          "description": "Harry discovered the mysterious ring after seeing a flash from the sky.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "The ring gradually corrupted Harry, leading to his reputation as the \"Mad Halfling.\"\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Harry attempted to become a fighter and repeatedly lost boxing matches in Larton.\n",
+          "campaign": null,
+          "location": "larton"
+        },
+        {
+          "description": "Harry convinced a wizard to enchant his gloves, giving him great strength. The gloves cannot be removed.\n",
+          "campaign": null,
+          "location": "larton"
+        },
+        {
+          "description": "Harry began winning fights after combining the enchanted gloves with the mysterious ring.\n",
+          "campaign": null,
+          "location": "larton"
+        },
+        {
+          "description": "Harry was recruited by the mercenary leader.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Harry's ring became an important factor in encounters with the sorcerer and creatures influenced by him.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "id": "rowan",
+      "name": "Rowan",
+      "description": "A human swordswoman and mercenary driven by the loss of her father and her desire for revenge against the Orcs responsible.\n",
+      "created": "2026-09-13T18:46:37.786833",
+      "updated": "2026-09-13T18:46:37.786836",
+      "role": "player-character",
+      "city": null,
+      "region": null,
+      "kingdom": null,
+      "details": "Rowan was raised in Baldon by her father, a blacksmith who taught her how to fight with a sword.\nWhile exploring one day, Rowan discovered Moose trapped in a cage and freed him. Through their connection, Rowan gained the ability to communicate with animals.\nWhile returning from a supply trip, Rowan and her family were ambushed by Orcs. Her father was killed by a stab in the back, and Rowan killed the remaining Orcs. She swore revenge against the Orcs responsible and eventually joined a mercenary group, where she met Aerith.\n",
+      "events": [
+        {
+          "description": "Rowan's father taught her how to fight with a sword.\n",
+          "campaign": null,
+          "location": "bald-on"
+        },
+        {
+          "description": "Rowan freed Moose from a cage and formed a bond with him, gaining the ability to communicate with animals.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Rowan's family was ambushed by Orcs while returning from a supply trip. Her father was killed, and Rowan killed the remaining Orcs.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Rowan swore revenge against the Orcs responsible for her father's death and joined a mercenary group.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Rowan met Aerith after joining the mercenaries.\n",
+          "campaign": null,
+          "location": null
+        },
+        {
+          "description": "Faela Logleragle, while under the sorcerer's mind control, attacked Rowan. Rowan killed Faela while defending herself.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        },
+        {
+          "description": "Rowan escaped with Moose after the confrontation with Faela. Narle witnessed Rowan leaving with Moose and was convinced that Rowan was not responsible for Faela's death.\n",
+          "campaign": "the-unforgiven",
+          "location": "reqrun"
+        }
+      ],
+      "relationships": []
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "the-unforgiven",
+      "name": "The Unforgiven",
+      "description": "The campaign centered on the strange disappearances in Reqrun, the awakening of an ancient Aboleth, and the discovery of the sorcerer's true identity.\n",
+      "created": "2026-09-13T18:46:37.788356",
+      "updated": "2026-09-13T18:46:37.788359",
+      "overview": "Animals begin disappearing from Reqrun at night, followed by the disappearance of the governor's supposed son. The party investigates the town, follows clues toward the northern lake, and becomes entangled in an ancient conflict involving an Aboleth and a mysterious sorcerer.\n",
+      "status": "completed",
+      "locations": [
+        "reqrun"
+      ],
+      "npcs": [
+        "pattrice",
+        "nedda",
+        "frank",
+        "shana",
+        "emmyth-carfir",
+        "dronath"
+      ],
+      "player_characters": [],
+      "outcome": "The party uncovered the truth behind the disappearances and confronted the sorcerer and the Aboleth.\n",
+      "consequences": "Reqrun was liberated from the sorcerer's influence. The events surrounding the Aboleth and the sorcerer's past revealed deeper forces affecting the world.\n",
+      "story": null
+    },
+    {
+      "id": "white-rabbit-incident",
+      "name": "White Rabbit Incident",
+      "description": "A strange magical incident during a festival in Reqrun resulted in a superpowered White Rabbit and an army of empowered rabbits.\n",
+      "created": "2026-09-13T18:46:37.789418",
+      "updated": "2026-09-13T18:46:37.789421",
+      "overview": "During a festival in Reqrun, a magical fountain is struck by emerald lightning. The resulting magic grants extraordinary abilities to a White Rabbit, who creates an army of empowered rabbits. The party ultimately defeats the White Rabbit using the Holy Hand Grenade.\n",
+      "status": "completed",
+      "locations": [
+        "reqrun"
+      ],
+      "npcs": [
+        "bill",
+        "albert"
+      ],
+      "player_characters": [],
+      "outcome": "The White Rabbit was defeated using the Holy Hand Grenade.\n",
+      "consequences": "Bill became known as the Defender of Reqrun, while Albert became known as the Guardian of the Roads. The Holy Hand Grenade was returned to the church in Reqrun.\n",
+      "story": null
+    }
+  ],
+  "world_events": [
+    {
+      "id": "batik-trade-route-collapse",
+      "name": "Collapse of the Batik Trade Route",
+      "description": "The ancient trade road through Batik has been overtaken by monsters after the protective magic surrounding the road began to fail.\n",
+      "created": "2026-09-13T18:46:37.791165",
+      "updated": "2026-09-13T18:46:37.791168",
+      "type": "consequence",
+      "status": "ongoing",
+      "locations": [
+        "batik"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "caused_by": [
+        "the-unforgiven"
+      ],
+      "true_causes": [
+        "pattrice"
+      ],
+      "hidden_connections": [
+        "bane",
+        "dwarmar"
+      ],
+      "dm_notes": "The protective magic surrounding the road was drained by Pattrice during The Unforgiven. He used the stolen magic to power his enchantment and sustain himself.\nThe collapse of the trade route is one of the larger consequences of The Unforgiven and contributes to the political instability affecting Elligaesia.\nThe deeper connection is to Bane and the remnants of Dwarmar technology. Bane's growing influence is contributing to the reactivation and increasing importance of ancient Dwarmar machines and power sources.\n",
+      "consequences": [
+        "Trade along the southern route has been disrupted.",
+        "Monsters now threaten travelers using the road.",
+        "The disruption contributes to growing trade tensions across Elligaesia."
+      ],
+      "potential_campaign": true
+    },
+    {
+      "id": "elligaesia-trade-dispute",
+      "name": "Elligaesia Trade Dispute",
+      "description": "The political leaders of Elligaesia are unable to agree on how to address the growing trade problems affecting the land.\n",
+      "created": "2026-09-13T18:46:37.792591",
+      "updated": "2026-09-13T18:46:37.792595",
+      "type": "political",
+      "status": "ongoing",
+      "locations": [],
+      "campaigns": [],
+      "caused_by": [
+        "batik-trade-route-collapse"
+      ],
+      "true_causes": [],
+      "hidden_connections": [
+        "bane",
+        "dwarmar"
+      ],
+      "dm_notes": "The immediate cause of the trade dispute is the collapse of the Batik trade route. The deeper consequences of the crisis may eventually connect to Bane's growing influence and the reemergence of ancient Dwarmar technology.\n",
+      "consequences": [
+        "Trade tensions have increased between the country-states.",
+        "Regions are having to compensate for the loss of goods from Batik."
+      ],
+      "potential_campaign": true
+    },
+    {
+      "id": "serenno-civil-war-event",
+      "name": "Serenno Civil War Event",
+      "description": "Serenno has descended into civil war following the assassination of its ruling family.\n",
+      "created": "2026-09-13T18:46:37.794840",
+      "updated": "2026-09-13T18:46:37.794845",
+      "type": "conflict",
+      "status": "ongoing",
+      "locations": [
+        "serenno"
+      ],
+      "campaigns": [],
+      "caused_by": [],
+      "true_causes": [],
+      "hidden_connections": [],
+      "dm_notes": "The assassination of Serenno's ruling family is the immediate cause of the civil war. The deeper circumstances surrounding the assassination have not yet been established.\n",
+      "consequences": [],
+      "potential_campaign": true
+    },
+    {
+      "id": "stratos-golem-conversion",
+      "name": "Stratos Golem Conversion",
+      "description": "The people of Stratos are transformed into mechanized golems under Dorith's control.\n",
+      "created": "2026-09-13T18:46:37.796780",
+      "updated": "2026-09-13T18:46:37.796783",
+      "type": "crisis",
+      "status": "ongoing",
+      "locations": [
+        "stratos"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "caused_by": [
+        "dorith",
+        "stratos-dwarmar-mechanism"
+      ],
+      "true_causes": [
+        "dorith"
+      ],
+      "hidden_connections": [
+        "stratos-dwarmar-mechanism",
+        "dwarmar",
+        "bane"
+      ],
+      "dm_notes": "The mechanized golems are powered by the same ancient Dwarmar technology that keeps Stratos suspended in the sky.\nThe golems are not simply constructs. They contain people who have been imprisoned or transformed into mechanized bodies.\nElorith, Aerith's mother, is one of these golems.\nThe deeper relationship between the golems, the technology keeping Stratos airborne, and the draining of life from the surrounding land should be revealed during the Stratos storyline.\n",
+      "consequences": [
+        "Many people of Stratos are imprisoned within mechanized bodies.",
+        "Dorith gains control over the city through the golems.",
+        "Elorith is among those transformed into a mechanized golem.",
+        "The true nature of the golems is hidden from the outside world."
+      ],
+      "potential_campaign": false
+    },
+    {
+      "id": "teth-umbara-island-conflict-event",
+      "name": "Teth-Umbara Island Conflict Event",
+      "description": "Teth and Umbara are engaged in a conflict over a mysterious island that recently appeared in the ocean.\n",
+      "created": "2026-09-13T18:46:37.797827",
+      "updated": "2026-09-13T18:46:37.797830",
+      "type": "conflict",
+      "status": "ongoing",
+      "locations": [
+        "teth",
+        "umbara"
+      ],
+      "campaigns": [],
+      "caused_by": [],
+      "true_causes": [],
+      "hidden_connections": [],
+      "dm_notes": "The true origin of the island and the reason it appeared are currently unknown.\n",
+      "consequences": [],
+      "potential_campaign": true
+    },
+    {
+      "id": "zeffo-undead-sightings",
+      "name": "Zeffo Undead Sightings",
+      "description": "Rumors have spread of undead appearing in the woods of Zeffo.\n",
+      "created": "2026-09-13T18:46:37.798788",
+      "updated": "2026-09-13T18:46:37.798790",
+      "type": "supernatural",
+      "status": "rumored",
+      "locations": [
+        "zeffo"
+      ],
+      "campaigns": [],
+      "caused_by": [],
+      "true_causes": [],
+      "hidden_connections": [],
+      "dm_notes": "The reports of undead are currently only rumors. The actual cause and nature of the undead activity have not yet been established.\n",
+      "consequences": [],
+      "potential_campaign": true
+    }
+  ],
+  "timeline_events": [
+    {
+      "id": "bane-banished",
+      "name": "Bane Is Banished",
+      "description": "Bane, a powerful sorcerer, interferes with mortals and is banished from the world.\n",
+      "created": "2026-09-13T18:46:37.800071",
+      "updated": "2026-09-13T18:46:37.800074",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [],
+      "kingdoms": [],
+      "characters": [
+        "bane"
+      ],
+      "campaigns": [],
+      "consequences": [
+        "Bane is separated from the mortal world.",
+        "Bane's influence continues to affect the world long after his banishment."
+      ],
+      "dm_notes": "Bane's relationship with the Dwarmar and the Power Sources remains an important unresolved part of ancient history. The full circumstances surrounding his banishment have not yet been established."
+    },
+    {
+      "id": "bane-banishment",
+      "name": "Bane Is Banished",
+      "description": "Bane, a powerful god, interferes with mortals and is punished by the other gods. Rather than destroy him, the gods imprison him within the body of a sorcerer, stripping away much of his memory of his former existence.\n",
+      "created": "2026-09-13T18:46:37.801480",
+      "updated": "2026-09-13T18:46:37.801482",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [],
+      "kingdoms": [],
+      "characters": [
+        "bane"
+      ],
+      "campaigns": [],
+      "consequences": [
+        "Bane is separated from his divine existence.",
+        "Bane becomes trapped within a mortal sorcerer's body.",
+        "Much of Bane's memory of his former existence is lost.",
+        "Bane must regain power and influence through the mortal world."
+      ],
+      "dm_notes": "Bane was originally a god. His interference with mortals became severe enough that the other gods determined he had to be contained.\nThey could not simply destroy him, so they imprisoned his essence within the body of a sorcerer. This was the only method they had to contain him.\nBane initially has little memory of who he was before the imprisonment. His connection to the Dwarmar and the Power Sources may be part of how he gradually rediscovers his identity and begins rebuilding his influence.\nThe corruption caused by the Power Sources may be intentional. Rather than conquering the realm directly, Bane can use corrupted sources and their users to spread his influence throughout the world."
+    },
+    {
+      "id": "creation-of-the-power-sources",
+      "name": "Creation of the Power Sources",
+      "description": "The Dwarmar come into possession of the Power Sources, powerful magical artifacts that become central to their civilization. Ancient knowledge hints that Bane was involved in their origin or acquisition.\n",
+      "created": "2026-09-13T18:46:37.802690",
+      "updated": "2026-09-13T18:46:37.802692",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [],
+      "kingdoms": [],
+      "characters": [
+        "bane"
+      ],
+      "campaigns": [],
+      "consequences": [
+        "The Power Sources become central to Dwarmar civilization.",
+        "Those who use the Power Sources are gradually corrupted."
+      ],
+      "dm_notes": "The exact origin of the Power Sources remains unclear, but there are hints that Bane was responsible for introducing or providing them to the Dwarmar.\nThe Power Sources slowly corrupt those who use them. This corruption may have been part of Bane's larger plan: rather than simply controlling individuals directly, the Power Sources allow his influence to spread through those who depend upon their power.\nThe true relationship between Bane, the Dwarmar, and the Power Sources should remain partially hidden until revealed through the campaign."
+    },
+    {
+      "id": "dronath-awakened",
+      "name": "Dronath Is Awakened",
+      "description": "Construction of Reqrun's new capitol disturbs the ancient chamber beneath the town and awakens Dronath, an Aboleth that has been trapped beneath Reqrun for centuries.\n",
+      "created": "2026-09-13T18:46:37.804177",
+      "updated": "2026-09-13T18:46:37.804179",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "reqrun"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "dronath"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "Dronath begins feeding on livestock to regain his strength.",
+        "The river becomes poisoned.",
+        "Animals begin disappearing from Reqrun.",
+        "Dronath begins searching for the sorcerer who previously imprisoned him."
+      ],
+      "dm_notes": "Dronath was trapped beneath Reqrun for approximately 1000 years. Construction and explosions associated with the new capitol disturb his prison and allow him to become active again.\nDronath discovers that the sorcerer responsible for his imprisonment is still alive and living in Reqrun.\nDronath does not initially seek to destroy the town. His primary goals are to regain his strength and find the sorcerer."
+    },
+    {
+      "id": "fall-of-the-dwarmar",
+      "name": "Fall of the Dwarmar",
+      "description": "The Dwarmar civilization falls after the Power Sources and the forces surrounding them bring about its eventual destruction.\n",
+      "created": "2026-09-13T18:46:37.805599",
+      "updated": "2026-09-13T18:46:37.805602",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [],
+      "consequences": [
+        "The Dwarmar civilization falls.",
+        "The Power Sources become remnants of a lost civilization.",
+        "Ancient Dwarmar knowledge and technology become lost or forgotten."
+      ],
+      "dm_notes": "The exact circumstances of the Dwarmar's fall have not yet been fully established.\nThe Power Sources and their connection to Bane are important to understanding the downfall of the Dwarmar. Their tendency to slowly corrupt those who use them may have contributed to the civilization's eventual destruction.\nAncient Dwarmar machines and technology may still exist and can become relevant to the modern world as they are rediscovered or reactivated."
+    },
+    {
+      "id": "reqrun-animal-disappearances",
+      "name": "Reqrun Animal Disappearances",
+      "description": "Animals begin disappearing from Reqrun at night, creating fear and uncertainty throughout the town.\n",
+      "created": "2026-09-13T18:46:37.806769",
+      "updated": "2026-09-13T18:46:37.806772",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "reqrun"
+      ],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "Livestock and other animals are lost from the town.",
+        "The disappearances lead to an investigation into what is happening around Reqrun."
+      ],
+      "dm_notes": "The disappearances are caused by Dronath, the Aboleth beneath Reqrun. His minions harvest livestock so that he can feed and regain his strength after being trapped for centuries.\nThe disappearances are the initial mystery that draws the Misfits into the events of The Unforgiven."
+    },
+    {
+      "id": "reqrun-crisis-resolved",
+      "name": "Reqrun Crisis Resolved",
+      "description": "The crisis in Reqrun comes to an end with the defeat of the Aboleth and the sorcerer responsible for the events surrounding the town.\n",
+      "created": "2026-09-13T18:46:37.810736",
+      "updated": "2026-09-13T18:46:37.810740",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "reqrun"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "pattrice",
+        "dronath"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "The Aboleth threat to Reqrun is ended.",
+        "The sorcerer's control over the town comes to an end.",
+        "The protective magic of the northern road has been severely depleted.",
+        "The political and supernatural consequences of the crisis continue beyond Reqrun."
+      ],
+      "dm_notes": "The exact circumstances of the final confrontation should be recorded here once established in the campaign's final events.\nPattrice had been draining the magic protecting the northern road in order to power his enchantment and sustain himself. The loss of this magic becomes one of the lasting consequences of the crisis.\nThe resolution of the crisis also leads into the events surrounding the altar and Stratos/Aerith."
+    },
+    {
+      "id": "rise-of-the-dwarmar",
+      "name": "Rise of the Dwarmar",
+      "description": "The Dwarmar rise to prominence in the ancient history of Elligaesia.\n",
+      "created": "2026-09-13T18:46:37.812618",
+      "updated": "2026-09-13T18:46:37.812622",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [],
+      "consequences": [],
+      "dm_notes": null
+    },
+    {
+      "id": "separation-of-northern-and-southern-kingdoms",
+      "name": "Separation of the Northern and Southern Kingdoms",
+      "description": "The gods divide the world into northern and southern regions as punishment for the mortals who allowed Bane to spread his influence. The Mountain of Bane becomes the great geographic boundary between the two regions. The mountains are filled with monsters, making passage between the regions extremely dangerous.\n",
+      "created": "2026-09-13T18:46:37.814508",
+      "updated": "2026-09-13T18:46:37.814510",
+      "era": "Ancient Era",
+      "date": null,
+      "locations": [
+        "mountain-of-bane"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "bane"
+      ],
+      "campaigns": [],
+      "consequences": [
+        "The northern and southern regions are separated.",
+        "The Mountain of Bane becomes a major geographic boundary.",
+        "Monsters inhabit the mountain range.",
+        "Travel between the northern and southern regions becomes extremely difficult.",
+        "Powerful wizards eventually create a pass through the mountains.",
+        "The road through the pass is enchanted to protect travelers from the monsters."
+      ],
+      "dm_notes": "The gods deliberately separated the world as punishment for the mortal civilizations that allowed Bane to spread his influence.\nThe Mountain of Bane is the great mountain range separating the northern and southern regions. The mountains are filled with monsters, making them effectively impassable.\nPowerful wizards eventually cut a pass through the mountain range and created an enchanted road connecting the regions. The magic surrounding the road protected travelers from the monsters of the mountains.\nThe road eventually became an important trade route through Batik, including the route passing through Reqrun.\nDuring The Unforgiven, Pattrice drains the protective magic from the road to power his enchantment and sustain himself. As that magic disappears, the monsters are no longer restricted by the road's protections and can roam freely across it.\nThe loss of the road's magic threatens to effectively close the only reliable passage through the Mountain of Bane."
+    },
+    {
+      "id": "serenno-civil-war",
+      "name": "Serenno Civil War",
+      "description": "Serenno descends into civil war following the assassination of its ruling family.\n",
+      "created": "2026-09-13T18:46:37.815600",
+      "updated": "2026-09-13T18:46:37.815602",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "serenno"
+      ],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [],
+      "consequences": [
+        "Serenno is divided by civil war.",
+        "The political stability of Serenno is disrupted.",
+        "Trade and cooperation within Elligaesia are further strained."
+      ],
+      "dm_notes": "The assassination of Serenno's ruling family is the established immediate cause of the civil war.\nThe identity of those responsible and any deeper connection to Bane, the Dwarmar, or the Power Sources have not yet been established."
+    },
+    {
+      "id": "sorcerer-identity-revealed",
+      "name": "The Sorcerer's Identity Is Revealed",
+      "description": "The truth behind the governor of Reqrun is revealed when Dronath recognizes him as the sorcerer responsible for imprisoning him.\n",
+      "created": "2026-09-13T18:46:37.816966",
+      "updated": "2026-09-13T18:46:37.816968",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "reqrun"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "pattrice",
+        "dronath"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "Pattrice's true nature is exposed.",
+        "The conflict between Pattrice and Dronath comes into the open.",
+        "The Misfits become directly involved in the confrontation between them."
+      ],
+      "dm_notes": "Pattrice is the sorcerer who previously fought Dronath and imprisoned him. He had taken control of the town while concealing his true identity.\nPattrice's identity is revealed when Dronath addresses him as the sorcerer.\nPattrice attempts to turn the town's guards against the Misfits by claiming that they are working for Dronath.\nThe deeper truth about Pattrice's multiple lives, his ability to transfer his consciousness between bodies, and his connection to Bane should remain separate from the public-facing history until those revelations are appropriate."
+    },
+    {
+      "id": "stratos-returns",
+      "name": "Stratos Returns",
+      "description": "The mechanism sustaining Stratos in the sky is disabled, causing the city's mechanized golems to lose power and Stratos to descend back toward the ground.\n",
+      "created": "2026-09-13T18:46:37.818497",
+      "updated": "2026-09-13T18:46:37.818499",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "stratos"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "aerith",
+        "dorith"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "The mechanized golems lose their source of power.",
+        "The people of Stratos are freed from the golems' control.",
+        "The technology stops draining life from the surrounding land.",
+        "The expansion of the desert stops.",
+        "Stratos descends back toward the ground.",
+        "The lost city of Stratos is restored to the wider world."
+      ],
+      "dm_notes": "The mechanism keeping Stratos airborne and powering the golems is part of the same Dwarmar technological system.\nDisabling the mechanism is intended to end Dorith's control over the city.\nThe mechanism's destruction also ends the process that has been draining life from the surrounding land and causing the desert to expand.\nStratos was believed to have been lost before its existence was rediscovered.\nThe exact circumstances of the mechanism's destruction and the final confrontation with Dorith should be established when the campaign reaches this point.\n"
+    },
+    {
+      "id": "stratos-revealed",
+      "name": "Stratos Revealed",
+      "description": "The party discovers that Stratos, a city believed to have been lost, still exists as a floating city in the sky.\n",
+      "created": "2026-09-13T18:46:37.819887",
+      "updated": "2026-09-13T18:46:37.819889",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "stratos"
+      ],
+      "kingdoms": [],
+      "characters": [
+        "aerith",
+        "dorith"
+      ],
+      "campaigns": [
+        "the-unforgiven"
+      ],
+      "consequences": [
+        "The existence of Stratos becomes known to the party.",
+        "Aerith's connection to Stratos becomes central to the continuing story.",
+        "The party encounters the mechanized golems controlling the city."
+      ],
+      "dm_notes": "Stratos was originally a ground-based High Elf city.\nAerith is technically a High Elf and is connected to the ruling class of Stratos.\nAerith's father used ancient Dwarmar technology to lift the city into the sky. This is not initially known to the players.\nThe technology keeping Stratos airborne is also responsible for powering the mechanized golems.\nThe same technology is slowly draining life from the surrounding land, causing the desert to expand.\nDorith, Aerith's uncle, currently rules Stratos and controls the city through the golems.\nThe full nature of the technology and its eventual connection to the fate of Stratos should be revealed gradually.\n"
+    },
+    {
+      "id": "teth-umbara-island-conflict",
+      "name": "Teth and Umbara Contest the Mysterious Island",
+      "description": "Teth and Umbara enter into conflict over a mysterious island that has appeared in the ocean.\n",
+      "created": "2026-09-13T18:46:37.820970",
+      "updated": "2026-09-13T18:46:37.820972",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "teth",
+        "umbara"
+      ],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [],
+      "consequences": [
+        "Teth and Umbara are drawn into conflict.",
+        "Relations between the two nations deteriorate.",
+        "The mysterious island becomes a potential source of future conflict."
+      ],
+      "dm_notes": "The origin of the island and the reason it appeared have not yet been established."
+    },
+    {
+      "id": "zeffo-undead-appear",
+      "name": "Undead Appear in Zeffo",
+      "description": "Reports emerge of undead appearing in the woods of Zeffo.\n",
+      "created": "2026-09-13T18:46:37.821907",
+      "updated": "2026-09-13T18:46:37.821909",
+      "era": "Modern Era",
+      "date": null,
+      "locations": [
+        "zeffo"
+      ],
+      "kingdoms": [],
+      "characters": [],
+      "campaigns": [],
+      "consequences": [
+        "Undead activity is reported in Zeffo.",
+        "The reports create concern about the safety of the region."
+      ],
+      "dm_notes": "The true cause of the undead activity has not yet been established."
+    }
+  ],
+  "lores": [
+    {
+      "id": "high-elf-naming-convention-lore",
+      "name": "High Elf Naming Convention Lore",
+      "description": "High Elf children are traditionally given names formed from variations of their parents' names.\n",
+      "created": "2026-09-13T18:46:37.822799",
+      "updated": "2026-09-13T18:46:37.822801",
+      "player_knowledge": null,
+      "details": "A child's name incorporates elements of both parents' names. In Aerith's family, the \"Aer\" portion comes from her father Aerick, while the \"ith\" portion comes from her mother Elorith.\nThe same maternal naming element appears in Dorith, who is Elorith's brother. This reflects a family naming tradition in which parts of names can be inherited through the maternal and paternal lines.\n",
+      "dm_notes": "The naming convention can be used to identify family relationships or ancestry among High Elves. The exact rules governing which portions of a parent's name are inherited are not yet fully established.\n"
+    },
+    {
+      "id": "stratos-dwarmar-mechanism-lore",
+      "name": "Stratos Dwarmar Mechanism Lore",
+      "description": "An ancient Dwarmar technological system responsible for keeping Stratos suspended in the sky and powering the mechanized golems that control the city.\n",
+      "created": "2026-09-13T18:46:37.823762",
+      "updated": "2026-09-13T18:46:37.823764",
+      "player_knowledge": "The party knows that ancient technology is responsible for keeping Stratos suspended in the sky and that the city's mechanized golems are connected to the same source of power.\n",
+      "details": "The mechanism sustains Stratos in the sky while also providing power to the city's mechanized golems. The system requires a continual source of energy and is slowly draining life from the surrounding land. This has caused the desert around Stratos to gradually expand.\n",
+      "dm_notes": "Aerick used ancient Dwarmar technology to lift Stratos into the sky. The mechanism keeping the city airborne and the mechanism powering the golems are part of the same system.\nThe technology is slowly draining the land of life to power itself, causing the desert to expand.\nDisabling the mechanism is the intended solution to the Stratos conflict. When it is disabled, the golems will lose power, the people trapped under Dorith's control will be freed, the desert will stop expanding, and Stratos will descend back toward the ground.\nThe full capabilities and origin of the technology should be revealed gradually.\n"
+    },
+    {
+      "id": "stratos-ruling-family-lore",
+      "name": "Stratos Ruling Family Lore",
+      "description": "The High Elf family at the center of Stratos's history and its connection to Aerith.\n",
+      "created": "2026-09-13T18:46:37.825019",
+      "updated": "2026-09-13T18:46:37.825024",
+      "player_knowledge": null,
+      "details": "Aerick and Elorith are the parents of Aerith.\nElorith is the sister of Dorith, making Dorith Aerith's maternal uncle.\nAerick was responsible for lifting Stratos into the sky using ancient Dwarmar technology.\nDorith currently rules Stratos and controls the city through its mechanized golems.\n",
+      "dm_notes": "The family relationships are important to the Stratos storyline. Elorith's transformation into a mechanized golem and Dorith's control of the city directly affect Aerith's personal connection to the conflict.\nThe full history and motivations of the family should be revealed through the campaign.\n"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "stratos-dwarmar-mechanism",
+      "name": "Stratos Dwarmar Mechanism",
+      "description": "An ancient Dwarmar mechanism responsible for keeping Stratos suspended in the sky and powering the mechanized golems.\n",
+      "created": "2026-09-13T18:46:37.740740",
+      "updated": "2026-09-13T18:46:37.740743",
+      "details": "The mechanism uses ancient Dwarmar technology. Its operation is connected to the suspension of Stratos and the power sustaining the mechanized golems. Disabling the mechanism is expected to cause Stratos to return to the ground and deprive the golems of their power.\n",
+      "dm_notes": "The mechanism is part of the same ancient technology responsible for the growing desert and the mechanized golems."
+    }
+  ],
+  "maps": []
+}

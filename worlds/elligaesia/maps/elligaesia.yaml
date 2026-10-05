@@ -15,57 +15,12 @@ details: '
   '
 dm_notes: null
 markers:
-- id: northern-road-marker
-  entity_id: northern-road
-  type: point
-  points: []
-  x: 78.74344199256824
-  y: 58.47118759651333
-  label: Northern Road
-  linked_map: null
-  visible: true
-  dm_only: false
-  tooltip: Northern Road
-  hide_label: true
-  icon: null
-  fill_color: null
-  fill_opacity: 0.2
-- id: afaddd8e-c545-47a4-bb47-d674a91a702a
-  entity_id: ''
-  type: point
-  points: []
-  x: 43.27485380116959
-  y: 29.058639466840052
-  label: The Shifting Sands
-  linked_map: null
-  visible: true
-  dm_only: false
-  tooltip: null
-  hide_label: true
-  icon: null
-  fill_color: null
-  fill_opacity: 0.2
-- id: sho-dar-map-marker
-  entity_id: shodar
-  type: point
-  points: []
-  x: 57.6674552456445
-  y: 92.42805312296815
-  label: Sho Dar
-  linked_map: null
-  visible: true
-  dm_only: false
-  tooltip: City of Sho Dar
-  hide_label: false
-  icon: null
-  fill_color: null
-  fill_opacity: 0.2
 - id: reqrun-map-marker
   entity_id: reqrun
   type: point
   points: []
-  x: 82.85176238121345
-  y: 66.97190065222692
+  x: 82.6171875
+  y: 66.14583333333334
   label: Reqrun
   linked_map: reqrun-map
   visible: true
@@ -109,8 +64,8 @@ markers:
   entity_id: colkirk
   type: point
   points: []
-  x: 36.0
-  y: 75.8
+  x: 36.42578125
+  y: 75.12977051109617
   label: Colkirk
   linked_map: null
   visible: true
@@ -139,8 +94,8 @@ markers:
   entity_id: larton
   type: point
   points: []
-  x: 31.570375081856117
-  y: 69.28110903974317
+  x: 31.73828125
+  y: 69.06855945976238
   label: Larton
   linked_map: null
   visible: true
@@ -169,8 +124,8 @@ markers:
   entity_id: serenno-city
   type: point
   points: []
-  x: 20.27264273422271
-  y: 42.884808802015606
+  x: 20.411794355534045
+  y: 42.189758116341196
   label: Serenno
   linked_map: null
   visible: true
@@ -184,8 +139,8 @@ markers:
   entity_id: ''
   type: point
   points: []
-  x: 19.173754121360258
-  y: 35.351689491222366
+  x: 19.3359375
+  y: 34.96060472496025
   label: Umbara
   linked_map: null
   visible: true
@@ -270,38 +225,20 @@ markers:
   icon: city
   fill_color: null
   fill_opacity: 0.2
-- id: 705efc50-6e2f-4bb5-99f6-8d1363436d00
-  entity_id: northern-road
-  type: path
-  points:
-  - - 76.25557525813231
-    - 47.75317605047139
-  - - 77.89425617537769
-    - 49.47865341047627
-  - - 77.72609420687134
-    - 50.95881547667426
-  - - 78.93595853511817
-    - 53.24770526861183
-  - - 78.93595853511817
-    - 54.760980296041936
-  - - 78.66535744471857
-    - 58.062990186118334
-  - - 79.01914719252558
-    - 60.06640371017555
-  - - 80.52866677326999
-    - 62.01778258086801
-  - - 81.67207059804458
-    - 63.97886040616873
-  x: 77.77777777777779
-  y: 52.01052503250976
-  label: Northern Road
+- id: sho-dar-map-marker
+  entity_id: shodar
+  type: point
+  points: []
+  x: 57.6674552456445
+  y: 92.42805312296815
+  label: Sho Dar
   linked_map: null
   visible: true
   dm_only: false
-  tooltip: north road
+  tooltip: City of Sho Dar
   hide_label: false
-  icon: location
-  fill_color: '#cb5d98'
+  icon: city
+  fill_color: null
   fill_opacity: 0.2
 - id: 8187c2a9-abeb-463a-823f-17f791371aa7
   entity_id: ''
@@ -325,8 +262,8 @@ markers:
     - 62.38456497886866
   - - 53.26821250989888
     - 62.442933319448954
-  - - 50.74776989674707
-    - 61.83969326540149
+  - - 51.17101599343946
+    - 62.241865219320225
   - - 49.556537353039715
     - 60.96886683192457
   - - 47.51647592288012
@@ -337,8 +274,8 @@ markers:
     - 56.84009646253251
   - - 49.03671532346491
     - 55.50592668034785
-  x: 53.11890838206628
-  y: 58.252397594278285
+  x: 50.62255859375
+  y: 54.97789717774707
   label: Desert of Golem
   linked_map: null
   visible: true
@@ -347,6 +284,122 @@ markers:
   hide_label: true
   icon: location
   fill_color: '#e1c560'
+  fill_opacity: 0.2
+- id: 705efc50-6e2f-4bb5-99f6-8d1363436d00
+  entity_id: northern-road
+  type: path
+  points:
+  - - 76.00087667801621
+    - 46.092537748069454
+  - - 75.97653253465487
+    - 46.58194805624006
+  - - 76.12284710603244
+    - 47.298307816384664
+  - - 76.58688409715487
+    - 47.83536965209328
+  - - 77.2218694680192
+    - 48.14437674730297
+  - - 77.24626355362243
+    - 48.974954034862606
+  - - 77.41679241853244
+    - 49.25113569581345
+  - - 77.49022438655162
+    - 49.934872063687635
+  - - 77.14810788120352
+    - 50.47214782620751
+  - - 78.00303956043216
+    - 51.090589870249445
+  - - 77.85638538180973
+    - 51.44849639939625
+  - - 78.27163420172567
+    - 52.148520693759934
+  - - 78.10024633025515
+    - 53.108616994927694
+  - - 78.36896083292919
+    - 53.857314911594365
+  - - 78.54004905094838
+    - 54.247999335708606
+  - - 78.68642355301621
+    - 54.70372850237527
+  - - 78.9795421297419
+    - 55.58272983095806
+  - - 79.02834028939677
+    - 56.250285235748365
+  - - 79.02835027784513
+    - 56.96658557177873
+  - - 78.95519798638054
+    - 57.95891306606291
+  - - 78.5886774069808
+    - 59.147266149718
+  - - 79.41910512767404
+    - 59.879426558615336
+  - - 79.24789704827433
+    - 60.49797556606291
+  - - 79.80928064749703
+    - 61.31133791095086
+  - - 80.51767800948379
+    - 61.80007078421909
+  - - 80.73728471060323
+    - 62.451278838405635
+  - - 81.54306863448379
+    - 63.265164115498905
+  - - 81.90927957198379
+    - 64.09513527709328
+  x: 76.00087667801621
+  y: 46.092537748069454
+  label: Northern Road
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: Northern Road
+  hide_label: true
+  icon: location
+  fill_color: '#352114'
+  fill_opacity: 0.1
+- id: ba2a2831-b9eb-410c-8114-84e7242a2ded
+  entity_id: ''
+  type: area
+  points:
+  - - 39.62716680557271
+    - 27.05986726345399
+  - - 41.581090881442975
+    - 25.887136556208905
+  - - 42.899989632655405
+    - 25.821984850250846
+  - - 44.31658458766135
+    - 25.887136556208905
+  - - 46.221660561634856
+    - 26.408350203873386
+  - - 47.9801922299181
+    - 27.255322381328174
+  - - 48.61521755457594
+    - 28.558356500489378
+  - - 47.833647924227826
+    - 29.796238913692523
+  - - 46.56359727491216
+    - 31.001545473916643
+  - - 45.049306116112696
+    - 31.131848885832763
+  - - 43.29077444782946
+    - 31.55533497456015
+  - - 41.874179492823515
+    - 31.55533497456015
+  - - 40.359888334024056
+    - 30.93639376795858
+  - - 38.40596425815379
+    - 29.30760111900707
+  - - 38.308268054360276
+    - 28.721235765384527
+  x: 39.62716680557271
+  y: 27.05986726345399
+  label: The Shifting Sands
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: The Shifting Sands
+  hide_label: true
+  icon: null
+  fill_color: '#dd9e55'
   fill_opacity: 0.2
 linked_map: null
 entity_id: null

@@ -14,6 +14,7 @@ import type { TimelineEvent, WorldData, WorldEvent } from "../types";
 
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
+import formatStatusLabel from "../utils/formatStatusLabel";
 
 type EventCardProps = {
   name: string;
@@ -158,7 +159,7 @@ function EventSection({
             }
 
             if ("status" in event && event.status) {
-              chips.push(event.status);
+              chips.push(formatStatusLabel(event.status));
             }
 
             return (

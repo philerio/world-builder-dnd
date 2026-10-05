@@ -34,12 +34,16 @@ import WorldPage from "./pages/WorldPage";
 import LocationsPage from "./pages/LocationsPage";
 import CharactersPage from "./pages/CharactersPage";
 import CampaignsPage from "./pages/CampaignsPage";
+import CampaignDashboardPage from "./pages/CampaignDashboardPage";
 import EventsPage from "./pages/EventsPage";
 import LorePage from "./pages/LorePage";
 import ArtifactsPage from "./pages/ArtifactsPage";
 import MapsPage from "./pages/MapsPage";
 import ExploreIcon from "@mui/icons-material/Explore";
 import CreateEntityDrawer from "./components/CreateEntityDrawer";
+import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
+import WorldStoriesPage from "./pages/WorldStoriesPage";
+import WorldStoryDashboardPage from "./pages/WorldStoryDashboardPage";
 
 const drawerWidth = 240;
 type SidebarProps = {
@@ -80,6 +84,11 @@ const navigation = [
     path: "/events",
     label: "Events",
     icon: <EventIcon />,
+  },
+  {
+    path: "/world-stories",
+    label: "World Story",
+    icon: <AutoAwesomeMotionIcon />,
   },
   {
     path: "/lore",
@@ -279,6 +288,10 @@ function Dashboard({ data }: { data: WorldData }) {
       count: data.world_events.length,
     },
     {
+      name: "World Stories",
+      count: data.world_stories.length,
+    },
+    {
       name: "Timeline Events",
       count: data.timeline_events.length,
     },
@@ -457,7 +470,13 @@ function AppContent() {
           <Route path="/locations" element={<LocationsPage />} />
           <Route path="/characters" element={<CharactersPage data={data} />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route
+            path="/campaigns/:campaignId"
+            element={<CampaignDashboardPage />}
+          />
           <Route path="/events" element={<EventsPage />} />
+          <Route path="/world-stories" element={<WorldStoriesPage />} />
+          <Route path="/world-stories/:storyId" element={<WorldStoryDashboardPage />} />
           <Route path="/lore" element={<LorePage />} />
           <Route path="/artifacts" element={<ArtifactsPage />} />
           <Route path="/maps" element={<MapsPage />} />

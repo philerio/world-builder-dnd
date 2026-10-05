@@ -382,6 +382,29 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         referenceType: "campaign",
       },
       {
+        name: "world_stories",
+        label: "World Stories",
+        type: "referenceArray",
+        referenceType: "world_story",
+      },
+      {
+        name: "world_story_threads",
+        label: "World Story Threads",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "thread_id",
+        fields: [
+          { name: "world_story_id", label: "World Story", type: "reference", referenceType: "world_story" },
+          { name: "thread_id", label: "Thread ID", type: "text" },
+        ],
+      },
+      {
+        name: "timeline_event_id",
+        label: "Timeline Record",
+        type: "reference",
+        referenceType: "timeline_event",
+      },
+      {
         name: "caused_by",
         label: "Caused By",
         type: "referenceArray",
@@ -410,6 +433,68 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "potential_campaign",
         label: "Potential Campaign",
         type: "boolean",
+      },
+    ],
+
+    world_story: [
+      ...COMMON_FIELDS,
+      {
+        name: "overview",
+        label: "Overview",
+        type: "textarea",
+      },
+      {
+        name: "status",
+        label: "Status",
+        type: "text",
+      },
+      {
+        name: "characters",
+        label: "Characters",
+        type: "referenceArray",
+      },
+      {
+        name: "campaigns",
+        label: "Campaigns",
+        type: "referenceArray",
+        referenceType: "campaign",
+      },
+      {
+        name: "world_events",
+        label: "World Events",
+        type: "referenceArray",
+        referenceType: "world_event",
+      },
+      {
+        name: "threads",
+        label: "Story Threads",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "name",
+        fields: [
+          { name: "id", label: "Thread ID", type: "text", generated: true },
+          { name: "name", label: "Name", type: "text" },
+          { name: "description", label: "Description", type: "textarea" },
+          { name: "status", label: "Status", type: "text" },
+          { name: "campaigns", label: "Campaigns", type: "referenceArray", referenceType: "campaign" },
+          { name: "world_events", label: "World Events", type: "referenceArray", referenceType: "world_event" },
+        ],
+      },
+      {
+        name: "contributions",
+        label: "Campaign Contributions",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "summary",
+        fields: [
+          { name: "campaign_id", label: "Campaign", type: "reference", referenceType: "campaign" },
+          { name: "source_type", label: "Source Type", type: "text" },
+          { name: "source_id", label: "Source ID", type: "text" },
+          { name: "summary", label: "Campaign Outcome or Consequence", type: "textarea" },
+          { name: "connection_status", label: "Connection", type: "text" },
+          { name: "dm_notes", label: "DM Notes", type: "textarea" },
+          { name: "thread_ids", label: "Story Thread IDs", type: "array" },
+        ],
       },
     ],
 
@@ -447,6 +532,29 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         label: "Campaigns",
         type: "referenceArray",
         referenceType: "campaign",
+      },
+      {
+        name: "world_stories",
+        label: "World Stories",
+        type: "referenceArray",
+        referenceType: "world_story",
+      },
+      {
+        name: "world_story_threads",
+        label: "World Story Threads",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "thread_id",
+        fields: [
+          { name: "world_story_id", label: "World Story", type: "reference", referenceType: "world_story" },
+          { name: "thread_id", label: "Thread ID", type: "text" },
+        ],
+      },
+      {
+        name: "source_world_event_id",
+        label: "Source World Event",
+        type: "reference",
+        referenceType: "world_event",
       },
       {
         name: "consequences",

@@ -19,6 +19,7 @@ type WorldDataContextValue = {
   getEntity: (entityId: string) => EntityData | undefined;
   loadEntity: (entityId: string) => Promise<EntityData>;
   loadEntities: (entityIds: string[]) => Promise<EntityData[]>;
+  loadCampaignReferences: (campaignId: string) => Promise<EntitySummary[]>;
   refreshEntities: () => Promise<void>;
   updateEntity: (
     entityId: string,
@@ -69,6 +70,13 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
     },
     [loadEntity],
   );
+  const loadCampaignReferences = useCallback(async (campaignId: string) => {
+    const response = await fetch(`http://localhost:8000/campaigns/${campaignId}/references`);
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    return await response.json() as EntitySummary[];
+  }, []);
   const refreshEntities = useCallback(async () => {
     try {
       setEntitiesLoading(true);
@@ -205,6 +213,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       getEntity,
       loadEntity,
       loadEntities,
+      loadCampaignReferences,
       refreshEntities,
       updateEntity,
       createEntity,
@@ -216,6 +225,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       getEntity,
       loadEntity,
       loadEntities,
+      loadCampaignReferences,
       refreshEntities,
       updateEntity,
       createEntity,

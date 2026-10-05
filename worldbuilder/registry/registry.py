@@ -12,6 +12,7 @@ from worldbuilder.models.continent import Continent
 from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.lore import Lore
 from worldbuilder.models.player_character import PlayerCharacter
+from worldbuilder.models.world_story import WorldStory
 
 class WorldRegistry:
     """Registry of all loaded world entities."""
@@ -31,6 +32,7 @@ class WorldRegistry:
         self.artifacts: dict[str, Artifact] = {}
         self.maps: dict[str, Map] = {}
         self.locations: dict[str, Location] = {}
+        self.world_stories: dict[str, WorldStory] = {}
         
     def _ensure_unique_id(self, entity_id: str) -> None:
         """Ensure an entity ID is unique across the registry."""
@@ -49,6 +51,7 @@ class WorldRegistry:
             self.artifacts,
             self.locations,
             self.maps,
+            self.world_stories,
         )
 
         if any(entity_id in collection for collection in collections):
@@ -262,6 +265,15 @@ class WorldRegistry:
     def has_lore(self, lore_id: str) -> bool:
         """Check whether a lore entry exists."""
         return lore_id in self.lores
+    def add_world_story(self, story: WorldStory) -> None:
+        if story.id in self.world_stories:
+            raise ValueError(f"Duplicate world story ID: {story.id}")
+        self._ensure_unique_id(story.id)
+        self.world_stories[story.id] = story
+
+    def get_world_story(self, story_id: str) -> WorldStory | None:
+        return self.world_stories.get(story_id)
+
     def add_map(self, map_object: Map) -> None:
         """Add a map to the registry."""
         if map_object.id in self.maps:
@@ -295,6 +307,7 @@ class WorldRegistry:
             self.artifacts,
             self.maps,
             self.locations,
+            self.world_stories,
         )
 
         for collection in collections:
@@ -333,5 +346,6 @@ class WorldRegistry:
             return "map"
         if entity_id in self.locations:
             return "location"
+        if entity_id in self.world_stories:
+            return "world_story"
         return None
-    

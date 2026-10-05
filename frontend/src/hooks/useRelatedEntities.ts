@@ -3,18 +3,17 @@ import { useEffect, useState } from "react";
 import type { EntitySummary } from "../types";
 
 function useRelatedEntities(entityId: string | null) {
-    const [entities, setEntities] = useState<EntitySummary[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<{
+        entityId: string;
+        entities: EntitySummary[];
+    } | null>(null);
 
     useEffect(() => {
         if (!entityId) {
-            setEntities([]);
             return;
         }
 
         let cancelled = false;
-
-        setLoading(true);
 
         fetch(`http://localhost:8000/entities/${entityId}/related`)
             .then((response) => {
@@ -26,14 +25,12 @@ function useRelatedEntities(entityId: string | null) {
             })
             .then((relatedEntities: EntitySummary[]) => {
                 if (!cancelled) {
-                    setEntities(relatedEntities);
-                    setLoading(false);
+                    setResult({ entityId, entities: relatedEntities });
                 }
             })
             .catch(() => {
                 if (!cancelled) {
-                    setEntities([]);
-                    setLoading(false);
+                    setResult({ entityId, entities: [] });
                 }
             });
 
@@ -42,9 +39,11 @@ function useRelatedEntities(entityId: string | null) {
         };
     }, [entityId]);
 
+    const isCurrentResult = entityId !== null && result?.entityId === entityId;
+
     return {
-        entities,
-        loading,
+        entities: isCurrentResult ? result.entities : [],
+        loading: entityId !== null && !isCurrentResult,
     };
 }
 

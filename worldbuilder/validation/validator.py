@@ -1,13 +1,15 @@
 from collections.abc import Mapping
 
 from worldbuilder.models.campaign import Campaign
+from worldbuilder.models.lore import Lore
 from worldbuilder.models.character import Character
 from worldbuilder.models.city import City
 from worldbuilder.models.map import Map
-from worldbuilder.models.story import StoryContent
+from worldbuilder.models.story import CampaignStory, StoryContent, WorldStoryThreadLink
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.models.world import World
 from worldbuilder.models.world_event import WorldEvent
+from worldbuilder.models.world_story import WorldStory
 from worldbuilder.registry import WorldRegistry
 
 
@@ -89,6 +91,12 @@ def validate_registry(registry: WorldRegistry) -> ValidationResult:
             event,
             registry,
         )
+
+    for lore in registry.lores.values():
+        validate_lore_references(result, lore, registry)
+
+    for story in registry.world_stories.values():
+        validate_world_story_references(result, story, registry)
 
     for map_object in registry.maps.values():
         validate_map_references(
@@ -196,12 +204,43 @@ def validate_campaign_references(
             player_character_id,
             "player character",
         )
-    if campaign.story is not None:
+    if isinstance(campaign.story, StoryContent):
         validate_story_content(
             result,
             campaign.story,
             registry,
         )
+    elif isinstance(campaign.story, CampaignStory):
+        for action in campaign.story.player_actions:
+            for story_id in action.world_stories:
+                validate_reference(
+                    result,
+                    registry.world_stories,
+                    story_id,
+                    "world story",
+                )
+            validate_world_story_thread_links(result, action.world_story_threads, registry)
+        for beat in campaign.story.beats:
+            for story_id in beat.world_stories:
+                validate_reference(result, registry.world_stories, story_id, "world story")
+            validate_world_story_thread_links(result, beat.world_story_threads, registry)
+            for consequence in beat.consequences:
+                for story_id in consequence.world_stories:
+                    validate_reference(
+                        result,
+                        registry.world_stories,
+                        story_id,
+                        "world story",
+                    )
+                validate_world_story_thread_links(result, consequence.world_story_threads, registry)
+            for content in (
+                beat.description_content,
+                beat.events_content,
+                beat.triggers_content,
+                beat.possible_approaches_content,
+            ):
+                if content is not None:
+                    validate_story_content(result, content, registry)
 
 
 def validate_world_event_references(
@@ -217,6 +256,89 @@ def validate_world_event_references(
             campaign_id,
             "campaign",
         )
+    for story_id in event.world_stories:
+        validate_reference(
+            result,
+            registry.world_stories,
+            story_id,
+            "world story",
+        )
+    validate_world_story_thread_links(result, event.world_story_threads, registry)
+    if event.timeline_event_id:
+        validate_reference(result, registry.timeline_events, event.timeline_event_id, "timeline event")
+    for location_id in event.locations:
+        if all(location_id not in collection for collection in (
+            registry.cities,
+            registry.locations,
+            registry.regions,
+            registry.kingdoms,
+        )):
+            result.add_error(f"Unknown location ID in world event: {location_id}")
+    for character_id in event.characters:
+        if character_id not in registry.npcs and character_id not in registry.player_characters:
+            result.add_error(f"Unknown character ID in world event: {character_id}")
+    for source in event.story_sources:
+        validate_reference(
+            result,
+            registry.campaigns,
+            source.campaign_id,
+            "campaign",
+        )
+
+
+def validate_lore_references(
+    result: ValidationResult,
+    lore: Lore,
+    registry: WorldRegistry,
+) -> None:
+    """Validate campaign references contained in lore records."""
+    for campaign_id in lore.campaigns:
+        validate_reference(result, registry.campaigns, campaign_id, "campaign")
+
+
+def validate_world_story_references(
+    result: ValidationResult,
+    story: WorldStory,
+    registry: WorldRegistry,
+) -> None:
+    """Validate campaigns, characters, and events linked to a world story."""
+    for campaign_id in story.campaigns:
+        validate_reference(result, registry.campaigns, campaign_id, "campaign")
+    for character_id in story.characters:
+        validate_character_reference(result, registry, character_id)
+    for event_id in story.world_events:
+        validate_reference(result, registry.world_events, event_id, "world event")
+    for thread in story.threads:
+        for campaign_id in thread.campaigns:
+            validate_reference(result, registry.campaigns, campaign_id, "campaign")
+        for event_id in thread.world_events:
+            validate_reference(result, registry.world_events, event_id, "world event")
+    for contribution in story.contributions:
+        validate_reference(
+            result,
+            registry.campaigns,
+            contribution.campaign_id,
+            "campaign",
+        )
+        for thread_id in contribution.thread_ids:
+            if all(thread.id != thread_id for thread in story.threads):
+                result.add_error(f"Unknown thread ID in world story contribution: {thread_id}")
+
+
+def validate_world_story_thread_links(
+    result: ValidationResult,
+    links: list[WorldStoryThreadLink],
+    registry: WorldRegistry,
+) -> None:
+    """Validate World Story and thread references attached to a campaign entity."""
+    for link in links:
+        world_story = registry.world_stories.get(link.world_story_id)
+        if world_story is None:
+            result.add_error(f"Unknown world story ID: {link.world_story_id}")
+        elif all(thread.id != link.thread_id for thread in world_story.threads):
+            result.add_error(
+                f"Unknown thread ID in world story {link.world_story_id}: {link.thread_id}"
+            )
 
 
 def validate_timeline_event_references(
@@ -239,6 +361,11 @@ def validate_timeline_event_references(
             campaign_id,
             "campaign",
         )
+    for story_id in event.world_stories:
+        validate_reference(result, registry.world_stories, story_id, "world story")
+    validate_world_story_thread_links(result, event.world_story_threads, registry)
+    if event.source_world_event_id:
+        validate_reference(result, registry.world_events, event.source_world_event_id, "world event")
 
     for kingdom_id in event.kingdoms:
         validate_reference(

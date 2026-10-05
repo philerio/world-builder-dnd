@@ -1,0 +1,32 @@
+id: bane-overarching-story
+name: Bane's Influence
+description: A setting-wide story about Bane's imprisonment and influence.
+created: '2026-10-05T17:32:46.577274'
+updated: '2026-10-05T17:32:46.577279'
+overview: Bane remains imprisoned within a mortal sorcerer's body while his influence
+  continues to affect the world. The details of his current actions and the story's
+  possible outcomes remain open for development.
+status: active
+characters:
+- bane
+campaigns:
+- the-unforgiven
+world_events: []
+threads:
+- id: banes-imprisonment
+  name: Bane's Imprisonment
+  description: The other gods imprisoned Bane within the body of a mortal sorcerer
+    and stripped away much of his memory.
+  status: active
+  campaigns: []
+  world_events: []
+contributions:
+- campaign_id: the-unforgiven
+  source_type: campaign_outcome
+  source_id: null
+  summary: The campaign outcome says the events surrounding the Aboleth and the sorcerer's
+    past revealed deeper forces affecting the world.
+  connection_status: confirmed
+  dm_notes: Potential connection to Bane's larger story only. The campaign material
+    does not establish a direct link, so confirm or reject this connection when the
+    campaign's outcome is reviewed.

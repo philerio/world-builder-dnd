@@ -1,5 +1,16 @@
-import { useMemo, useEffect, useState, useRef } from "react";
-import type { MouseEvent } from "react";
+import { createElement, useEffect, useMemo, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+  MapContainer,
+  ImageOverlay,
+  Marker,
+  Polygon,
+  Polyline,
+  Tooltip as LeafletTooltip,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
+import L from "leaflet";
 import {
   Box,
   Button,
@@ -8,13 +19,11 @@ import {
   CardContent,
   Chip,
   Grid,
-  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
-import Tooltip from "@mui/material/Tooltip";
 import MapIcon from "@mui/icons-material/Map";
 import CastleIcon from "@mui/icons-material/Castle";
 import ChurchIcon from "@mui/icons-material/Church";
@@ -24,34 +33,22 @@ import LocationCityIcon from "@mui/icons-material/LocationCity";
 import ForestIcon from "@mui/icons-material/Forest";
 import PlaceIcon from "@mui/icons-material/Place";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import type { DrawingState, EntitySummary, Map, MapMarker } from "../types";
+import type { EntitySummary, Map, MapMarker } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
+import MarkerDrawer from "../components/MarkerDrawer";
+import MarkerContextMenu from "../components/MarkerContextMenu";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import useEntityIndex from "../hooks/useEntityIndex";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useWorldData } from "../context/WorldDataContext";
-import MarkerDrawer from "../components/MarkerDrawer";
-import MarkerContextMenu from "../components/MarkerContextMenu";
+
+import "leaflet/dist/leaflet.css";
+import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
+import "@geoman-io/leaflet-geoman-free";
 
 type MapCardProps = {
   map: Map;
   onOpen: () => void;
-};
-
-type MapMarkerLayerProps = {
-  map: Map;
-  onOpenEntity: (entityId: string) => void;
-  onOpenMap: (mapId: string) => void;
-  onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
-  onMarkerMove: (marker: MapMarker) => void;
-  drawingState: DrawingState | null;
-  onAddDrawingPoint: (point: [number, number]) => void;
-};
-type MarkerMenuTarget = {
-  event: MouseEvent;
-  x?: number;
-  y?: number;
-  markerId?: string;
 };
 
 type MapViewerProps = {
@@ -61,60 +58,140 @@ type MapViewerProps = {
   onOpenEntity: (entityId: string) => void;
   onOpenMap: (mapId: string) => void;
   getEntity: (entityId: string) => EntitySummary | undefined;
-  onOpenMarkerMenu: (target: MarkerMenuTarget) => void;
+  onOpenMarkerMenu: (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => void;
   onMarkerMove: (marker: MapMarker) => void;
-  drawingState: DrawingState | null;
-  onCancelDrawing: () => void;
-  onAddDrawingPoint: (point: [number, number]) => void;
-  onFinishDrawing: () => void;
-};
-type MarkerDrawerState = {
-  open: boolean;
-  mode: "create" | "edit";
-  marker: MapMarker | null;
+  onShapeCreated: (marker: MapMarker) => void;
+  onShapeEdited: (marker: MapMarker) => void;
 };
 
-function MarkerIcon({ icon }: { icon?: string }) {
-  switch (icon) {
-    case "city":
-      return <LocationCityIcon fontSize="small" />;
+type LeafletMapProps = {
+  map: Map;
+  onOpenEntity: (entityId: string) => void;
+  onOpenMap: (mapId: string) => void;
+  onOpenMarkerMenu: (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => void;
+  onMarkerMove: (marker: MapMarker) => void;
+  onShapeCreated: (marker: MapMarker) => void;
+  onShapeEdited: (marker: MapMarker) => void;
+};
 
-    case "castle":
-      return <CastleIcon fontSize="small" />;
+type MapContextMenuProps = {
+  imageWidth: number;
+  imageHeight: number;
+  onOpenMarkerMenu: (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => void;
+};
 
-    case "church":
-      return <ChurchIcon fontSize="small" />;
+type GeomanControllerProps = {
+  mapData: Map;
+  imageWidth: number;
+  imageHeight: number;
+  onShapeCreated: (marker: MapMarker) => void;
+  onShapeEdited: (marker: MapMarker) => void;
+};
 
-    case "farm":
-      return <AgricultureIcon fontSize="small" />;
+type MapMarkersProps = {
+  map: Map;
+  imageWidth: number;
+  imageHeight: number;
+  onOpenEntity: (entityId: string) => void;
+  onOpenMap: (mapId: string) => void;
+  onOpenMarkerMenu: (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => void;
+  onMarkerMove: (marker: MapMarker) => void;
+};
 
-    case "forest":
-      return <ForestIcon fontSize="small" />;
+type CampaignMarkerProps = {
+  marker: MapMarker;
+  imageWidth: number;
+  imageHeight: number;
+  onOpenEntity: (entityId: string) => void;
+  onOpenMap: (mapId: string) => void;
+  onOpenMarkerMenu: (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => void;
+  onMarkerMove: (marker: MapMarker) => void;
+};
 
-    case "map":
-      return <MapOutlinedIcon fontSize="small" />;
+type GeomanLayer = L.Layer & {
+  options: L.LayerOptions & {
+    markerId?: string;
+  };
+};
 
-    case "house":
-      return <HouseIcon fontSize="small" />;
+type GeomanCreateEvent = {
+  layer: GeomanLayer;
+};
 
-    case "location":
-    default:
-      return <PlaceIcon fontSize="small" />;
-  }
+type GeomanEditEvent = {
+  layer: GeomanLayer;
+};
+
+type ImageDimensions = {
+  width: number;
+  height: number;
+};
+
+type MapLayerOptions = L.LayerOptions & {
+  markerId?: string;
+};
+
+function getMapLayerMarkerId(layer: L.Layer): string | undefined {
+  return (layer.options as MapLayerOptions | undefined)?.markerId;
 }
-const isPointInPolygon = (
-  point: [number, number],
-  polygon: [number, number][],
-) => {
-  const [x, y] = point;
+
+function setMapLayerMarkerId(layer: L.Layer, markerId: string) {
+  (layer.options as MapLayerOptions).markerId = markerId;
+}
+
+function getPolylineLatLngs(layer: L.Polyline): L.LatLng[] {
+  const latLngs = layer.getLatLngs();
+
+  if (latLngs.length === 0 || Array.isArray(latLngs[0])) {
+    return [];
+  }
+
+  return latLngs as L.LatLng[];
+}
+
+function isPointInPolygon(point: L.LatLng, polygon: L.LatLng[]) {
   let inside = false;
 
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [xi, yi] = polygon[i];
-    const [xj, yj] = polygon[j];
+  for (
+    let index = 0, previous = polygon.length - 1;
+    index < polygon.length;
+    previous = index++
+  ) {
+    const currentPoint = polygon[index];
+    const previousPoint = polygon[previous];
 
     const intersects =
-      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      currentPoint.lng > point.lng !== previousPoint.lng > point.lng &&
+      point.lat <
+        ((previousPoint.lat - currentPoint.lat) *
+          (point.lng - currentPoint.lng)) /
+          (previousPoint.lng - currentPoint.lng) +
+          currentPoint.lat;
 
     if (intersects) {
       inside = !inside;
@@ -122,60 +199,371 @@ const isPointInPolygon = (
   }
 
   return inside;
-};
+}
 
-const distanceToSegment = (
-  point: [number, number],
-  start: [number, number],
-  end: [number, number],
-) => {
-  const [px, py] = point;
-  const [x1, y1] = start;
-  const [x2, y2] = end;
-
-  const dx = x2 - x1;
-  const dy = y2 - y1;
+function distanceToSegmentSquared(
+  point: L.Point,
+  start: L.Point,
+  end: L.Point,
+) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
 
   if (dx === 0 && dy === 0) {
-    return Math.hypot(px - x1, py - y1);
+    return point.distanceTo(start) ** 2;
   }
 
   const t = Math.max(
     0,
-    Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)),
+    Math.min(
+      1,
+      ((point.x - start.x) * dx + (point.y - start.y) * dy) /
+        (dx * dx + dy * dy),
+    ),
   );
 
-  const closestX = x1 + t * dx;
-  const closestY = y1 + t * dy;
+  const projection = L.point(start.x + t * dx, start.y + t * dy);
+  return point.distanceTo(projection) ** 2;
+}
 
-  return Math.hypot(px - closestX, py - closestY);
-};
+function findShapeMarkerIdAtPoint(
+  map: L.Map,
+  latLng: L.LatLng,
+): string | undefined {
+  const point = map.latLngToLayerPoint(latLng);
+  let areaMarkerId: string | undefined;
+  let pathMarkerId: string | undefined;
 
-const isPointNearPath = (
-  point: [number, number],
-  path: [number, number][],
-  tolerance = 1.5,
-) => {
-  for (let i = 1; i < path.length; i += 1) {
-    if (distanceToSegment(point, path[i - 1], path[i]) <= tolerance) {
-      return true;
+  map.eachLayer((layer) => {
+    if (areaMarkerId || pathMarkerId) {
+      return;
     }
+
+    const markerId = getMapLayerMarkerId(layer);
+    if (!markerId) {
+      return;
+    }
+
+    if (layer instanceof L.Polygon) {
+      const latLngs = layer.getLatLngs();
+      if (latLngs.length > 0 && Array.isArray(latLngs[0])) {
+        const polygon = latLngs[0] as L.LatLng[];
+        if (isPointInPolygon(latLng, polygon)) {
+          areaMarkerId = markerId;
+        }
+      }
+      return;
+    }
+
+    if (layer instanceof L.Polyline) {
+      const latLngs = getPolylineLatLngs(layer);
+      for (let index = 1; index < latLngs.length; index += 1) {
+        const start = map.latLngToLayerPoint(latLngs[index - 1]);
+        const end = map.latLngToLayerPoint(latLngs[index]);
+        if (distanceToSegmentSquared(point, start, end) <= 12 ** 2) {
+          pathMarkerId = markerId;
+          break;
+        }
+      }
+    }
+  });
+
+  return areaMarkerId ?? pathMarkerId;
+}
+
+function markerIcon(icon?: string) {
+  const iconComponents = {
+    city: LocationCityIcon,
+    castle: CastleIcon,
+    church: ChurchIcon,
+    farm: AgricultureIcon,
+    forest: ForestIcon,
+    map: MapOutlinedIcon,
+    house: HouseIcon,
+    location: PlaceIcon,
+  };
+
+  const IconComponent =
+    iconComponents[icon as keyof typeof iconComponents] ?? PlaceIcon;
+
+  const iconMarkup = renderToStaticMarkup(
+    createElement(IconComponent, {
+      fontSize: "small",
+    }),
+  ).replace(
+    "<svg ",
+    '<svg style="width:20px;height:20px;display:block;overflow:visible;color:inherit;fill:currentColor;" ',
+  );
+
+  return L.divIcon({
+    className: "campaign-map-marker",
+    html: `
+      <div
+        style="
+          width: 34px;
+          height: 34px;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: rgba(18, 18, 18, 0.94);
+          border: 2px solid #c9a85b;
+          color: #d9b86c;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.65);
+          overflow: visible;
+        "
+      >
+        ${iconMarkup}
+      </div>
+    `,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+  });
+}
+
+function markerLabelIcon(label: string) {
+  const escapedLabel = label
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+  return L.divIcon({
+    className: "campaign-map-label-icon",
+    html: `<div class="campaign-map-label-content">${escapedLabel}</div>`,
+    iconSize: [1, 1],
+    iconAnchor: [0, 0],
+  });
+}
+
+function getLabelWorldPoint(points: [number, number][]): [number, number] {
+  const totals = points.reduce(
+    (sum, [x, y]) => [sum[0] + x, sum[1] + y] as [number, number],
+    [0, 0] as [number, number],
+  );
+
+  return [totals[0] / points.length, totals[1] / points.length];
+}
+
+function worldToLeaflet(
+  [x, y]: [number, number],
+  imageWidth: number,
+  imageHeight: number,
+): [number, number] {
+  return [-(y / 100) * imageHeight, (x / 100) * imageWidth];
+}
+
+function leafletToWorld(
+  latitude: number,
+  longitude: number,
+  imageWidth: number,
+  imageHeight: number,
+): [number, number] {
+  return [(longitude / imageWidth) * 100, (-latitude / imageHeight) * 100];
+}
+
+function useImageDimensions(imageUrl: string) {
+  const [dimensions, setDimensions] = useState<ImageDimensions | null>(null);
+
+  useEffect(() => {
+    const image = new Image();
+
+    image.onload = () => {
+      setDimensions({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+
+    image.onerror = () => {
+      setDimensions(null);
+    };
+
+    image.src = imageUrl;
+
+    return () => {
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [imageUrl]);
+
+  return dimensions;
+}
+
+function getImageBounds(dimensions: ImageDimensions): L.LatLngBoundsExpression {
+  return [
+    [-dimensions.height, 0],
+    [0, dimensions.width],
+  ];
+}
+
+function MapImage({
+  imageUrl,
+  bounds,
+}: {
+  imageUrl: string;
+  bounds: L.LatLngBoundsExpression;
+}) {
+  return <ImageOverlay url={imageUrl} bounds={bounds} zIndex={1} />;
+}
+
+function getMapView(map: L.Map, imageWidth: number, imageHeight: number) {
+  const viewportHeight = map.getContainer().clientHeight;
+
+  if (viewportHeight <= 0) {
+    return null;
   }
 
-  return false;
-};
+  const zoom = Math.log2(viewportHeight / imageHeight);
+
+  return {
+    center: [-imageHeight / 2, imageWidth / 2] as [number, number],
+    zoom,
+  };
+}
+
+function resetMapView(
+  map: L.Map,
+  imageWidth: number,
+  imageHeight: number,
+  animate = true,
+) {
+  const view = getMapView(map, imageWidth, imageHeight);
+
+  if (!view) {
+    return;
+  }
+
+  map.setView(view.center, view.zoom, {
+    animate,
+  });
+}
+
+function MapResetButton({
+  imageWidth,
+  imageHeight,
+}: {
+  imageWidth: number;
+  imageHeight: number;
+}) {
+  const map = useMap();
+
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: 10,
+        left: 60,
+        zIndex: 1000,
+      }}
+    >
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => resetMapView(map, imageWidth, imageHeight)}
+        sx={{
+          minWidth: 0,
+          textTransform: "none",
+          backgroundColor: "background.paper",
+          color: "text.primary",
+          border: 1,
+          borderColor: "divider",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+          "&:hover": {
+            backgroundColor: "action.hover",
+          },
+        }}
+      >
+        Reset View
+      </Button>
+    </Box>
+  );
+}
+
+function MapInitialView({
+  imageWidth,
+  imageHeight,
+}: {
+  imageWidth: number;
+  imageHeight: number;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      resetMapView(map, imageWidth, imageHeight, false);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [imageWidth, imageHeight, map]);
+
+  return null;
+}
+
+function layerToPoints(
+  layer: L.Layer,
+  imageWidth: number,
+  imageHeight: number,
+): [number, number][] | null {
+  if (layer instanceof L.Polygon) {
+    const latLngs = layer.getLatLngs();
+
+    if (
+      !Array.isArray(latLngs) ||
+      latLngs.length === 0 ||
+      !Array.isArray(latLngs[0])
+    ) {
+      return null;
+    }
+
+    const firstRing = latLngs[0] as L.LatLng[];
+
+    return firstRing.map((latLng) =>
+      leafletToWorld(latLng.lat, latLng.lng, imageWidth, imageHeight),
+    );
+  }
+
+  if (layer instanceof L.Polyline) {
+    const latLngs = layer.getLatLngs();
+
+    if (
+      !Array.isArray(latLngs) ||
+      latLngs.length === 0 ||
+      Array.isArray(latLngs[0])
+    ) {
+      return null;
+    }
+
+    return (latLngs as L.LatLng[]).map((latLng) =>
+      leafletToWorld(latLng.lat, latLng.lng, imageWidth, imageHeight),
+    );
+  }
+
+  return null;
+}
+
 function MapsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [selectedMapId, setSelectedMapId] = useState<string | null>(
     searchParams.get("map"),
   );
-  const [drawingState, setDrawingState] = useState<DrawingState | null>(null);
-  const [markerDrawer, setMarkerDrawer] = useState<MarkerDrawerState>({
+
+  const [markerDrawer, setMarkerDrawer] = useState<{
+    open: boolean;
+    mode: "create" | "edit";
+    marker: MapMarker | null;
+  }>({
     open: false,
     mode: "create",
     marker: null,
   });
+
   const [markerContextMenu, setMarkerContextMenu] = useState<{
     mouseX: number;
     mouseY: number;
@@ -184,73 +572,6 @@ function MapsPage() {
     markerId: string | null;
   } | null>(null);
 
-  const startDrawing = (type: "area" | "path") => {
-    if (!markerDrawer.marker) {
-      return;
-    }
-
-    setDrawingState({
-      markerId: markerDrawer.marker.id,
-      type,
-      points: [],
-    });
-
-    setMarkerDrawer({
-      open: false,
-      mode: markerDrawer.mode,
-      marker: markerDrawer.marker,
-    });
-  };
-
-  const cancelDrawing = () => {
-    if (!markerDrawer.marker) {
-      setDrawingState(null);
-      return;
-    }
-
-    setDrawingState(null);
-
-    setMarkerDrawer({
-      open: true,
-      mode: markerDrawer.mode,
-      marker: markerDrawer.marker,
-    });
-  };
-  const finishDrawing = () => {
-    if (!drawingState) {
-      return;
-    }
-
-    const marker = markerDrawer.marker;
-
-    if (!marker) {
-      return;
-    }
-
-    setMarkerDrawer({
-      open: true,
-      mode: markerDrawer.mode,
-      marker: {
-        ...marker,
-        type: drawingState.type,
-        points: drawingState.points,
-      },
-    });
-
-    setDrawingState(null);
-  };
-  const addDrawingPoint = (point: [number, number]) => {
-    setDrawingState((current) => {
-      if (!current) {
-        return current;
-      }
-
-      return {
-        ...current,
-        points: [...current.points, point],
-      };
-    });
-  };
   const {
     entities,
     getEntity: getWorldEntity,
@@ -285,6 +606,7 @@ function MapsPage() {
 
   const openMap = (mapId: string) => {
     setSelectedMapId(mapId);
+
     setSearchParams({
       map: mapId,
       ...(searchParams.get("from") === "world-map"
@@ -292,6 +614,19 @@ function MapsPage() {
         : {}),
     });
   };
+
+  const selectedMap = maps.find((map) => map.id === selectedMapId);
+
+  const handleBack = () => {
+    if (searchParams.get("from") === "world-map") {
+      navigate("/world-map");
+      return;
+    }
+
+    setSelectedMapId(null);
+    setSearchParams({});
+  };
+
   const handleMarkerMove = async (marker: MapMarker) => {
     if (!selectedMap) {
       return;
@@ -310,6 +645,51 @@ function MapsPage() {
       console.error("Failed to move marker:", error);
     }
   };
+
+  const handleShapeCreated = (marker: MapMarker) => {
+    setMarkerDrawer({
+      open: true,
+      mode: "create",
+      marker,
+    });
+  };
+
+  const handleShapeEdited = async (marker: MapMarker) => {
+    if (!selectedMap) {
+      return;
+    }
+
+    const updatedMarkers = selectedMap.markers.map((currentMarker) =>
+      currentMarker.id === marker.id ? marker : currentMarker,
+    );
+
+    try {
+      await updateEntity(selectedMap.id, {
+        ...selectedMap,
+        markers: updatedMarkers,
+      });
+    } catch (error) {
+      console.error("Failed to save edited shape:", error);
+    }
+  };
+
+  const handleOpenMarkerMenu = (
+    event: React.MouseEvent,
+    x: number,
+    y: number,
+    markerId?: string,
+  ) => {
+    event.preventDefault();
+
+    setMarkerContextMenu({
+      mouseX: event.clientX,
+      mouseY: event.clientY,
+      mapX: x,
+      mapY: y,
+      markerId: markerId ?? null,
+    });
+  };
+
   const handleEditMarker = () => {
     if (!markerContextMenu?.markerId || !selectedMap) {
       return;
@@ -332,22 +712,6 @@ function MapsPage() {
     setMarkerContextMenu(null);
   };
 
-  const handleOpenMarkerMenu = ({
-    event,
-    x,
-    y,
-    markerId,
-  }: MarkerMenuTarget) => {
-    event.preventDefault();
-
-    setMarkerContextMenu({
-      mouseX: event.clientX,
-      mouseY: event.clientY,
-      mapX: x ?? 0,
-      mapY: y ?? 0,
-      markerId: markerId ?? null,
-    });
-  };
   const handleCreateMarker = () => {
     if (!markerContextMenu) {
       return;
@@ -362,6 +726,7 @@ function MapsPage() {
       dm_only: false,
       hide_label: false,
       icon: "location",
+      type: "point",
     };
 
     setMarkerDrawer({
@@ -372,6 +737,7 @@ function MapsPage() {
 
     setMarkerContextMenu(null);
   };
+
   const handleDeleteMarker = async () => {
     if (!markerContextMenu?.markerId || !selectedMap) {
       return;
@@ -392,6 +758,7 @@ function MapsPage() {
       console.error("Failed to delete marker:", error);
     }
   };
+
   const handleSaveMarker = async (marker: MapMarker) => {
     if (!selectedMap) {
       return;
@@ -426,6 +793,7 @@ function MapsPage() {
       behavior: "instant",
     });
   }, [selectedMapId]);
+
   if (entitiesLoading && mapSummaries.length === 0) {
     return <Typography color="text.secondary">Loading maps…</Typography>;
   }
@@ -437,16 +805,7 @@ function MapsPage() {
       </Typography>
     );
   }
-  const selectedMap = maps.find((map) => map.id === selectedMapId);
-  const handleBack = () => {
-    if (searchParams.get("from") === "world-map") {
-      navigate("/world-map");
-      return;
-    }
 
-    setSelectedMapId(null);
-    setSearchParams({});
-  };
   if (selectedMap) {
     return (
       <>
@@ -459,10 +818,8 @@ function MapsPage() {
           getEntity={getEntity}
           onOpenMarkerMenu={handleOpenMarkerMenu}
           onMarkerMove={handleMarkerMove}
-          drawingState={drawingState}
-          onCancelDrawing={cancelDrawing}
-          onAddDrawingPoint={addDrawingPoint}
-          onFinishDrawing={finishDrawing}
+          onShapeCreated={handleShapeCreated}
+          onShapeEdited={handleShapeEdited}
         />
 
         <EntityDetailDrawer
@@ -473,6 +830,7 @@ function MapsPage() {
           onBack={goBack}
           canGoBack={canGoBack}
         />
+
         <MarkerDrawer
           open={markerDrawer.open}
           marker={markerDrawer.marker}
@@ -485,8 +843,8 @@ function MapsPage() {
             })
           }
           onSave={handleSaveMarker}
-          onStartDrawing={startDrawing}
         />
+
         <MarkerContextMenu
           open={Boolean(markerContextMenu)}
           position={
@@ -654,15 +1012,15 @@ function MapViewer({
   getEntity,
   onOpenMarkerMenu,
   onMarkerMove,
-  drawingState,
-  onCancelDrawing,
-  onAddDrawingPoint,
-  onFinishDrawing,
+  onShapeCreated,
+  onShapeEdited,
 }: MapViewerProps) {
   const entity = map.entity_id ? getEntity(map.entity_id) : undefined;
+
   const parentMap = map.parent_map
     ? maps.find((candidate) => candidate.id === map.parent_map)
     : undefined;
+
   return (
     <Box>
       <Box
@@ -699,7 +1057,7 @@ function MapViewer({
             ? "Back to World Map"
             : parentMap
               ? `Back to ${parentMap.name}`
-              : "Back to Maps"}{" "}
+              : "Back to Maps"}
         </Button>
 
         <Stack
@@ -776,708 +1134,666 @@ function MapViewer({
         }}
       >
         {map.image_path ? (
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              overflow: "auto",
-            }}
-          >
-            <Box
-              sx={{
-                position: "relative",
-                width: "fit-content",
-                maxWidth: "100%",
-              }}
-            >
-              <Box
-                component="img"
-                onContextMenu={(event) => {
-                  const rect = event.currentTarget.getBoundingClientRect();
-
-                  const x = ((event.clientX - rect.left) / rect.width) * 100;
-                  const y = ((event.clientY - rect.top) / rect.height) * 100;
-
-                  onOpenMarkerMenu({
-                    event,
-                    x,
-                    y,
-                  });
-                }}
-                src={map.image_path}
-                alt={map.name}
-                sx={{
-                  display: "block",
-                  width: "auto",
-                  maxWidth: "100%",
-                  height: "auto",
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 1,
-                }}
-              />
-              <MapMarkerLayer
-                map={map}
-                onOpenEntity={onOpenEntity}
-                onOpenMap={onOpenMap}
-                onOpenMarkerMenu={onOpenMarkerMenu}
-                onMarkerMove={onMarkerMove}
-                drawingState={drawingState}
-                onAddDrawingPoint={onAddDrawingPoint}
-              />
-            </Box>
-          </Box>
+          <LeafletMap
+            map={map}
+            onOpenEntity={onOpenEntity}
+            onOpenMap={onOpenMap}
+            onOpenMarkerMenu={onOpenMarkerMenu}
+            onMarkerMove={onMarkerMove}
+            onShapeCreated={onShapeCreated}
+            onShapeEdited={onShapeEdited}
+          />
         ) : (
           <Typography color="text.secondary">
             No map image has been assigned.
           </Typography>
         )}
       </Box>
-      {drawingState && (
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            position: "absolute",
-            top: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 200,
-            backgroundColor: "background.paper",
-            p: 1,
-            borderRadius: 1,
-            boxShadow: 3,
-          }}
-        >
-          <Button
-            variant="contained"
-            onClick={onFinishDrawing}
-            disabled={
-              drawingState.type === "area"
-                ? drawingState.points.length < 3
-                : drawingState.points.length < 2
-            }
-          >
-            Done
-          </Button>
-
-          <Button variant="outlined" onClick={onCancelDrawing}>
-            Cancel
-          </Button>
-        </Stack>
-      )}
     </Box>
   );
 }
-
-function MapMarkerLayer({
+function LeafletMap({
   map,
   onOpenEntity,
   onOpenMap,
   onOpenMarkerMenu,
   onMarkerMove,
-  drawingState,
-  onAddDrawingPoint,
-}: MapMarkerLayerProps) {
+  onShapeCreated,
+  onShapeEdited,
+}: LeafletMapProps) {
+  const imageDimensions = useImageDimensions(map.image_path!);
+
+  const imageBounds = imageDimensions ? getImageBounds(imageDimensions) : null;
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        height: "min(70vh, 1000px)",
+        minHeight: 600,
+        overflow: "hidden",
+        border: 1,
+        borderColor: "divider",
+        borderRadius: 1,
+        backgroundColor: "background.default",
+        position: "relative",
+        "& .leaflet-control-zoom a, & .leaflet-pm-toolbar .leaflet-buttons-control-button":
+          {
+            backgroundColor: "background.paper",
+            color: "text.primary",
+            borderColor: "divider",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+          },
+        "& .leaflet-control-zoom a:hover, & .leaflet-pm-toolbar .leaflet-buttons-control-button:hover":
+          {
+            backgroundColor: "action.hover",
+          },
+        "& .leaflet-control-zoom": {
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1,
+          overflow: "hidden",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+        },
+        "& .leaflet-pm-toolbar": {
+          boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+        },
+        "& .campaign-map-marker": {
+          background: "transparent !important",
+          border: "0 !important",
+          width: "34px !important",
+          height: "34px !important",
+          margin: "-17px 0 0 -17px !important",
+        },
+        "& .campaign-map-label-icon": {
+          background: "transparent !important",
+          border: "0 !important",
+          width: "1px !important",
+          height: "1px !important",
+          overflow: "visible !important",
+          pointerEvents: "none",
+        },
+        "& .campaign-map-label-content": {
+          position: "absolute",
+          left: "0",
+          top: "18px",
+          transform: "translateX(-50%)",
+          backgroundColor: "rgba(18, 18, 18, 0.94)",
+          border: "1px solid rgba(201, 168, 91, 0.75)",
+          borderRadius: "5px",
+          color: "#ffffff",
+          fontSize: "12px",
+          fontWeight: 600,
+          lineHeight: 1.2,
+          padding: "3px 7px",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.55)",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <MapContainer
+        crs={L.CRS.Simple}
+        center={[-50, 50]}
+        zoom={0}
+        minZoom={-5}
+        maxZoom={5}
+        style={{
+          width: "100%",
+          height: "100%",
+          background: "transparent",
+        }}
+      >
+        {imageDimensions && imageBounds && (
+          <>
+            <MapInitialView
+              imageWidth={imageDimensions.width}
+              imageHeight={imageDimensions.height}
+            />
+
+            <MapImage imageUrl={map.image_path!} bounds={imageBounds} />
+
+            <MapResetButton
+              imageWidth={imageDimensions.width}
+              imageHeight={imageDimensions.height}
+            />
+
+            <MapContextMenu
+              imageWidth={imageDimensions.width}
+              imageHeight={imageDimensions.height}
+              onOpenMarkerMenu={onOpenMarkerMenu}
+            />
+
+            <MapMarkers
+              map={map}
+              imageWidth={imageDimensions.width}
+              imageHeight={imageDimensions.height}
+              onOpenEntity={onOpenEntity}
+              onOpenMap={onOpenMap}
+              onOpenMarkerMenu={onOpenMarkerMenu}
+              onMarkerMove={onMarkerMove}
+            />
+
+            <GeomanController
+              mapData={map}
+              imageWidth={imageDimensions.width}
+              imageHeight={imageDimensions.height}
+              onShapeCreated={onShapeCreated}
+              onShapeEdited={onShapeEdited}
+            />
+          </>
+        )}
+      </MapContainer>
+    </Box>
+  );
+}
+
+function MapContextMenu({
+  imageWidth,
+  imageHeight,
+  onOpenMarkerMenu,
+}: MapContextMenuProps) {
+  const map = useMap();
+
+  useMapEvents({
+    contextmenu(event) {
+      const [x, y] = leafletToWorld(
+        event.latlng.lat,
+        event.latlng.lng,
+        imageWidth,
+        imageHeight,
+      );
+
+      const sourceMarkerId = getMapLayerMarkerId(event.sourceTarget as L.Layer);
+      const shapeMarkerId = sourceMarkerId
+        ? undefined
+        : findShapeMarkerIdAtPoint(map, event.latlng);
+
+      const syntheticEvent = {
+        preventDefault: () => undefined,
+        clientX: event.originalEvent.clientX,
+        clientY: event.originalEvent.clientY,
+      } as React.MouseEvent;
+
+      onOpenMarkerMenu(syntheticEvent, x, y, sourceMarkerId ?? shapeMarkerId);
+    },
+  });
+
+  return null;
+}
+function MapMarkers({
+  map,
+  imageWidth,
+  imageHeight,
+  onOpenEntity,
+  onOpenMap,
+  onOpenMarkerMenu,
+  onMarkerMove,
+}: MapMarkersProps) {
   const visibleMarkers = map.markers.filter(
     (marker) => marker.visible && !marker.dm_only,
   );
-  const [draggingMarkerId, setDraggingMarkerId] = useState<string | null>(null);
-  const [dragPosition, setDragPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [hoveredMarker, setHoveredMarker] = useState<{
-    marker: MapMarker;
-    x: number;
-    y: number;
-  } | null>(null);
-  const mapLayerRef = useRef<HTMLDivElement | null>(null);
-  const draggedMarkerRef = useRef<string | null>(null);
-  const didDragRef = useRef(false);
-  const getMarkerAtPosition = (x: number, y: number) => {
-    const point: [number, number] = [x, y];
-    const pointMarker = map.markers.find(
-      (marker) =>
-        marker.visible &&
-        !marker.dm_only &&
-        marker.type !== "area" &&
-        marker.type !== "path" &&
-        Math.hypot(x - marker.x, y - marker.y) <= 2,
-    );
-    if (pointMarker) return pointMarker;
-    const path = map.markers.find((marker) => {
-      if (
-        !marker.visible ||
-        marker.dm_only ||
-        marker.type !== "path" ||
-        !marker.points ||
-        marker.points.length < 2
-      ) {
-        return false;
-      }
 
-      return isPointNearPath(point, marker.points);
-    });
-
-    if (path) {
-      return path;
-    }
-    const area = map.markers.find((marker) => {
-      if (
-        !marker.visible ||
-        marker.dm_only ||
-        marker.type !== "area" ||
-        !marker.points ||
-        marker.points.length < 3
-      ) {
-        return false;
-      }
-
-      return isPointInPolygon(point, marker.points);
-    });
-
-    if (area) {
-      return area;
-    }
-  };
-  const getPointerPosition = (event: React.PointerEvent | React.MouseEvent) => {
-    if (!mapLayerRef.current) {
-      return null;
-    }
-
-    const rect = mapLayerRef.current.getBoundingClientRect();
-
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-
-    return {
-      x: Math.max(0, Math.min(100, x)),
-      y: Math.max(0, Math.min(100, y)),
-    };
-  };
-
-  const handleMarkerPointerDown = (
-    event: React.PointerEvent,
-    marker: MapMarker,
-  ) => {
-    if (event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    draggedMarkerRef.current = marker.id;
-    didDragRef.current = false;
-
-    setDraggingMarkerId(marker.id);
-    setDragPosition({
-      x: marker.x,
-      y: marker.y,
-    });
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleMarkerPointerMove = (event: React.PointerEvent) => {
-    const markerId = draggedMarkerRef.current;
-
-    if (!markerId) {
-      return;
-    }
-
-    const position = getPointerPosition(event);
-
-    if (!position) {
-      return;
-    }
-
-    const marker = map.markers.find(
-      (currentMarker) => currentMarker.id === markerId,
-    );
-
-    if (!marker) {
-      return;
-    }
-
-    const distance = Math.sqrt(
-      Math.pow(position.x - marker.x, 2) + Math.pow(position.y - marker.y, 2),
-    );
-
-    if (distance > 0.5) {
-      didDragRef.current = true;
-      setDragPosition(position);
-    }
-  };
-
-  const handleMarkerPointerUp = (event: React.PointerEvent) => {
-    const markerId = draggedMarkerRef.current;
-
-    if (!markerId) {
-      return;
-    }
-
-    const position = getPointerPosition(event);
-
-    const marker = map.markers.find(
-      (currentMarker) => currentMarker.id === markerId,
-    );
-
-    if (position && marker && didDragRef.current) {
-      onMarkerMove({
-        ...marker,
-        x: position.x,
-        y: position.y,
-      });
-    }
-
-    setDraggingMarkerId(null);
-    setDragPosition(null);
-    draggedMarkerRef.current = null;
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    if (didDragRef.current) {
-      requestAnimationFrame(() => {
-        didDragRef.current = false;
-      });
-    }
-  };
   return (
-    <Box
-      ref={mapLayerRef}
-      onContextMenu={(event) => {
-        event.preventDefault();
-
-        if (drawingState) {
-          return;
-        }
-
-        const position = getPointerPosition(event);
-
-        if (!position) {
-          return;
-        }
-
-        const marker = getMarkerAtPosition(position.x, position.y);
-
-        onOpenMarkerMenu({
-          event,
-          x: position.x,
-          y: position.y,
-          markerId: marker?.id,
-        });
-      }}
-      onPointerDown={(event) => {
-        if (!drawingState) {
-          return;
-        }
-
-        event.preventDefault();
-
-        const position = getPointerPosition(event);
-
-        if (!position) {
-          return;
-        }
-
-        onAddDrawingPoint([position.x, position.y]);
-      }}
-      sx={{
-        position: "absolute",
-        inset: 0,
-        pointerEvents: "auto",
-      }}
-      onPointerMove={(event) => {
-        if (drawingState) {
-          setHoveredMarker(null);
-          return;
-        }
-
-        const position = getPointerPosition(event);
-
-        if (!position) {
-          setHoveredMarker(null);
-          return;
-        }
-
-        const marker = getMarkerAtPosition(position.x, position.y);
-
-        if (!marker?.tooltip) {
-          setHoveredMarker(null);
-          return;
-        }
-
-        setHoveredMarker({
-          marker,
-          x: position.x,
-          y: position.y,
-        });
-      }}
-      onPointerLeave={() => {
-        setHoveredMarker(null);
-      }}
-      onClick={(event) => {
-        if (drawingState || didDragRef.current) {
-          return;
-        }
-
-        const position = getPointerPosition(event);
-
-        if (!position) {
-          return;
-        }
-
-        const marker = getMarkerAtPosition(position.x, position.y);
-        if (!marker) {
-          return;
-        }
-
-        if (marker.linked_map) {
-          onOpenMap(marker.linked_map);
-        } else if (marker.entity_id) {
-          onOpenEntity(marker.entity_id);
-        }
-      }}
-    >
-      {hoveredMarker && (
-        <Box
-          sx={{
-            position: "absolute",
-            left: `${hoveredMarker.x}%`,
-            top: `${hoveredMarker.y}%`,
-            transform: "translate(12px, 12px)",
-            zIndex: 150,
-            maxWidth: 280,
-            px: 1.25,
-            py: 0.75,
-            borderRadius: 1,
-            backgroundColor: "grey.900",
-            color: "common.white",
-            fontSize: "0.8rem",
-            lineHeight: 1.4,
-            boxShadow: 3,
-            pointerEvents: "none",
-          }}
-        >
-          {hoveredMarker.marker.tooltip}
-        </Box>
-      )}
-      {/* Area overlays */}
-      <Box
-        component="svg"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        sx={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "auto",
-          zIndex: 10,
-        }}
-      >
-        {visibleMarkers
-          .filter(
-            (marker) =>
-              marker.type === "area" &&
-              marker.points &&
-              marker.points.length >= 3,
-          )
-          .map((marker) => (
-            <polygon
-              key={marker.id}
-              points={marker.points?.map(([x, y]) => `${x},${y}`).join(" ")}
-              fill={marker.fill_color ?? "#1976d2"}
-              fillOpacity={marker.fill_opacity ?? 0.2}
-              stroke={marker.fill_color ?? "#1976d2"}
-              strokeOpacity={0.8}
-              strokeWidth={2}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-      </Box>
+    <>
       {visibleMarkers
         .filter(
           (marker) =>
             marker.type === "area" &&
             marker.points &&
-            marker.points.length >= 3 &&
-            marker.label &&
-            !marker.hide_label,
+            marker.points.length >= 3,
         )
-        .map((marker) => {
-          const centerX =
-            marker.points!.reduce((sum, [x]) => sum + x, 0) /
-            marker.points!.length;
-
-          const centerY =
-            marker.points!.reduce((sum, [, y]) => sum + y, 0) /
-            marker.points!.length;
-
-          return (
-            <Typography
-              key={`area-label-${marker.id}`}
-              variant="caption"
-              sx={{
-                position: "absolute",
-                left: `${centerX}%`,
-                top: `${centerY}%`,
-                transform: "translate(-50%, -50%)",
-                px: 0.75,
-                py: 0.5,
-                borderRadius: 0.75,
-                backgroundColor: "background.paper",
-                border: 1,
-                borderColor: "divider",
-                whiteSpace: "nowrap",
-                boxShadow: 1,
-                pointerEvents: "none",
-              }}
-            >
-              {marker.label}
-            </Typography>
-          );
-        })}
-      {/* Path overlays */}
-      {visibleMarkers
-        .filter(
-          (marker) =>
-            marker.type === "path" &&
-            marker.points &&
-            marker.points.length >= 2 &&
-            marker.label &&
-            !marker.hide_label,
-        )
-        .map((marker) => {
-          const middlePoint =
-            marker.points![Math.floor(marker.points!.length / 2)];
-
-          return (
-            <Typography
-              key={`path-label-${marker.id}`}
-              variant="caption"
-              sx={{
-                position: "absolute",
-                left: `${middlePoint[0]}%`,
-                top: `${middlePoint[1]}%`,
-                transform: "translate(-50%, -50%)",
-                px: 0.75,
-                py: 0.25,
-                borderRadius: 0.75,
-                backgroundColor: "background.paper",
-                border: 1,
-                borderColor: "divider",
-                whiteSpace: "nowrap",
-                boxShadow: 1,
-                pointerEvents: "none",
-                zIndex: 30,
-              }}
-            >
-              {marker.label}
-            </Typography>
-          );
-        })}
-      <Box
-        component="svg"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        sx={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "auto",
-          zIndex: 20,
-        }}
-      >
-        {visibleMarkers
-          .filter(
-            (marker) =>
-              marker.type === "path" &&
-              marker.points &&
-              marker.points.length >= 2,
-          )
-          .map((marker) => (
-            <polyline
-              key={marker.id}
-              points={marker.points?.map(([x, y]) => `${x},${y}`).join(" ")}
-              fill="none"
-              stroke={marker.fill_color ?? "#1976d2"}
-              strokeOpacity={0.9}
-              strokeWidth={6}
-              pointerEvents="visiblePainted"
-              vectorEffect="non-scaling-stroke"
-              onContextMenu={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                onOpenMarkerMenu({
-                  event,
-                  markerId: marker.id,
-                });
-              }}
-            >
-              {marker.tooltip && <title>{marker.tooltip}</title>}
-            </polyline>
-          ))}
-      </Box>
-      {drawingState && drawingState.points.length > 0 && (
-        <Box
-          component="svg"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          sx={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-            zIndex: 50,
-          }}
-        >
-          {drawingState.type === "area" && drawingState.points.length >= 3 && (
-            <polygon
-              points={drawingState.points
-                .map(([x, y]) => `${x},${y}`)
-                .join(" ")}
-              fill="#1976d2"
-              fillOpacity={0.15}
-              stroke="#1976d2"
-              strokeWidth={.5}
-              strokeOpacity={0.9}
-              vectorEffect="non-scaling-stroke"
-            />
-          )}
-
-          {drawingState.type === "path" && drawingState.points.length >= 2 && (
-            <polyline
-              points={drawingState.points
-                .map(([x, y]) => `${x},${y}`)
-                .join(" ")}
-              fill="none"
-              stroke="#1976d2"
-              strokeWidth={.5}
-              strokeOpacity={0.9}
-              vectorEffect="non-scaling-stroke"
-            />
-          )}
-
-          {drawingState.points.map(([x, y], index) => (
-            <circle
-              key={`${x}-${y}-${index}`}
-              cx={x}
-              cy={y}
-              r=".6"
-              fill="#1976d2"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </Box>
-      )}
-      {/* Point markers */}
-      {visibleMarkers
-        .filter((marker) => marker.type !== "area" && marker.type !== "path")
-        .map((marker) => {
-          return (
-            <Box
-              key={marker.id}
-              onContextMenu={(event) => {
-                event.stopPropagation();
-
-                onOpenMarkerMenu({
-                  event,
-                  markerId: marker.id,
-                });
-              }}
-              sx={{
-                position: "absolute",
-                left: `${
-                  draggingMarkerId === marker.id && dragPosition
-                    ? dragPosition.x
-                    : marker.x
-                }%`,
-                top: `${
-                  draggingMarkerId === marker.id && dragPosition
-                    ? dragPosition.y
-                    : marker.y
-                }%`,
-                width: 0,
-                height: 0,
-                pointerEvents: "auto",
-                zIndex: 1000,
-                cursor: draggingMarkerId === marker.id ? "grabbing" : "grab",
-              }}
-              onPointerDown={(event) => handleMarkerPointerDown(event, marker)}
-              onPointerMove={handleMarkerPointerMove}
-              onPointerUp={handleMarkerPointerUp}
-              onPointerCancel={handleMarkerPointerUp}
-              onClick={() => {
-                if (didDragRef.current) {
-                  return;
-                }
-
+        .map((marker) => (
+          <Polygon
+            key={marker.id}
+            positions={marker.points!.map((point) =>
+              worldToLeaflet(point, imageWidth, imageHeight),
+            )}
+            pathOptions={{
+              color: marker.fill_color ?? "#1976d2",
+              fillColor: marker.fill_color ?? "#1976d2",
+              fillOpacity: marker.fill_opacity ?? 0.2,
+              weight: 2,
+            }}
+            ref={(layer) => {
+              if (layer) {
+                setMapLayerMarkerId(layer, marker.id);
+              }
+            }}
+            eventHandlers={{
+              click: () => {
                 if (marker.linked_map) {
                   onOpenMap(marker.linked_map);
                 } else if (marker.entity_id) {
                   onOpenEntity(marker.entity_id);
                 }
-              }}
-            >
-              <Tooltip title={marker.tooltip ?? ""}>
-                <IconButton
-                  size="small"
-                  aria-label={marker.label ?? "Map location"}
-                  sx={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    transform: "translate(-50%, -100%)",
-                    pointerEvents: "auto",
-                    color: "primary.main",
-                    backgroundColor: "background.paper",
-                    border: 1,
-                    borderColor: "divider",
-                    boxShadow: 2,
-                    "&:hover": {
-                      backgroundColor: "background.paper",
-                    },
-                  }}
-                >
-                  <MarkerIcon icon={marker.icon} />
-                </IconButton>
-              </Tooltip>
+              },
+              contextmenu: (event) => {
+                const [x, y] = leafletToWorld(
+                  event.latlng.lat,
+                  event.latlng.lng,
+                  imageWidth,
+                  imageHeight,
+                );
+                const syntheticEvent = {
+                  preventDefault: () => undefined,
+                  clientX: event.originalEvent.clientX,
+                  clientY: event.originalEvent.clientY,
+                } as React.MouseEvent;
+                onOpenMarkerMenu(syntheticEvent, x, y, marker.id);
+              },
+            }}
+          >
+            {(marker.tooltip || marker.label) && (
+              <LeafletTooltip>{marker.tooltip || marker.label}</LeafletTooltip>
+            )}
+          </Polygon>
+        ))}
 
-              {marker.label && !marker.hide_label && (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    position: "absolute",
-                    left: 0,
-                    bottom: 32,
-                    transform: "translateX(-50%)",
-                    px: 0.75,
-                    py: 0.25,
-                    borderRadius: 0.75,
-                    backgroundColor: "background.paper",
-                    border: 1,
-                    borderColor: "divider",
-                    whiteSpace: "nowrap",
-                    boxShadow: 1,
-                    pointerEvents: "none",
-                  }}
-                >
-                  {marker.label}
-                </Typography>
-              )}
-            </Box>
-          );
-        })}
-    </Box>
+      {visibleMarkers
+        .filter(
+          (marker) =>
+            marker.type === "path" &&
+            marker.points &&
+            marker.points.length >= 2,
+        )
+        .map((marker) => (
+          <Polyline
+            key={marker.id}
+            positions={marker.points!.map((point) =>
+              worldToLeaflet(point, imageWidth, imageHeight),
+            )}
+            pathOptions={{
+              color: marker.fill_color ?? "#1976d2",
+              weight: 4,
+              opacity: 0.9,
+            }}
+            ref={(layer) => {
+              if (layer) {
+                setMapLayerMarkerId(layer, marker.id);
+              }
+            }}
+            eventHandlers={{
+              click: () => {
+                if (marker.linked_map) {
+                  onOpenMap(marker.linked_map);
+                } else if (marker.entity_id) {
+                  onOpenEntity(marker.entity_id);
+                }
+              },
+              contextmenu: (event) => {
+                const [x, y] = leafletToWorld(
+                  event.latlng.lat,
+                  event.latlng.lng,
+                  imageWidth,
+                  imageHeight,
+                );
+                const syntheticEvent = {
+                  preventDefault: () => undefined,
+                  clientX: event.originalEvent.clientX,
+                  clientY: event.originalEvent.clientY,
+                } as React.MouseEvent;
+                onOpenMarkerMenu(syntheticEvent, x, y, marker.id);
+              },
+            }}
+          >
+            {(marker.tooltip || marker.label) && (
+              <LeafletTooltip>{marker.tooltip || marker.label}</LeafletTooltip>
+            )}
+          </Polyline>
+        ))}
+
+      {visibleMarkers
+        .filter((marker) => marker.type !== "area" && marker.type !== "path")
+        .map((marker) => (
+          <CampaignMarker
+            key={marker.id}
+            marker={marker}
+            imageWidth={imageWidth}
+            imageHeight={imageHeight}
+            onOpenEntity={onOpenEntity}
+            onOpenMap={onOpenMap}
+            onOpenMarkerMenu={onOpenMarkerMenu}
+            onMarkerMove={onMarkerMove}
+          />
+        ))}
+
+      {visibleMarkers
+        .filter(
+          (marker) =>
+            marker.label &&
+            !marker.hide_label &&
+            ((marker.type === "area" &&
+              marker.points &&
+              marker.points.length >= 3) ||
+              (marker.type === "path" &&
+                marker.points &&
+                marker.points.length >= 2)),
+        )
+        .map((marker) => (
+          <Marker
+            key={`${marker.id}-label`}
+            position={worldToLeaflet(
+              getLabelWorldPoint(marker.points!),
+              imageWidth,
+              imageHeight,
+            )}
+            icon={markerLabelIcon(marker.label!)}
+            interactive={false}
+            keyboard={false}
+          />
+        ))}
+    </>
   );
+}
+
+function CampaignMarker({
+  marker,
+  imageWidth,
+  imageHeight,
+  onOpenEntity,
+  onOpenMap,
+  onOpenMarkerMenu,
+  onMarkerMove,
+}: CampaignMarkerProps) {
+  const position = worldToLeaflet(
+    [marker.x, marker.y],
+    imageWidth,
+    imageHeight,
+  );
+
+  return (
+    <>
+      <Marker
+        position={position}
+        icon={markerIcon(marker.icon)}
+        draggable
+        pmIgnore
+        ref={(layer) => {
+          if (layer) {
+            setMapLayerMarkerId(layer, marker.id);
+          }
+        }}
+        eventHandlers={{
+          dragend: (event) => {
+            console.log("dragend!");
+
+            const leafletMarker = event.target as L.Marker;
+            const latLng = leafletMarker.getLatLng();
+            const [x, y] = leafletToWorld(
+              latLng.lat,
+              latLng.lng,
+              imageWidth,
+              imageHeight,
+            );
+            onMarkerMove({
+              ...marker,
+              x,
+              y,
+            });
+          },
+          click: (e) => {
+            console.log("click!", e);
+            if (marker.linked_map) {
+              onOpenMap(marker.linked_map);
+            } else if (marker.entity_id) {
+              onOpenEntity(marker.entity_id);
+            }
+          },
+          contextmenu: (event) => {
+            const [x, y] = leafletToWorld(
+              event.latlng.lat,
+              event.latlng.lng,
+              imageWidth,
+              imageHeight,
+            );
+            const syntheticEvent = {
+              preventDefault: () => undefined,
+              clientX: event.originalEvent.clientX,
+              clientY: event.originalEvent.clientY,
+            } as React.MouseEvent;
+            onOpenMarkerMenu(syntheticEvent, x, y, marker.id);
+          },
+        }}
+      >
+        {(marker.tooltip || marker.label) && (
+          <LeafletTooltip>{marker.tooltip || marker.label}</LeafletTooltip>
+        )}
+      </Marker>
+      {marker.label && !marker.hide_label && (
+        <Marker
+          position={position}
+          icon={markerLabelIcon(marker.label)}
+          interactive={false}
+          keyboard={false}
+        />
+      )}
+    </>
+  );
+}
+
+function GeomanController({
+  mapData,
+  imageWidth,
+  imageHeight,
+  onShapeCreated,
+  onShapeEdited,
+}: GeomanControllerProps) {
+  const map = useMap();
+
+  // ---------------------------------------------------------
+  // Geoman controls: initialize ONCE for this map
+  // ---------------------------------------------------------
+  useEffect(() => {
+    map.pm.addControls({
+      position: "topleft",
+      drawMarker: false,
+      drawCircleMarker: false,
+      drawCircle: false,
+      drawRectangle: false,
+      drawText: false,
+      drawPolyline: true,
+      drawPolygon: true,
+      editMode: true,
+      dragMode: true,
+      cutPolygon: false,
+      removalMode: false,
+      rotateMode: false,
+    });
+
+    return () => {
+      map.pm.removeControls();
+    };
+  }, [map]);
+
+  // ---------------------------------------------------------
+  // Shape creation
+  // ---------------------------------------------------------
+  useEffect(() => {
+    const handleCreate = (event: GeomanCreateEvent) => {
+      const points = layerToPoints(event.layer, imageWidth, imageHeight);
+
+      if (!points || points.length === 0) {
+        return;
+      }
+
+      const type =
+        event.layer instanceof L.Polygon
+          ? "area"
+          : event.layer instanceof L.Polyline
+            ? "path"
+            : null;
+
+      if (!type) {
+        event.layer.removeFrom(map);
+        return;
+      }
+
+      const marker: MapMarker = {
+        id: crypto.randomUUID(),
+        entity_id: "",
+        type,
+        x: points[0][0],
+        y: points[0][1],
+        points,
+        visible: true,
+        dm_only: false,
+        hide_label: false,
+        fill_color: "#1976d2",
+        fill_opacity: 0.2,
+      };
+
+      event.layer.removeFrom(map);
+      onShapeCreated(marker);
+    };
+
+    map.on("pm:create", handleCreate as L.LeafletEventHandlerFn);
+
+    return () => {
+      map.off("pm:create", handleCreate as L.LeafletEventHandlerFn);
+    };
+  }, [map, imageWidth, imageHeight, onShapeCreated]);
+
+  // ---------------------------------------------------------
+  // Existing shape editing / dragging
+  // ---------------------------------------------------------
+  useEffect(() => {
+    const handleDragEnd = (event: GeomanEditEvent) => {
+      console.log("[Geoman] dragend fired", event);
+
+      const markerId = getMapLayerMarkerId(event.layer);
+      console.log("[Geoman] dragged marker ID:", markerId);
+
+      if (!markerId) {
+        console.log("[Geoman] dragged layer has no marker ID");
+        return;
+      }
+
+      const points = layerToPoints(event.layer, imageWidth, imageHeight);
+
+      console.log("[Geoman] dragged layer points:", points);
+
+      if (!points) {
+        return;
+      }
+
+      const existingMarker = mapData.markers.find(
+        (marker) => marker.id === markerId,
+      );
+
+      if (!existingMarker) {
+        console.log("[Geoman] dragged marker not found");
+        return;
+      }
+
+      const updatedMarker: MapMarker = {
+        ...existingMarker,
+        points,
+        x: points[0]?.[0] ?? existingMarker.x,
+        y: points[0]?.[1] ?? existingMarker.y,
+      };
+
+      console.log("[Geoman] saving dragged layer:", updatedMarker);
+
+      onShapeEdited(updatedMarker);
+    };
+
+    const handleEdit = (event: GeomanEditEvent) => {
+      console.log("[Geoman] edit event fired", event);
+
+      const markerId = getMapLayerMarkerId(event.layer);
+      console.log("[Geoman] marker ID:", markerId);
+
+      if (!markerId) {
+        console.log("[Geoman] no marker ID found");
+        return;
+      }
+
+      const points = layerToPoints(event.layer, imageWidth, imageHeight);
+
+      console.log("[Geoman] converted points:", points);
+
+      if (!points) {
+        console.log("[Geoman] could not convert layer to points");
+        return;
+      }
+
+      const existingMarker = mapData.markers.find(
+        (marker) => marker.id === markerId,
+      );
+
+      console.log("[Geoman] existing marker:", existingMarker);
+
+      if (!existingMarker) {
+        console.log("[Geoman] marker not found in mapData");
+        return;
+      }
+
+      const updatedMarker: MapMarker = {
+        ...existingMarker,
+        points,
+        x: points[0]?.[0] ?? existingMarker.x,
+        y: points[0]?.[1] ?? existingMarker.y,
+      };
+
+      console.log("[Geoman] calling onShapeEdited:", updatedMarker);
+
+      onShapeEdited(updatedMarker);
+    };
+
+    const shapeLayers: L.Layer[] = [];
+
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+        const markerId = getMapLayerMarkerId(layer);
+
+        if (markerId) {
+          console.log("[Geoman] attaching handlers to:", markerId);
+
+          layer.on("pm:update", handleEdit as L.LeafletEventHandlerFn);
+
+          layer.on("pm:dragend", handleDragEnd as L.LeafletEventHandlerFn);
+
+          shapeLayers.push(layer);
+        }
+      }
+    });
+
+    return () => {
+      shapeLayers.forEach((layer) => {
+        layer.off("pm:update", handleEdit as L.LeafletEventHandlerFn);
+
+        layer.off("pm:dragend", handleDragEnd as L.LeafletEventHandlerFn);
+      });
+    };
+  }, [map, mapData.markers, imageWidth, imageHeight, onShapeEdited]);
+
+  // ---------------------------------------------------------
+  // Make sure rendered shape layers have their marker IDs
+  // ---------------------------------------------------------
+  useEffect(() => {
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+        const marker = mapData.markers.find((candidate) => {
+          if (candidate.type !== "area" && candidate.type !== "path") {
+            return false;
+          }
+
+          if (!candidate.points || candidate.points.length === 0) {
+            return false;
+          }
+
+          return getMapLayerMarkerId(layer) === candidate.id;
+        });
+
+        if (marker) {
+          setMapLayerMarkerId(layer, marker.id);
+        }
+      }
+    });
+  }, [map, mapData.markers]);
+
+  return null;
 }
 
 export default MapsPage;

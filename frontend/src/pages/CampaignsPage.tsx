@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-    Box,
+  Box,
+  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -13,13 +15,16 @@ import {
 import type { Campaign, WorldData } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
+import formatStatusLabel from "../utils/formatStatusLabel";
 
 type CampaignCardProps = {
   campaign: Campaign;
   onOpen: () => void;
+  onOpenDashboard: () => void;
 };
 
 function CampaignsPage() {
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +101,7 @@ function CampaignsPage() {
                 <CampaignCard
                   campaign={campaign}
                   onOpen={() => openEntity(campaign.id)}
+                  onOpenDashboard={() => navigate(`/campaigns/${campaign.id}`)}
                 />
               </Grid>
             ))}
@@ -115,7 +121,7 @@ function CampaignsPage() {
   );
 }
 
-function CampaignCard({ campaign, onOpen }: CampaignCardProps) {
+function CampaignCard({ campaign, onOpen, onOpenDashboard }: CampaignCardProps) {
   return (
     <Card>
       <CardActionArea onClick={onOpen}>
@@ -133,7 +139,7 @@ function CampaignCard({ campaign, onOpen }: CampaignCardProps) {
                 {campaign.name}
               </Typography>
 
-              {campaign.status && <Chip size="small" label={campaign.status} />}
+              {campaign.status && <Chip size="small" label={formatStatusLabel(campaign.status)} />}
             </Stack>
 
             {campaign.description && (
@@ -167,19 +173,24 @@ function CampaignCard({ campaign, onOpen }: CampaignCardProps) {
             >
               <Chip
                 size="small"
-                label={`${campaign.player_characters.length} PCs`}
+                label={`${campaign.player_characters?.length ?? 0} PCs`}
               />
 
-              <Chip size="small" label={`${campaign.npcs.length} NPCs`} />
+              <Chip size="small" label={`${campaign.npcs?.length ?? 0} NPCs`} />
 
               <Chip
                 size="small"
-                label={`${campaign.locations.length} locations`}
+                label={`${campaign.locations?.length ?? 0} locations`}
               />
             </Stack>
           </Stack>
         </CardContent>
       </CardActionArea>
+      <CardContent sx={{ pt: 0 }}>
+        <Button onClick={onOpenDashboard} variant="contained" size="small">
+          Open Campaign Dashboard
+        </Button>
+      </CardContent>
     </Card>
   );
 }

@@ -12,7 +12,7 @@ type MarkerDrawerProps = {
   mode: "create" | "edit";
   onClose: () => void;
   onSave: (marker: MapMarker) => void;
-  onStartDrawing?: (type: "area" | "path") => void;
+  onStartDrawing?: (type: "area" | "path", marker?: MapMarker) => void;
 };
 
 function MarkerDrawer({
@@ -97,13 +97,47 @@ function MarkerDrawer({
                   />
                 ))}
             </Stack>
+            {formData && mode === "create" && (
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    onStartDrawing?.("area", {
+                      ...formData,
+                      type: "area",
+                    })
+                  }
+                >
+                  Draw Area
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    onStartDrawing?.("path", {
+                      ...formData,
+                      type: "path",
+                    })
+                  }
+                >
+                  Draw Path
+                </Button>
+              </Stack>
+            )}
+
             {formData &&
+              mode === "edit" &&
               (formData.type === "area" || formData.type === "path") && (
                 <Button
                   variant="outlined"
-                  onClick={() => onStartDrawing?.(formData.type)}
+                  onClick={() => {
+                    const shapeType = formData.type;
+                    if (shapeType === "area" || shapeType === "path") {
+                      onStartDrawing?.(shapeType, formData);
+                    }
+                  }}
                 >
-                  Draw on Map
+                  Edit Shape
                 </Button>
               )}
             <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
