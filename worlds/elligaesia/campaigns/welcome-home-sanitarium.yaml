@@ -1,0 +1,549 @@
+id: welcome-home-sanitarium
+name: Welcome Home (Sanitarium)
+description: 'An unfinished campaign about two explorers hired by Wicket Warrick to
+  investigate a hidden city, while Aerith is drawn into the return of her family''s
+  lost city and its mechanized golems.
+
+  '
+created: '2026-10-06T18:07:04.230360'
+updated: '2026-10-06T18:07:04.230366'
+overview: 'A puzzle and exploration campaign with a science-fantasy tone. Two explorers
+  meet Wicket Warrick at the docks in Minrath and accept passage aboard his flying
+  ship, The Hive. In parallel, Aerith is held in the floating elven city ruled by
+  her uncle Dorith. The party''s journeys converge amid a rebellion, a dangerous storm,
+  and a series of ancient chambers leading toward the power source of the city''s
+  golems.
+
+  '
+status: paused
+locations:
+- minrath
+- stratos
+npcs:
+- wicket-warrick
+- glog
+- gloc
+- chirpa
+- dorith
+- aerick
+- orik
+player_characters:
+- sirr
+- freya
+- aerith
+world_stories:
+- bane-overarching-story
+world_story_threads:
+- world_story_id: bane-overarching-story
+  thread_id: dwarmar-artifacts-activate
+outcome: null
+consequences: null
+story:
+  beats:
+  - id: meet-wicket-warrick
+    name: Meet Wicket Warrick
+    description: 'Two explorers wait at the docks in Minrath for Wicket Warrick, a
+      mysterious contact who promises to take them somewhere extraordinary.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: completed
+    act: null
+    order: 1
+    triggers:
+    - The explorers meet Wicket at the agreed dock and time.
+    events: 'Wicket arrives aboard The Hive with his orc bodyguards, Glog and Gloc.
+      A dispute with the port master over docking fees is defused with a bag of payment.
+      Wicket offers the explorers a share of whatever they find.
+
+      '
+    secrets:
+    - Wicket is deliberately vague about the destination because he enjoys keeping
+      people curious and does not want listeners to learn his plans.
+    - Wicket believes the destination is a wealthy city in the sky and expects its
+      treasure and technology to make the expedition worthwhile.
+    possible_approaches:
+    - Negotiate Wicket's promised share before accepting.
+    - Ask the port master about The Hive or its unusual crew.
+    - Inspect the ship and its octagonal doors and windows.
+    leads_to:
+    - explore-the-hive
+    locations:
+    - minrath
+    npcs:
+    - wicket-warrick
+    - glog
+    - gloc
+    player_characters:
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: aerith-held-in-stratos
+    name: Aerith Held in the City
+    description: Aerith wakes in a stone cell high on a mountainside, guarded by silent
+      golems. After several days, Dorith arrives and claims to recognize her as the
+      lost princess.
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: completed
+    act: null
+    order: 2
+    triggers:
+    - Aerith has been held in the cell for several days.
+    events: Dorith releases Aerith, offers food and clean clothes, and returns some
+      of her belongings. He keeps their conversation private and limits what he tells
+      her about the city and her family.
+    secrets:
+    - Dorith does not want the people around them to know Aerith's identity until
+      he has spoken with her privately.
+    - Aerith has spoken with Dorith and is suspicious of his account.
+    - The smaller golem beside Dorith is Aerith's mother, Elorith, transformed and
+      controlled.
+    possible_approaches:
+    - Examine the old drawings and signs that Aerith once lived in the room.
+    - Question Dorith about the city, her parents, and the golems.
+    - Look for signs that the city is controlled by more than its visible guards.
+    leads_to:
+    - doriths-account
+    - arrive-at-stratos
+    locations:
+    - stratos
+    npcs:
+    - dorith
+    - elorith
+    - aerick
+    player_characters:
+    - aerith
+    consequences: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: dwarmar-artifacts-activate
+  - id: doriths-account
+    name: Dorith's Account
+    description: 'Dorith tells Aerith that her father trapped the city in the sky
+      to keep its ancient technology from the outside world. Dorith presents himself
+      as the one who wants to share that technology.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: completed
+    act: null
+    order: 3
+    triggers:
+    - Aerith speaks privately with Dorith during the journey or at the city.
+    events: 'Dorith describes the city''s ancient technology and the altar that may
+      teleport people across distance or time. He says Aerith''s father hid or took
+      the key that can control it.
+
+      '
+    secrets:
+    - Dorith's account is not fully trustworthy; Aerith has already become suspicious
+      of him.
+    - The original draft calls the destination Nevarro. Current world records identify
+      the matching floating city as Stratos; confirm whether Nevarro is an earlier
+      name or a separate place.
+    - The elves independently learned to activate Stratos's Dwarmar mechanism. Gnomes independently use Dwarmar power sources to operate flying ships. These sources contain remnants of Bane's power, but neither people knows this.
+    possible_approaches:
+    - Ask Dorith why the city has no ordinary workers in its halls.
+    - Compare his account with the history shown in the old paintings.
+    - Keep the key and altar's role secret from the golems and the public.
+    leads_to:
+    - arrive-at-stratos
+    locations:
+    - stratos
+    npcs:
+    - dorith
+    - aerick
+    player_characters:
+    - aerith
+    consequences: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: dwarmar-artifacts-activate
+  - id: explore-the-hive
+    name: Explore The Hive
+    description: 'While The Hive crosses the Shifting Sands, the explorers can learn
+      how the ship works and decide whether to investigate its guarded engine room.
+      Freya has not yet decided how to spend her time aboard.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: in_progress
+    act: null
+    order: 4
+    triggers:
+    - The explorers accept Wicket's offer and board The Hive.
+    events: 'The ship is warm and unusually quiet. Its crew includes bees and orcs
+      with name tags; the bees tend the ship and serve mead. The engine room is guarded,
+      the captain''s quarters are locked, and the journey will take at least three
+      days.
+
+      '
+    secrets:
+    - The bees do not power the ship; magic does. Wicket lets people believe otherwise.
+    - Wicket uses orc souls to help power The Hive's ancient Dwarmar source. Gnomes independently learned to use Dwarmar power sources for their flying ships, while the elves independently activated Stratos's source. Each contains a remnant of Bane's power, but no one aboard knows this.
+    - Wicket's arrangement with the queen of the bees involves protecting her lands
+      from orc invaders in exchange for the bees' labor; the source notes do not clarify
+      the orcs' exact role in that bargain.
+    - Wicket becomes angry when an orc drops a traveler's belongings and says the
+      orc may be chosen the next day. The orcs appear frightened but quickly resume
+      their blank demeanor.
+    possible_approaches:
+    - Decide what Freya does during the day aboard the ship.
+    - Explore the ship's decks, crew quarters, storage area, and mead bar.
+    - Try to enter the engine room past its two bee guards.
+    - Sneak through the storage room toward the engine room.
+    - Ask Wicket about the buzzing, the bees, the orcs, or the ship's power.
+    leads_to:
+    - cross-the-shifting-sands
+    locations: []
+    npcs:
+    - wicket-warrick
+    - glog
+    - gloc
+    - chirpa
+    player_characters:
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: dwarmar-artifacts-activate
+  - id: cross-the-shifting-sands
+    name: Cross the Shifting Sands
+    description: 'The Hive approaches a massive storm over the Shifting Sands. Wicket
+      plans to ride the wind around the tornado, climb above its eye, and descend
+      through the center.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 5
+    triggers:
+    - The ship reaches the storm above the Shifting Sands.
+    events: 'The party and crew work the ship''s wings under Chirpa''s directions.
+      Strength checks become harder as the ship circles the storm, while lightning
+      strikes can damage the ship. A severe failure may send it spinning into the
+      storm and toward a crash.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Help operate one of the ship's wings.
+    - Protect the crew and ship when lightning strikes.
+    - Find another way to stabilize the ship if Wicket's plan fails.
+    leads_to:
+    - arrive-at-stratos
+    locations: []
+    npcs:
+    - wicket-warrick
+    - chirpa
+    player_characters:
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: arrive-at-stratos
+    name: Arrive at Stratos
+    description: 'Aerith is presented to the people of the floating city as the lost
+      princess who can help them leave. The explorers aboard The Hive arrive through
+      the storm, bringing the separated storylines together.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 6
+    triggers:
+    - Aerith reaches the city with Dorith.
+    - The explorers survive the storm and reach the floating city.
+    events: 'Dorith addresses the crowd and demands that the rebellion surrender.
+      The crowd''s response shifts after the golems stand alert. The Hive then appears
+      through the storm and crashes into the city, destroying the golems surrounding
+      Aerith and pinning Dorith under wreckage.
+
+      '
+    secrets:
+    - The source draft calls this city Nevarro; the current setting entity is Stratos.
+    - Dorith claims that Aerith's father is responsible for trapping the city and
+      that the altar can release it.
+    possible_approaches:
+    - Help Aerith evade the golems and reach the crowd.
+    - Try to prevent the ship from crashing into the city.
+    - Use the confusion to help Dorith, flee, or make contact with the rebellion.
+    leads_to:
+    - meet-the-resistance
+    locations:
+    - stratos
+    npcs:
+    - dorith
+    - aerick
+    - wicket-warrick
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: dwarmar-artifacts-activate
+  - id: meet-the-resistance
+    name: Meet the Resistance
+    description: 'Rebels pull survivors from the wreckage and take the party to a
+      hidden base. They want help reaching the source that powers the golems.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 7
+    triggers:
+    - Rebels approach the party after the crash.
+    events: 'A rebel woman leads Aerith away while others search the wreckage for
+      survivors. The group must decide whether to trust the resistance and how to
+      deal with Dorith and the damaged city.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Accept the rebels' help and learn what they know about the golems.
+    - Rescue survivors from the wreckage before leaving.
+    - Conceal Aerith's identity or use it to negotiate with the rebels.
+    leads_to:
+    - descend-through-the-library
+    locations:
+    - stratos
+    npcs:
+    - dorith
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: descend-through-the-library
+    name: Descend Through the Library
+    description: 'The party enters the city''s library in protective suits. The locals
+      believe poisonous gas kills anyone who enters, but shadow creatures inhabit
+      the building and feed on intruders.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 8
+    triggers:
+    - The party accepts the resistance's plan to reach the golem power source.
+    events: 'The party must move through multiple floors toward the sewers. Wraiths
+      hide in dark areas, possess damaged suits, and return shortly after being defeated.
+      Fire and intense light can drive them back.
+
+      '
+    secrets:
+    - The suits prevent exposure to the supposed poison, but they do not prevent the
+      wraiths from possessing a wearer after the suit is breached.
+    - Orik can light the darkened room long enough for the party to escape, but the
+      source draft has him sacrifice himself to buy that time.
+    possible_approaches:
+    - Use intense light or fire to keep the wraiths away.
+    - Protect the suits and retreat when one is breached.
+    - Continue down toward the sewers and the hidden route to the power source.
+    - Choose whether to stay and help Orik or use his sacrifice to escape.
+    leads_to:
+    - abandoned-chamber
+    locations:
+    - stratos
+    npcs:
+    - orik
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: abandoned-chamber
+    name: The Abandoned Chamber
+    description: 'A chamber of doors and matching keyholes separates the party from
+      the path ahead. One chamber contains Weeping Angels that can transport a character
+      into another realm, forcing the separated group to cooperate.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 9
+    triggers:
+    - The party escapes the library and reaches the ancient chambers.
+    events: 'The source proposes isolating a party member in a strange realm while
+      the others work to open a door from the chamber.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Keep watch on the statues and coordinate movement through the room.
+    - Communicate with a separated party member and find a way to reunite.
+    - Search the adjoining doors for a safer route.
+    leads_to:
+    - solve-the-ancient-rooms
+    locations:
+    - stratos
+    npcs: []
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: solve-the-ancient-rooms
+    name: Solve the Ancient Rooms
+    description: 'A sequence of puzzle rooms guards the route to the golem power source.
+      The rooms test observation, cooperation, memory, and willingness to endure apparent
+      failure.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 10
+    triggers:
+    - The party opens the route beyond the abandoned chamber.
+    events: 'Prepared room ideas include a button that resets descending ceiling spikes;
+      a spider encounter that can be approached stealthily or fought; four riddles
+      with two failures allowed; a hidden floor path where levitation is suppressed;
+      a water-measuring puzzle above rising lava; a mirror that reveals a key and
+      an invisible guardian tracked by sand; a maze creature that is forgotten whenever
+      the party looks away; and guards where one always lies and one always tells
+      the truth.
+
+      '
+    secrets: []
+    possible_approaches:
+    - Test what the button changes before deciding whether it is a trap.
+    - Use stealth to pass the spider or risk a fight.
+    - Solve the riddles before the two permitted failures are used.
+    - Look for environmental clues to the hidden floor path.
+    - Measure water between the two containers to match the required amount.
+    - Use the mirror and disturbed sand to locate the guardian and key.
+    - Record actions and injuries in the memory-loss maze so the party can compare
+      notes.
+    - Determine which guard lies before choosing a door.
+    leads_to:
+    - reach-the-golem-power-source
+    locations:
+    - stratos
+    npcs: []
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - id: reach-the-golem-power-source
+    name: Reach the Golem Power Source
+    description: 'The party reaches the power source that sustains the city''s golems
+      and the technology keeping the city aloft. The source draft does not yet decide
+      what the party does with it.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 11
+    triggers:
+    - The party passes the library and ancient chambers to reach the source.
+    events: null
+    secrets: []
+    possible_approaches:
+    - Disable the mechanism and free the people controlled by the golems.
+    - Search for a way to descend the city safely before disrupting its power.
+    - Preserve or repurpose the source rather than destroying it.
+    leads_to: []
+    locations:
+    - stratos
+    npcs:
+    - dorith
+    - aerick
+    player_characters:
+    - aerith
+    - sirr
+    - freya
+    consequences: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: dwarmar-artifacts-activate
+  current_beat: explore-the-hive
+  player_actions:
+  - id: sirr-killed-guard-bees
+    description: Sirr killed two guard bees outside the engine room without alerting
+      anyone.
+    session: null
+    story_beat: explore-the-hive
+    consequence_ids: []
+    world_stories: []
+    world_story_threads: []
+    reviewed: true
+    notes: The source comment recorded Sirr at 12 HP at that point; treat this as
+      a snapshot, not guaranteed current hit points.
+  session_recaps: []
+  world_clocks: []

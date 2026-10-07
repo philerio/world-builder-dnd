@@ -9,20 +9,35 @@ type: conflict
 status: ongoing
 
 locations:
-  - serenno
+  - serenno-city
 
-campaigns: []
+campaigns:
+  - the-unforgiven
 
-caused_by: []
+caused_by:
+  - the-unforgiven
 
-true_causes: []
+true_causes:
+  - bane
 
-hidden_connections: []
+hidden_connections:
+  - bane
+  - dwarmar
+  - bane-overarching-story
+
+world_stories:
+  - bane-overarching-story
+
+world_story_threads:
+  - world_story_id: bane-overarching-story
+    thread_id: influence-unleashed
 
 dm_notes: >
   The assassination of Serenno's ruling family is the immediate cause
-  of the civil war. The deeper circumstances surrounding the
-  assassination have not yet been established.
+  of the civil war. The larger chain of events is a result of Bane's
+  influence, unleashed after The Unforgiven. The public does not know
+  this, and the specific agents or intermediate causes behind the
+  assassination remain undetermined.
 
 consequences: []
 

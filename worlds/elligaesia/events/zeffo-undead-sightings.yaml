@@ -1,27 +1,37 @@
 id: zeffo-undead-sightings
 name: Zeffo Undead Sightings
+description: 'Rumors have spread of undead appearing in the woods of Zeffo.
 
-description: >
-  Rumors have spread of undead appearing in the woods of Zeffo.
-
+  '
+created: '2026-10-06T17:28:54.664236'
+updated: '2026-10-06T17:28:54.664242'
 type: supernatural
 status: rumored
-
 locations:
-  - zeffo
+- the-woods-of-zeffo-location
+characters: []
+campaigns:
+- the-unforgiven
+world_stories:
+- bane-overarching-story
+world_story_threads:
+- world_story_id: bane-overarching-story
+  thread_id: influence-unleashed
+story_sources: []
+timeline_event_id: null
+caused_by:
+- the-unforgiven
+true_causes:
+- bane
+hidden_connections:
+- bane
+- dwarmar
+- bane-overarching-story
+dm_notes: 'The reports of undead are currently only rumors. Their appearance is a result
+  of Bane''s influence, unleashed after The Unforgiven. The people of Zeffo do not
+  know this. The specific mechanism and any connection to a particular artifact
+  have not been established.
 
-campaigns: []
-
-caused_by: []
-
-true_causes: []
-
-hidden_connections: []
-
-dm_notes: >
-  The reports of undead are currently only rumors. The actual cause
-  and nature of the undead activity have not yet been established.
-
+  '
 consequences: []
-
 potential_campaign: true

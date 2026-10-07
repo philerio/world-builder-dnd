@@ -29,6 +29,18 @@ function CharactersPage({ data }: CharactersPageProps) {
     useEntityDrawer();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const allCharacters = [...data.player_characters, ...data.npcs];
+  const entityNameById = new Map(
+    [
+      ...data.continents,
+      ...data.kingdoms,
+      ...data.regions,
+      ...data.cities,
+      ...(data.locations ?? []),
+      ...data.player_characters,
+      ...data.npcs,
+    ].map((entity) => [entity.id, entity.name] as const),
+  );
+  const getEntityName = (id: string) => entityNameById.get(id) ?? id;
   const getUniqueValues = (values: (string | undefined)[]): string[] => {
     return [
       ...new Set(values.filter((value): value is string => Boolean(value))),
@@ -43,7 +55,7 @@ function CharactersPage({ data }: CharactersPageProps) {
         allCharacters.map((character) => character.role),
       ).map((value) => ({
         value,
-        label: value,
+        label: getEntityName(value),
       })),
     },
     {
@@ -53,7 +65,7 @@ function CharactersPage({ data }: CharactersPageProps) {
         allCharacters.map((character) => character.kingdom),
       ).map((value) => ({
         value,
-        label: value,
+        label: getEntityName(value),
       })),
     },
     {
@@ -63,7 +75,7 @@ function CharactersPage({ data }: CharactersPageProps) {
         allCharacters.map((character) => character.region),
       ).map((value) => ({
         value,
-        label: value,
+        label: getEntityName(value),
       })),
     },
     {
@@ -73,7 +85,7 @@ function CharactersPage({ data }: CharactersPageProps) {
         allCharacters.map((character) => character.city),
       ).map((value) => ({
         value,
-        label: value,
+        label: getEntityName(value),
       })),
     },
   ];
@@ -159,6 +171,7 @@ function CharactersPage({ data }: CharactersPageProps) {
           description="The heroes whose stories are being played at the table."
           characters={filteredPlayerCharacters}
           icon={<GroupsIcon color="primary" />}
+          getEntityName={getEntityName}
           onSelect={openEntity}
         />
 
@@ -176,6 +189,7 @@ function CharactersPage({ data }: CharactersPageProps) {
           description="The people, allies, enemies, and other characters encountered in the world."
           characters={filteredNPCs}
           icon={<PersonIcon color="primary" />}
+          getEntityName={getEntityName}
           onSelect={openEntity}
         />
       </Box>
@@ -197,12 +211,14 @@ function CharacterSection({
   description,
   characters,
   icon,
+  getEntityName,
   onSelect,
 }: {
   title: string;
   description: string;
   characters: Character[];
   icon: React.ReactNode;
+  getEntityName: (id: string) => string;
   onSelect: (id: string) => void;
 }) {
   return (
@@ -262,11 +278,15 @@ function CharacterSection({
                     }}
                   >
                     {character.city && (
-                      <Chip size="small" label={character.city} />
+                      <Chip size="small" label={getEntityName(character.city)} />
+                    )}
+
+                    {character.region && (
+                      <Chip size="small" label={getEntityName(character.region)} />
                     )}
 
                     {character.kingdom && (
-                      <Chip size="small" label={character.kingdom} />
+                      <Chip size="small" label={getEntityName(character.kingdom)} />
                     )}
                   </Stack>
 
@@ -294,7 +314,9 @@ function CharacterSection({
 
       {characters.length === 0 && (
         <Typography color="text.secondary">
-          No characters have been added yet.
+          {title === "NPCs"
+            ? "No NPCs match these filters."
+            : "No player characters match these filters."}
         </Typography>
       )}
     </Box>

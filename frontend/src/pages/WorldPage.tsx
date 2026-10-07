@@ -14,6 +14,8 @@ import useEntityDrawer from "../hooks/useEntityDrawer";
 import PublicIcon from "@mui/icons-material/Public";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import LandscapeIcon from "@mui/icons-material/Landscape";
+import CastleIcon from "@mui/icons-material/Castle";
+import PlaceIcon from "@mui/icons-material/Place";
 
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 
@@ -165,6 +167,47 @@ function WorldPage({ data }: WorldPageProps) {
                 <Divider sx={{ my: 5 }} />
 
                 <WorldSection
+                    title="Kingdoms"
+                    description="Nations and sovereign powers across the world."
+                >
+                    {data.kingdoms.length === 0 ? (
+                        <Typography color="text.secondary">No kingdoms have been added yet.</Typography>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {data.kingdoms.map((kingdom) => {
+                                const continent = data.continents.find((item) => item.id === kingdom.continent);
+                                const capital = data.cities.find((item) => item.id === kingdom.capital);
+                                const ruler = data.npcs.find((item) => item.id === kingdom.ruler);
+                                const cityCount = data.cities.filter((city) => city.kingdom === kingdom.id).length;
+                                return (
+                                    <Grid key={kingdom.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                        <Card sx={{ height: "100%" }}>
+                                            <CardActionArea sx={{ height: "100%" }} onClick={() => openEntity(kingdom.id)}>
+                                                <CardContent sx={{ p: 3 }}>
+                                                    <CastleIcon color="primary" sx={{ fontSize: 30, mb: 2 }} />
+                                                    <Typography variant="h3" sx={{ fontSize: "1.3rem" }}>{kingdom.name}</Typography>
+                                                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                                                        {continent?.name ?? "Continent not specified"}
+                                                    </Typography>
+                                                    {(capital || ruler) && (
+                                                        <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                                                            {[capital && `Capital: ${capital.name}`, ruler && `Ruler: ${ruler.name}`].filter(Boolean).join(" · ")}
+                                                        </Typography>
+                                                    )}
+                                                    <Chip size="small" label={`${cityCount} cities`} sx={{ mt: 2 }} />
+                                                </CardContent>
+                                            </CardActionArea>
+                                        </Card>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    )}
+                </WorldSection>
+
+                <Divider sx={{ my: 5 }} />
+
+                <WorldSection
                     title="Regions"
                     description="Regional divisions of the known continents."
                 >
@@ -292,6 +335,44 @@ function WorldPage({ data }: WorldPageProps) {
                             );
                         })}
                     </Grid>
+                </WorldSection>
+
+                <Divider sx={{ my: 5 }} />
+
+                <WorldSection
+                    title="Points of Interest"
+                    description="Places beyond the major settlements that matter to the world and its stories."
+                >
+                    {(data.locations ?? []).length === 0 ? (
+                        <Typography color="text.secondary">No points of interest have been added yet.</Typography>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {(data.locations ?? []).map((location) => {
+                                const region = data.regions.find((item) => item.id === location.region);
+                                const kingdom = data.kingdoms.find((item) => item.id === location.kingdom);
+                                return (
+                                    <Grid key={location.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                        <Card sx={{ height: "100%" }}>
+                                            <CardActionArea sx={{ height: "100%" }} onClick={() => openEntity(location.id)}>
+                                                <CardContent sx={{ p: 3 }}>
+                                                    <PlaceIcon color="primary" sx={{ fontSize: 30, mb: 2 }} />
+                                                    <Typography variant="h3" sx={{ fontSize: "1.3rem" }}>{location.name}</Typography>
+                                                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                                                        {[location.location_type, region?.name, kingdom?.name].filter(Boolean).join(" · ") || "Location"}
+                                                    </Typography>
+                                                    {location.description && (
+                                                        <Typography color="text.secondary" variant="body2" sx={{ mt: 1, lineHeight: 1.6 }}>
+                                                            {location.description}
+                                                        </Typography>
+                                                    )}
+                                                </CardContent>
+                                            </CardActionArea>
+                                        </Card>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    )}
                 </WorldSection>
             </Box>
 

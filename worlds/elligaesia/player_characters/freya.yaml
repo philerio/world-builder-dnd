@@ -1,0 +1,9 @@
+id: freya
+name: Freya
+description: An explorer traveling with the party aboard The Hive.
+role: player-character
+city: null
+region: null
+kingdom: null
+events: []
+relationships: []

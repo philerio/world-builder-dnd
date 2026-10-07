@@ -1,9 +1,10 @@
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 
 from worldbuilder.models.campaign import Campaign
-from worldbuilder.models.lore import Lore
 from worldbuilder.models.character import Character
 from worldbuilder.models.city import City
+from worldbuilder.models.lore import Lore
 from worldbuilder.models.map import Map
 from worldbuilder.models.story import CampaignStory, StoryContent, WorldStoryThreadLink
 from worldbuilder.models.timeline_event import TimelineEvent
@@ -18,6 +19,9 @@ class ValidationResult:
 
     def __init__(self) -> None:
         self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.issues: list[dict[str, str]] = []
+        self._entity_context: tuple[str, str] | None = None
 
     @property
     def is_valid(self) -> bool:
@@ -27,6 +31,32 @@ class ValidationResult:
     def add_error(self, message: str) -> None:
         """Add a validation error."""
         self.errors.append(message)
+        issue = {"message": message, "severity": "error"}
+        if self._entity_context:
+            entity_type, entity_id = self._entity_context
+            issue["source_type"] = entity_type
+            issue["source_id"] = entity_id
+        self.issues.append(issue)
+
+    def add_warning(self, message: str) -> None:
+        """Record a non-blocking data quality warning."""
+        self.warnings.append(message)
+        issue = {"message": message, "severity": "warning"}
+        if self._entity_context:
+            entity_type, entity_id = self._entity_context
+            issue["source_type"] = entity_type
+            issue["source_id"] = entity_id
+        self.issues.append(issue)
+
+    @contextmanager
+    def entity_context(self, entity_type: str, entity_id: str) -> Iterator[None]:
+        """Attach the entity being checked to any errors raised in this scope."""
+        previous_context = self._entity_context
+        self._entity_context = (entity_type, entity_id)
+        try:
+            yield
+        finally:
+            self._entity_context = previous_context
 
 
 def validate_reference(
@@ -47,63 +77,73 @@ def validate_registry(registry: WorldRegistry) -> ValidationResult:
     result = ValidationResult()
 
     for world in registry.worlds.values():
-        if not isinstance(world, World):
-            result.add_error(
-                f"Invalid world object: {world!r}"
-            )
+        with result.entity_context("world", world.id):
+            if not isinstance(world, World):
+                result.add_error(
+                    f"Invalid world object: {world!r}"
+                )
 
     for city in registry.cities.values():
-        validate_city_references(result, city, registry)
+        with result.entity_context("city", city.id):
+            validate_city_references(result, city, registry)
 
     for npc in registry.npcs.values():
-        validate_character_references(result, npc, registry)
-        validate_character_relationships(result, npc, registry)
+        with result.entity_context("npc", npc.id):
+            validate_character_references(result, npc, registry)
+            validate_character_relationships(result, npc, registry)
 
     for player_character in registry.player_characters.values():
-        validate_character_references(
-            result,
-            player_character,
-            registry,
-        )
-        validate_character_relationships(
-            result,
-            player_character,
-            registry,
-        )
+        with result.entity_context("player_character", player_character.id):
+            validate_character_references(
+                result,
+                player_character,
+                registry,
+            )
+            validate_character_relationships(
+                result,
+                player_character,
+                registry,
+            )
 
     for campaign in registry.campaigns.values():
-        validate_campaign_references(
-            result,
-            campaign,
-            registry,
-        )
+        with result.entity_context("campaign", campaign.id):
+            validate_campaign_references(
+                result,
+                campaign,
+                registry,
+            )
 
     for event in registry.timeline_events.values():
-        validate_timeline_event_references(
-            result,
-            event,
-            registry,
-        )
+        with result.entity_context("timeline_event", event.id):
+            validate_timeline_event_references(
+                result,
+                event,
+                registry,
+            )
 
     for event in registry.world_events.values():
-        validate_world_event_references(
-            result,
-            event,
-            registry,
-        )
+        with result.entity_context("world_event", event.id):
+            validate_world_event_references(
+                result,
+                event,
+                registry,
+            )
 
     for lore in registry.lores.values():
-        validate_lore_references(result, lore, registry)
+        with result.entity_context("lore", lore.id):
+            validate_lore_references(result, lore, registry)
 
     for story in registry.world_stories.values():
-        validate_world_story_references(result, story, registry)
+        with result.entity_context("world_story", story.id):
+            validate_world_story_references(result, story, registry)
 
     for map_object in registry.maps.values():
-        validate_map_references(
-            result,
-            map_object,
-            registry,
-        )
+        with result.entity_context("map", map_object.id):
+            validate_map_references(
+                result,
+                map_object,
+                registry,
+            )
     return result
 
 
@@ -395,25 +435,12 @@ def validate_story_content(
 ) -> None:
     """Validate entity references contained in story content."""
     for node in story.nodes:
-        if node.type == "entity_link":
-            if registry.get_entity(node.entity_id) is None:
-                result.add_error(
-                    f"Unknown entity ID in story: {node.entity_id}"
-                )
-
-
-def validate_map_references(
-    result: ValidationResult,
-    map_object: Map,
-    registry: WorldRegistry,
-) -> None:
-    """Validate entity references contained in map markers."""
-    for marker in map_object.markers:
-        if registry.get_entity(marker.entity_id) is None:
+        if node.type == "entity_link" and registry.get_entity(node.entity_id) is None:
             result.add_error(
-                f"Unknown entity ID in map marker: {marker.entity_id}"
+                f"Unknown entity ID in story: {node.entity_id}"
             )
-            
+
+
 def validate_map_references(
     result: ValidationResult,
     map_object: Map,
@@ -429,7 +456,7 @@ def validate_map_references(
         )
 
     for marker in map_object.markers:
-        if registry.get_entity(marker.entity_id) is None:
+        if marker.entity_id and registry.get_entity(marker.entity_id) is None:
             result.add_error(
                 f"Unknown entity ID in map marker: {marker.entity_id}"
             )

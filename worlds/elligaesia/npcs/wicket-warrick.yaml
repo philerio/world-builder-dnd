@@ -1,0 +1,28 @@
+id: wicket-warrick
+name: Wicket Warrick
+description: >
+  A gnome explorer and captain of The Hive. Wicket hires the party to explore a
+  place beyond the Shifting Sands in exchange for a share of whatever they find.
+role: Captain of The Hive
+city: null
+region: null
+kingdom: null
+details: >
+  Wicket enjoys keeping people curious and gives vague answers about his
+  destination. He arrives with two orc bodyguards, Glog and Gloc, and a crew
+  that includes large bees.
+motives:
+  - Reach the hidden city and claim valuable discoveries.
+  - Obtain a powerful source of energy for his fleet.
+goals:
+  - Complete the expedition across the Shifting Sands.
+fears: []
+secrets:
+  - Wicket believes the destination is a wealthy city in the sky.
+  - He intends to claim its power source for his fleet and may threaten to leave if the party demands too large a share.
+  - His ship is powered by orc souls and the same source as the city's golems, but he does not know the latter connection.
+knowledge:
+  - The Hive can cross the Shifting Sands and approach the storm above the destination.
+  - He knows the crew's rules and keeps the engine room off limits to passengers.
+events: []
+relationships: []

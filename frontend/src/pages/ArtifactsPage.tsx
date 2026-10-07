@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -14,7 +14,9 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 
-import type { Artifact, WorldData } from "../types";
+import type { Artifact } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
+import DashboardFilters from "../components/filters/DashboardFilters";
 
 type ArtifactCardProps = {
   artifact: Artifact;
@@ -22,41 +24,31 @@ type ArtifactCardProps = {
 };
 
 function ArtifactsPage() {
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const artifacts = worldData?.artifacts ?? [];
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data: WorldData) => {
-        setArtifacts(data.artifacts);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
+  if (worldDataLoading) {
     return <Typography color="text.secondary">Loading artifacts…</Typography>;
   }
 
-  if (error) {
+  if (worldDataError) {
     return (
-      <Typography color="error">Could not load artifacts: {error}</Typography>
+      <Typography color="error">Could not load artifacts: {worldDataError}</Typography>
     );
   }
+
+  const normalizedSearch = filters.search?.trim().toLowerCase() ?? "";
+  const filteredArtifacts = artifacts.filter((artifact) =>
+    [artifact.name, artifact.description, artifact.details]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(normalizedSearch),
+  );
 
   return (
     <Box>
@@ -88,6 +80,13 @@ function ArtifactsPage() {
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
+        <DashboardFilters
+          search={{ label: "Search artifacts", placeholder: "Name or details…" }}
+          onChange={setFilters}
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Showing {filteredArtifacts.length} of {artifacts.length} artifacts
+        </Typography>
         <Stack
           direction="row"
           sx={{
@@ -105,13 +104,13 @@ function ArtifactsPage() {
           Objects with significance to the world's history and stories.
         </Typography>
 
-        {artifacts.length === 0 ? (
+        {filteredArtifacts.length === 0 ? (
           <Typography color="text.secondary">
-            No artifacts have been added yet.
+            {artifacts.length === 0 ? "No artifacts have been added yet." : "No artifacts match this search."}
           </Typography>
         ) : (
           <Grid container spacing={2}>
-            {artifacts.map((artifact) => (
+            {filteredArtifacts.map((artifact) => (
               <Grid key={artifact.id} size={{ xs: 12, sm: 6, md: 4 }}>
                 <ArtifactCard
                   artifact={artifact}

@@ -19,7 +19,6 @@ npcs:
 - pattrice
 - nedda
 - frank
-- shana - alatar
 - dronath
 - ann
 - fredrick
@@ -81,6 +80,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: arrive-in-reqrun
     name: Arrive in Reqrun
     description: 'The party reaches the fork in the road outside town, already feeling
@@ -122,6 +123,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: ask-around-reqrun
     name: Follow the Town's Leads
     description: 'Farmers, Shana, and Alatar each offer partial accounts of the missing
@@ -164,6 +167,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: investigate-frank-and-the-inn
     name: Frank and the Mandolin
     description: 'Frank''s late-night fishing story, strange noises from the northern
@@ -206,6 +211,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: follow-the-northern-road
     name: The Northern Road Is Not Safe
     description: 'The northern route is unnaturally quiet, creatures have green eyes,
@@ -248,6 +255,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: survive-the-outposts
     name: The Road's Edge
     description: 'Travel north brings attacks, eerie quiet, and signs that the magic
@@ -288,6 +297,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: the-hag-test
     name: The Forest Tests the Party
     description: 'Voices and lights lure travelers off the hidden path. Following
@@ -325,6 +336,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: investigate-the-northern-lake
     name: The Corrupted Lake
     description: 'Dead fish, poisoned water, and a hidden cave entrance connect the
@@ -363,6 +376,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: enter-the-cave
     name: The Enchanted Door
     description: 'The cave''s rooms and enchanted locks suggest that someone built
@@ -397,6 +412,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: meet-dronath
     name: Dronath's Bargain
     description: 'Dronath explains why the animals are disappearing and offers a deal:
@@ -442,7 +459,11 @@ story:
       timing: Within three days of accepting.
       status: pending
       leads_to: []
+      world_stories: []
+      world_story_threads: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: return-to-reqrun
     name: Storms Over Reqrun
     description: 'Returning to town brings the party into a changed political situation:
@@ -484,6 +505,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: question-alatar
     name: The Healer's Past
     description: 'Alatar is a pacifist healer, not the fighter the party may expect.
@@ -529,7 +552,11 @@ story:
       status: pending
       leads_to:
       - confront-pattrice
+      world_stories: []
+      world_story_threads: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: confront-pattrice
     name: The Governor Is the Sorcerer
     description: 'The party''s investigation leads to Pattrice''s true identity and
@@ -570,6 +597,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: aftermath-and-the-journals
     name: The Journals Beneath the Hut
     description: 'After the confrontation, the town''s memory is unsettled and Alatar''s
@@ -610,6 +639,8 @@ story:
     player_characters: []
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   - id: the-altar-and-stratos
     name: The Altar and the Flying City
     description: 'Optional transition hook: the altar can lead Aerith to Stratos and
@@ -643,14 +674,11 @@ story:
     - aerith
     consequences: []
     world_events: []
+    world_stories: []
+    world_story_threads: []
   current_beat: meet-the-three-misfits
-  player_actions:
-  - id: 12e63331-c7d8-427f-9144-edeb3feaf3dd
-    description: Test
-    session: null
-    story_beat: meet-the-three-misfits
-    consequence_ids: []
-    notes: null
+  player_actions: []
+  session_recaps: []
   world_clocks:
   - id: animals-attack-reqrun
     name: Dronath's Animal Threat

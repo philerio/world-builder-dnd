@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -13,25 +13,27 @@ import {
 } from "@mui/material";
 import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 
-import type { WorldData, WorldStory } from "../types";
 import formatStatusLabel from "../utils/formatStatusLabel";
+import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
+import { useWorldData } from "../context/WorldDataContext";
 
 export default function WorldStoriesPage() {
-  const [stories, setStories] = useState<WorldStory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const stories = worldData?.world_stories ?? [];
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) throw new Error(`API returned ${response.status}`);
-        return response.json() as Promise<WorldData>;
-      })
-      .then((data) => setStories(data.world_stories ?? []))
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const statuses = [...new Set(stories.map((story) => story.status).filter(Boolean))].sort();
+  const storyFilters: DashboardFilter[] = [{
+    key: "status",
+    label: "Status",
+    options: statuses.map((status) => ({ value: status, label: formatStatusLabel(status) })),
+  }];
+  const search = filters.search?.trim().toLowerCase() ?? "";
+  const filteredStories = stories.filter((story) =>
+    (!search || [story.name, story.description, story.overview].filter(Boolean).join(" ").toLowerCase().includes(search))
+    && (!filters.status || story.status === filters.status),
+  );
 
   return (
     <>
@@ -47,15 +49,30 @@ export default function WorldStoriesPage() {
         </Box>
 
         <Box sx={{ px: { xs: 3, md: 5 }, pb: 5 }}>
-          {loading && <Typography color="text.secondary">Loading world stories…</Typography>}
-          {error && <Alert severity="error">Could not load world stories: {error}</Alert>}
-          {!loading && !error && stories.length === 0 && (
+          {worldDataLoading && <Typography color="text.secondary">Loading world stories…</Typography>}
+          {worldDataError && <Alert severity="error">Could not load world stories: {worldDataError}</Alert>}
+          {!worldDataLoading && !worldDataError && stories.length === 0 && (
             <Alert severity="info">
               No world stories yet. Use “New Entity” and choose “World Story” to start an overarching narrative.
             </Alert>
           )}
+          {!worldDataLoading && !worldDataError && stories.length > 0 && (
+            <>
+              <DashboardFilters
+                search={{ label: "Search world stories", placeholder: "Name or overview…" }}
+                filters={storyFilters}
+                onChange={setFilters}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Showing {filteredStories.length} of {stories.length} world stories
+              </Typography>
+            </>
+          )}
+          {!worldDataLoading && !worldDataError && stories.length > 0 && filteredStories.length === 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>No world stories match these filters.</Alert>
+          )}
           <Grid container spacing={2}>
-            {stories.map((story) => (
+            {filteredStories.map((story) => (
               <Grid key={story.id} size={{ xs: 12, lg: 8 }}>
                 <Card>
                   <CardActionArea onClick={() => navigate(`/world-stories/${story.id}`)}>

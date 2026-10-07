@@ -1,6 +1,112 @@
+from pydantic import BaseModel
+
 from worldbuilder.models.reference import EntityReference
 from worldbuilder.models.story import CampaignStory
 from worldbuilder.registry import WorldRegistry
+
+
+_NON_REFERENCE_FIELDS = {
+    "id",
+    "description",
+    "details",
+    "dm_notes",
+    "notes",
+    "summary",
+    "text",
+    "content",
+    "name",
+    "title",
+    "status",
+    "role",
+    "relationship",
+    "trigger",
+    "effect",
+    "goal",
+    "goals",
+    "fears",
+    "secrets",
+    "knowledge",
+}
+
+
+def _referenced_ids(value: object, known_ids: set[str], field_name: str = "") -> set[str]:
+    """Find exact entity-ID values in structured entity data, skipping prose fields."""
+    if field_name in _NON_REFERENCE_FIELDS:
+        return set()
+
+    if isinstance(value, dict):
+        references: set[str] = set()
+        for key, nested_value in value.items():
+            references.update(_referenced_ids(nested_value, known_ids, str(key)))
+        return references
+
+    if isinstance(value, (list, tuple, set)):
+        references: set[str] = set()
+        for nested_value in value:
+            references.update(_referenced_ids(nested_value, known_ids, field_name))
+        return references
+
+    if isinstance(value, str) and value in known_ids:
+        return {value}
+
+    return set()
+
+
+def get_entity_relationships(
+    registry: WorldRegistry,
+    entity_id: str,
+) -> tuple[list[EntityReference], list[EntityReference]]:
+    """Return explicit outgoing and incoming links for an entity."""
+    entity = registry.get_entity(entity_id)
+    if not isinstance(entity, BaseModel):
+        return [], []
+
+    collections = (
+        registry.worlds,
+        registry.continents,
+        registry.regions,
+        registry.kingdoms,
+        registry.cities,
+        registry.npcs,
+        registry.player_characters,
+        registry.campaigns,
+        registry.world_events,
+        registry.timeline_events,
+        registry.lores,
+        registry.artifacts,
+        registry.maps,
+        registry.locations,
+        registry.world_stories,
+    )
+    entities = [entity for collection in collections for entity in collection.values()]
+    known_ids = {entity.id for entity in entities}
+    outgoing_ids = _referenced_ids(
+        entity.model_dump(mode="python"),
+        known_ids,
+    ) - {entity_id}
+    incoming_ids: set[str] = set()
+
+    for source in entities:
+        if source.id == entity_id:
+            continue
+        if isinstance(source, BaseModel) and entity_id in _referenced_ids(
+            source.model_dump(mode="python"), known_ids
+        ):
+            incoming_ids.add(source.id)
+
+    def to_references(ids: set[str]) -> list[EntityReference]:
+        return sorted(
+            (
+                EntityReference(
+                    id=linked_id,
+                    entity_type=registry.get_entity_type(linked_id) or "",
+                )
+                for linked_id in ids
+            ),
+            key=lambda reference: (reference.entity_type, reference.id),
+        )
+
+    return to_references(outgoing_ids), to_references(incoming_ids)
 
 
 def get_related_entities(
@@ -36,6 +142,32 @@ def get_related_entities(
             for city in registry.cities.values()
             if city.kingdom == entity_id
         ]
+
+    if entity_type in {"location", "city", "region", "kingdom", "continent"}:
+        references = [
+            EntityReference(id=event.id, entity_type="world_event")
+            for event in registry.world_events.values()
+            if entity_id in event.locations
+        ]
+        references.extend(
+            EntityReference(id=event.id, entity_type="timeline_event")
+            for event in registry.timeline_events.values()
+            if entity_id in event.locations
+        )
+        return references
+
+    if entity_type in {"npc", "player_character"}:
+        references = [
+            EntityReference(id=event.id, entity_type="world_event")
+            for event in registry.world_events.values()
+            if entity_id in event.characters
+        ]
+        references.extend(
+            EntityReference(id=event.id, entity_type="timeline_event")
+            for event in registry.timeline_events.values()
+            if entity_id in event.characters
+        )
+        return references
 
     if entity_type == "world_event":
         references = [

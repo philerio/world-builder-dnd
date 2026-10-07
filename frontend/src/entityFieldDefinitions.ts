@@ -210,7 +210,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             name: "location",
             label: "Location",
             type: "reference",
-            referenceType: "location",
+            referenceTypes: ["location", "city"],
           },
         ],
       },
@@ -223,6 +223,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             name: "character",
             label: "Character",
             type: "reference",
+            referenceTypes: ["npc", "player_character"],
           },
           {
             name: "relationship",
@@ -288,6 +289,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             name: "location",
             label: "Location",
             type: "reference",
+            referenceTypes: ["location", "city"],
           },
         ],
       },
@@ -300,6 +302,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             name: "character",
             label: "Character",
             type: "reference",
+            referenceTypes: ["npc", "player_character"],
           },
           {
             name: "relationship",
@@ -331,7 +334,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "locations",
         label: "Locations",
         type: "referenceArray",
-        referenceType: "location",
+        referenceTypes: ["location", "city"],
       },
       {
         name: "npcs",
@@ -373,7 +376,13 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "locations",
         label: "Locations",
         type: "referenceArray",
-        referenceType: "location",
+        referenceTypes: ["location", "city"],
+      },
+      {
+        name: "characters",
+        label: "Characters",
+        type: "referenceArray",
+        referenceTypes: ["npc", "player_character"],
       },
       {
         name: "campaigns",
@@ -408,16 +417,19 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "caused_by",
         label: "Caused By",
         type: "referenceArray",
+        referenceTypes: ["world_event", "timeline_event"],
       },
       {
         name: "true_causes",
         label: "True Causes",
         type: "referenceArray",
+        referenceTypes: ["world_event", "timeline_event"],
       },
       {
         name: "hidden_connections",
         label: "Hidden Connections",
         type: "referenceArray",
+        referenceTypes: ["world_event", "timeline_event"],
       },
       {
         name: "dm_notes",
@@ -452,6 +464,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "characters",
         label: "Characters",
         type: "referenceArray",
+        referenceTypes: ["npc", "player_character"],
       },
       {
         name: "campaigns",
@@ -514,7 +527,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "locations",
         label: "Locations",
         type: "referenceArray",
-        referenceType: "location",
+        referenceTypes: ["location", "city"],
       },
       {
         name: "kingdoms",
@@ -526,6 +539,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "characters",
         label: "Characters",
         type: "referenceArray",
+        referenceTypes: ["npc", "player_character"],
       },
       {
         name: "campaigns",
@@ -570,6 +584,12 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
 
     lore: [
       ...COMMON_FIELDS,
+      {
+        name: "campaigns",
+        label: "Campaigns",
+        type: "referenceArray",
+        referenceType: "campaign",
+      },
       {
         name: "details",
         label: "Details",

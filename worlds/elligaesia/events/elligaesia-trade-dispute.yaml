@@ -10,22 +10,32 @@ status: ongoing
 
 locations: []
 
-campaigns: []
+campaigns:
+  - the-unforgiven
 
 caused_by:
   - batik-trade-route-collapse
 
-true_causes: []
+true_causes:
+  - bane
 
 hidden_connections:
   - bane
   - dwarmar
+  - bane-overarching-story
+
+world_stories:
+  - bane-overarching-story
+
+world_story_threads:
+  - world_story_id: bane-overarching-story
+    thread_id: influence-unleashed
 
 dm_notes: >
   The immediate cause of the trade dispute is the collapse of the
-  Batik trade route. The deeper consequences of the crisis may
-  eventually connect to Bane's growing influence and the reemergence
-  of ancient Dwarmar technology.
+  Batik trade route. The collapse and wider political fallout are
+  consequences of The Unforgiven and Bane's influence. The public does
+  not know this connection.
 
 consequences:
   - Trade tensions have increased between the country-states.

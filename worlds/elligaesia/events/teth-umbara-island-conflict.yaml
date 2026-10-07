@@ -12,17 +12,32 @@ locations:
   - teth
   - umbara
 
-campaigns: []
+campaigns:
+  - the-unforgiven
 
-caused_by: []
+caused_by:
+  - the-unforgiven
 
-true_causes: []
+true_causes:
+  - bane
 
-hidden_connections: []
+hidden_connections:
+  - bane
+  - dwarmar
+  - bane-overarching-story
+
+world_stories:
+  - bane-overarching-story
+
+world_story_threads:
+  - world_story_id: bane-overarching-story
+    thread_id: influence-unleashed
 
 dm_notes: >
-  The true origin of the island and the reason it appeared are currently
-  unknown.
+  The island's appearance and the resulting Teth-Umbara conflict are downstream
+  effects of Bane's influence, unleashed after The Unforgiven. The people involved
+  do not know this. The exact mechanism and any connection to a specific artifact
+  have not been established.
 
 consequences: []
 

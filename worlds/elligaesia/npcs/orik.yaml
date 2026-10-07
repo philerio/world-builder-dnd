@@ -1,0 +1,17 @@
+id: orik
+name: Orik
+description: An elven guide who accompanies the party through the library beneath Stratos.
+role: Library guide
+city: stratos
+region: null
+kingdom: null
+details: >
+  The campaign draft has Orik use a powerful light spell to drive back the
+  library's wraiths and give the party time to escape.
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

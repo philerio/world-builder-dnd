@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,10 +12,12 @@ import {
   Typography,
 } from "@mui/material";
 
-import type { Campaign, WorldData } from "../types";
+import type { Campaign } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import formatStatusLabel from "../utils/formatStatusLabel";
+import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
 
 type CampaignCardProps = {
   campaign: Campaign;
@@ -25,41 +27,36 @@ type CampaignCardProps = {
 
 function CampaignsPage() {
   const navigate = useNavigate();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const campaigns = worldData?.campaigns ?? [];
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data: WorldData) => {
-        setCampaigns(data.campaigns);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
+  if (worldDataLoading) {
     return <Typography color="text.secondary">Loading campaigns…</Typography>;
   }
 
-  if (error) {
+  if (worldDataError) {
     return (
-      <Typography color="error">Could not load campaigns: {error}</Typography>
+      <Typography color="error">Could not load campaigns: {worldDataError}</Typography>
     );
   }
+
+  const statuses = [...new Set(campaigns.map((campaign) => campaign.status).filter((status): status is string => Boolean(status)))].sort();
+  const campaignFilters: DashboardFilter[] = [{
+    key: "status",
+    label: "Status",
+    options: statuses.map((status) => ({ value: status, label: formatStatusLabel(status) })),
+  }];
+  const search = filters.search?.trim().toLowerCase() ?? "";
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const searchableText = [campaign.name, campaign.description, campaign.overview, campaign.outcome]
+      .filter(Boolean).join(" ").toLowerCase();
+    return (!search || searchableText.includes(search))
+      && (!filters.status || campaign.status === filters.status);
+  });
 
   return (
     <Box>
@@ -90,13 +87,21 @@ function CampaignsPage() {
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
-        {campaigns.length === 0 ? (
+        <DashboardFilters
+          search={{ label: "Search campaigns", placeholder: "Name, overview, or outcome…" }}
+          filters={campaignFilters}
+          onChange={setFilters}
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Showing {filteredCampaigns.length} of {campaigns.length} campaigns
+        </Typography>
+        {filteredCampaigns.length === 0 ? (
           <Typography color="text.secondary">
-            No campaigns have been added yet.
+            {campaigns.length === 0 ? "No campaigns have been added yet." : "No campaigns match these filters."}
           </Typography>
         ) : (
           <Grid container spacing={2}>
-            {campaigns.map((campaign) => (
+            {filteredCampaigns.map((campaign) => (
               <Grid key={campaign.id} size={{ xs: 12, sm: 6, md: 4 }}>
                 <CampaignCard
                   campaign={campaign}
@@ -124,13 +129,13 @@ function CampaignsPage() {
 function CampaignCard({ campaign, onOpen, onOpenDashboard }: CampaignCardProps) {
   return (
     <Card>
-      <CardActionArea onClick={onOpen}>
-        <CardContent>
-          <Stack spacing={2}>
+      <CardContent sx={{ pb: 1 }}>
+        <Stack spacing={1.5}>
+          <CardActionArea onClick={onOpen} sx={{ borderRadius: 1 }}>
             <Stack
               direction="row"
               sx={{
-                alignItems: "flex-start",
+                alignItems: "center",
                 justifyContent: "space-between",
                 gap: 2,
               }}
@@ -139,9 +144,26 @@ function CampaignCard({ campaign, onOpen, onOpenDashboard }: CampaignCardProps) 
                 {campaign.name}
               </Typography>
 
-              {campaign.status && <Chip size="small" label={formatStatusLabel(campaign.status)} />}
+              {campaign.status && (
+                <Chip size="small" label={formatStatusLabel(campaign.status)} />
+              )}
             </Stack>
+          </CardActionArea>
 
+          <Button
+            onClick={onOpenDashboard}
+            variant="contained"
+            size="small"
+            sx={{ alignSelf: "flex-start" }}
+          >
+            Open Campaign Dashboard
+          </Button>
+        </Stack>
+      </CardContent>
+
+      <CardActionArea onClick={onOpen}>
+        <CardContent sx={{ pt: 1 }}>
+          <Stack spacing={2}>
             {campaign.description && (
               <Typography
                 variant="body2"
@@ -186,11 +208,6 @@ function CampaignCard({ campaign, onOpen, onOpenDashboard }: CampaignCardProps) 
           </Stack>
         </CardContent>
       </CardActionArea>
-      <CardContent sx={{ pt: 0 }}>
-        <Button onClick={onOpenDashboard} variant="contained" size="small">
-          Open Campaign Dashboard
-        </Button>
-      </CardContent>
     </Card>
   );
 }

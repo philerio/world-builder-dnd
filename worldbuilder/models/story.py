@@ -147,11 +147,22 @@ class WorldClock(BaseModel):
     status: ClockStatus = "active"
 
 
+class SessionRecap(BaseModel):
+    """Optional written recap for one campaign session."""
+
+    session: int
+    played_on: str | None = None
+    summary: str | None = None
+    notes: str | None = None
+
+
 class CampaignStory(BaseModel):
     beats: list[StoryBeat] = Field(default_factory=list)
 
     current_beat: str | None = None
 
     player_actions: list[PlayerAction] = Field(default_factory=list)
+
+    session_recaps: list[SessionRecap] = Field(default_factory=list)
 
     world_clocks: list[WorldClock] = Field(default_factory=list)

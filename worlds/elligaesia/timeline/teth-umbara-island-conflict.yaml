@@ -8,13 +8,19 @@ description: >
 era: Modern Era
 date: null
 
-locations:
+locations: []
+
+kingdoms:
   - teth
   - umbara
-
-kingdoms: []
 characters: []
-campaigns: []
+campaigns:
+  - the-unforgiven
+world_stories:
+  - bane-overarching-story
+world_story_threads:
+  - world_story_id: bane-overarching-story
+    thread_id: influence-unleashed
 
 consequences:
   - Teth and Umbara are drawn into conflict.
@@ -22,5 +28,7 @@ consequences:
   - The mysterious island becomes a potential source of future conflict.
 
 dm_notes: >
-  The origin of the island and the reason it appeared have not yet
+  The island's appearance and resulting conflict are consequences of Bane's
+  influence, unleashed after The Unforgiven. The people involved do not know
+  this. The exact mechanism and any connection to a specific artifact have not
   been established.

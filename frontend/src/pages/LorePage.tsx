@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -15,6 +15,8 @@ import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 
 import type { Lore } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
+import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
 
 type LoreCardProps = {
   lore: Lore;
@@ -23,43 +25,39 @@ type LoreCardProps = {
 
 type LoreSectionProps = {
   lore: Lore[];
+  emptyMessage: string;
   onOpen: (id: string) => void;
 };
 
 function LorePage() {
-  const [lore, setLore] = useState<Lore[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const lore = worldData?.lores ?? [];
+  const campaigns = worldData?.campaigns ?? [];
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data) => {
-        setLore(data.lores);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
+  if (worldDataLoading) {
     return <Typography color="text.secondary">Loading lore…</Typography>;
   }
 
-  if (error) {
-    return <Typography color="error">Could not load lore: {error}</Typography>;
+  if (worldDataError) {
+    return <Typography color="error">Could not load lore: {worldDataError}</Typography>;
   }
+
+  const search = filters.search?.trim().toLowerCase() ?? "";
+  const filteredLore = lore.filter((item) => {
+    const searchableText = [item.name, item.description, item.details, item.player_knowledge]
+      .filter(Boolean).join(" ").toLowerCase();
+    return (!search || searchableText.includes(search))
+      && (!filters.campaign || item.campaigns?.includes(filters.campaign));
+  });
+  const loreFilters: DashboardFilter[] = [{
+    key: "campaign",
+    label: "Campaign",
+    options: campaigns.map((campaign) => ({ value: campaign.id, label: campaign.name })),
+  }];
 
   return (
     <Box>
@@ -90,7 +88,19 @@ function LorePage() {
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
-        <LoreSection lore={lore} onOpen={openEntity} />
+        <DashboardFilters
+          search={{ label: "Search lore", placeholder: "Name, details, or player knowledge…" }}
+          filters={loreFilters}
+          onChange={setFilters}
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Showing {filteredLore.length} of {lore.length} lore records
+        </Typography>
+        <LoreSection
+          lore={filteredLore}
+          emptyMessage={lore.length === 0 ? "No lore has been added yet." : "No lore matches these filters."}
+          onOpen={openEntity}
+        />
       </Box>
 
       <EntityDetailDrawer
@@ -105,7 +115,7 @@ function LorePage() {
   );
 }
 
-function LoreSection({ lore, onOpen }: LoreSectionProps) {
+function LoreSection({ lore, emptyMessage, onOpen }: LoreSectionProps) {
   return (
     <Box>
       <Stack
@@ -127,9 +137,7 @@ function LoreSection({ lore, onOpen }: LoreSectionProps) {
       </Typography>
 
       {lore.length === 0 ? (
-        <Typography color="text.secondary">
-          No lore has been added yet.
-        </Typography>
+        <Typography color="text.secondary">{emptyMessage}</Typography>
       ) : (
         <Grid container spacing={2}>
           {lore.map((item) => (

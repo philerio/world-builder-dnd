@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import {
+  Autocomplete,
+  Badge,
   Box,
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Divider,
   Drawer,
   List,
@@ -13,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Stack,
+  TextField,
   Toolbar,
   Typography,
 } from "@mui/material";
@@ -28,6 +34,8 @@ import DiamondIcon from "@mui/icons-material/Diamond";
 import MapIcon from "@mui/icons-material/Map";
 import WorldMapPage from "./pages/WorldMapPage";
 import StarsIcon from "@mui/icons-material/Stars";
+import SearchIcon from "@mui/icons-material/Search";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 
 import type { WorldData } from "./types";
 import WorldPage from "./pages/WorldPage";
@@ -44,10 +52,17 @@ import CreateEntityDrawer from "./components/CreateEntityDrawer";
 import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 import WorldStoriesPage from "./pages/WorldStoriesPage";
 import WorldStoryDashboardPage from "./pages/WorldStoryDashboardPage";
+import EntityDetailDrawer from "./components/EntityDetailDrawer";
+import useEntityDrawer from "./hooks/useEntityDrawer";
+import { useWorldData } from "./context/WorldDataContext";
+import type { EntitySummary } from "./types";
+import DataHealthPage from "./pages/DataHealthPage";
 
 const drawerWidth = 240;
 type SidebarProps = {
   onNewEntity: () => void;
+  onSearch: () => void;
+  healthCounts: { errors: number; warnings: number } | null;
 };
 const navigation = [
   {
@@ -105,9 +120,14 @@ const navigation = [
     label: "Maps",
     icon: <MapIcon />,
   },
+  {
+    path: "/data-health",
+    label: "Data Health",
+    icon: <FactCheckIcon />,
+  },
 ];
 
-function Sidebar({ onNewEntity }: SidebarProps) {
+function Sidebar({ onNewEntity, onSearch, healthCounts }: SidebarProps) {
   return (
     <Drawer
       variant="permanent"
@@ -147,6 +167,17 @@ function Sidebar({ onNewEntity }: SidebarProps) {
 
       <Divider />
 
+      <Box sx={{ px: 1.5, pt: 1.5 }}>
+        <Button
+          fullWidth
+          startIcon={<SearchIcon />}
+          onClick={onSearch}
+          sx={{ justifyContent: "flex-start", color: "text.secondary", textTransform: "none" }}
+        >
+          Search world
+        </Button>
+      </Box>
+
       <List sx={{ px: 1.5, py: 2 }}>
         {navigation.map((item) => (
           <ListItemButton
@@ -179,7 +210,18 @@ function Sidebar({ onNewEntity }: SidebarProps) {
               },
             }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemIcon>
+              {item.path === "/data-health" && healthCounts && healthCounts.errors + healthCounts.warnings > 0 ? (
+                <Badge
+                  badgeContent={healthCounts.errors + healthCounts.warnings}
+                  color={healthCounts.errors > 0 ? "error" : "warning"}
+                  overlap="circular"
+                  aria-label={`${healthCounts.errors} errors and ${healthCounts.warnings} warnings`}
+                >
+                  {item.icon}
+                </Badge>
+              ) : item.icon}
+            </ListItemIcon>
             <ListItemText primary={item.label} />
           </ListItemButton>
         ))}
@@ -270,6 +312,10 @@ function Dashboard({ data }: { data: WorldData }) {
     {
       name: "Cities",
       count: data.cities.length,
+    },
+    {
+      name: "Points of Interest",
+      count: data.locations?.length ?? 0,
     },
     {
       name: "NPCs",
@@ -405,39 +451,65 @@ function Dashboard({ data }: { data: WorldData }) {
 }
 
 function AppContent() {
-  const [data, setData] = useState<WorldData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [healthCounts, setHealthCounts] = useState<{ errors: number; warnings: number } | null>(null);
+  const {
+    entities,
+    entitiesLoading,
+    worldData: data,
+    worldDataLoading,
+    worldDataError,
+  } = useWorldData();
+  const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } = useEntityDrawer();
 
-        return response.json();
-      })
-      .then((worldData: WorldData) => {
-        setData(worldData);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-      });
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        const target = event.target;
+        if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true']")) {
+          return;
+        }
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  if (error) {
+  useEffect(() => {
+    let active = true;
+    fetch("http://localhost:8000/validation")
+      .then((response) => {
+        if (!response.ok) throw new Error(`API returned ${response.status}`);
+        return response.json() as Promise<{ errors?: string[]; warnings?: string[] }>;
+      })
+      .then((report) => {
+        if (active) setHealthCounts({ errors: report.errors?.length ?? 0, warnings: report.warnings?.length ?? 0 });
+      })
+      .catch(() => {
+        if (active) setHealthCounts(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (worldDataError) {
     return (
       <Box sx={{ p: 5 }}>
         <Typography variant="h2">Could not load world</Typography>
 
         <Typography color="error" sx={{ mt: 2 }}>
-          {error}
+          {worldDataError}
         </Typography>
       </Box>
     );
   }
 
-  if (!data) {
+  if (worldDataLoading || !data) {
     return (
       <Box sx={{ p: 5 }}>
         <Typography color="text.secondary">Loading world...</Typography>
@@ -447,13 +519,63 @@ function AppContent() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar onNewEntity={() => setCreateDrawerOpen(true)} />{" "}
+      <Sidebar
+        onNewEntity={() => setCreateDrawerOpen(true)}
+        onSearch={() => setSearchOpen(true)}
+        healthCounts={healthCounts}
+      />
       <CreateEntityDrawer
         open={createDrawerOpen}
         onClose={() => setCreateDrawerOpen(false)}
         onCreated={() => {
           setCreateDrawerOpen(false);
         }}
+      />
+      <Dialog open={searchOpen} onClose={() => setSearchOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Search the world</DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Autocomplete
+            autoHighlight
+            options={entities}
+            groupBy={(entity) => entity.entity_type.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}
+            getOptionLabel={(entity) => entity.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            loading={entitiesLoading}
+            noOptionsText={entitiesLoading ? "Loading world records…" : "No matching records"}
+            onChange={(_event, selected: EntitySummary | null) => {
+              if (!selected) return;
+              setSearchOpen(false);
+              openEntity(selected.id);
+            }}
+            renderOption={(props, entity) => {
+              const { key, ...optionProps } = props;
+              return (
+                <Box component="li" key={key} {...optionProps}>
+                  <Stack sx={{ minWidth: 0 }}>
+                    <Typography variant="body2">{entity.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {entity.entity_type.replaceAll("_", " ")}
+                    </Typography>
+                  </Stack>
+                </Box>
+              );
+            }}
+            renderInput={(params) => (
+              <TextField {...params} autoFocus label="Find a record" placeholder="Search by name" />
+            )}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+            Tip: press Ctrl+K or ⌘K from anywhere to open search.
+          </Typography>
+        </DialogContent>
+      </Dialog>
+      <EntityDetailDrawer
+        entityId={entityId}
+        open={isOpen}
+        onClose={closeEntity}
+        onOpenEntity={openEntity}
+        onBack={goBack}
+        canGoBack={canGoBack}
       />
       <Box
         component="main"
@@ -480,6 +602,7 @@ function AppContent() {
           <Route path="/lore" element={<LorePage />} />
           <Route path="/artifacts" element={<ArtifactsPage />} />
           <Route path="/maps" element={<MapsPage />} />
+          <Route path="/data-health" element={<DataHealthPage onOpenEntity={openEntity} onValidationReport={setHealthCounts} />} />
         </Routes>
       </Box>
     </Box>

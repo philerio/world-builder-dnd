@@ -1,4 +1,5 @@
 from worldbuilder.models.campaign import Campaign
+from worldbuilder.models.story import CampaignStory, SessionRecap
 
 
 def test_campaign_creation() -> None:
@@ -26,3 +27,25 @@ def test_campaign_creation() -> None:
     assert campaign.player_characters == ["placeholder-pc"]
     assert campaign.outcome == "The White Rabbit was defeated."
     assert campaign.consequences is not None
+
+
+def test_campaign_story_supports_optional_session_recaps() -> None:
+    assert CampaignStory().session_recaps == []
+
+    story = CampaignStory(
+        session_recaps=[
+            SessionRecap(
+                session=1,
+                played_on="2026-10-06",
+                summary="The party arrived in Reqrun.",
+            )
+        ]
+    )
+
+    assert story.session_recaps == [
+        SessionRecap(
+            session=1,
+            played_on="2026-10-06",
+            summary="The party arrived in Reqrun.",
+        )
+    ]

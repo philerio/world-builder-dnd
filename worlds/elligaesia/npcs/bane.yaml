@@ -7,5 +7,18 @@ description: >
 role: God
 details: >
   Bane's influence continues to affect the world long after his
-  banishment. His connection to the Power Sources and the ancient
-  Dwarmar civilization remains a major mystery.
+  banishment. His influence was unleashed across Elligaesia after
+  The Unforgiven. Ancient Dwarmar artifacts contain remnants of his
+  power, and Bane is working to gather enough remnants to open a portal
+  to the realm of the gods and take revenge on those who banished him.
+  The required number of artifacts is not yet established.
+motives:
+  - Take revenge on the gods who banished him.
+goals:
+  - Gather remnants of his power from a certain number of ancient Dwarmar artifacts.
+  - Open a portal to the realm of the gods once he has gathered enough power.
+fears: []
+secrets:
+  - The people of Elligaesia do not know that Bane's influence is behind the recent crises or the activation of Dwarmar artifacts.
+knowledge:
+  - Every ancient Dwarmar artifact contains remnants of Bane's power.

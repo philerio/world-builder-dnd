@@ -23,6 +23,14 @@ true_causes:
 hidden_connections:
   - bane
   - dwarmar
+  - bane-overarching-story
+
+world_stories:
+  - bane-overarching-story
+
+world_story_threads:
+  - world_story_id: bane-overarching-story
+    thread_id: influence-unleashed
 
 dm_notes: >
   The protective magic surrounding the road was drained by Pattrice
@@ -33,10 +41,9 @@ dm_notes: >
   of The Unforgiven and contributes to the political instability
   affecting Elligaesia.
 
-  The deeper connection is to Bane and the remnants of Dwarmar
-  technology. Bane's growing influence is contributing to the
-  reactivation and increasing importance of ancient Dwarmar
-  machines and power sources.
+  Bane's influence was unleashed by The Unforgiven and contributed
+  to the reactivation of ancient Dwarmar machines and power sources.
+  The people affected by the collapse do not know this connection.
 
 consequences:
   - Trade along the southern route has been disrupted.

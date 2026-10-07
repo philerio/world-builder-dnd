@@ -8,10 +8,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { EntitySummary , EntityData} from "../types";
+import type { EntityData, EntitySummary, WorldData } from "../types";
 
 
 type WorldDataContextValue = {
+  worldData: WorldData | null;
+  worldDataLoading: boolean;
+  worldDataError: string | null;
+  refreshWorldData: () => Promise<void>;
   entities: EntitySummary[];
   entitiesLoading: boolean;
   entitiesError: string | null;
@@ -25,6 +29,7 @@ type WorldDataContextValue = {
     entityId: string,
     entity: Record<string, unknown>,
   ) => Promise<EntityData>;
+  deleteEntity: (entityId: string) => Promise<void>;
   createEntity: (
     entityType: string,
     entity: Record<string, unknown>,
@@ -35,15 +40,74 @@ const WorldDataContext = createContext<WorldDataContextValue | undefined>(
   undefined,
 );
 
+const ENTITY_COLLECTIONS: Record<string, keyof WorldData> = {
+  continent: "continents",
+  kingdom: "kingdoms",
+  region: "regions",
+  city: "cities",
+  location: "locations",
+  npc: "npcs",
+  player_character: "player_characters",
+  campaign: "campaigns",
+  world_event: "world_events",
+  timeline_event: "timeline_events",
+  lore: "lores",
+  artifact: "artifacts",
+  map: "maps",
+  world_story: "world_stories",
+};
+
+function updateWorldEntity(
+  worldData: WorldData | null,
+  entityType: string,
+  entityId: string,
+  entity: Record<string, unknown>,
+  remove = false,
+): WorldData | null {
+  if (!worldData) return worldData;
+  if (entityType === "world") {
+    return { ...worldData, world: remove ? undefined : entity as WorldData["world"] };
+  }
+
+  const collectionKey = ENTITY_COLLECTIONS[entityType];
+  if (!collectionKey) return worldData;
+
+  const collection = (worldData[collectionKey] ?? []) as unknown as Record<string, unknown>[];
+  const nextCollection = remove
+    ? collection.filter((item) => item.id !== entityId)
+    : collection.some((item) => item.id === entityId)
+      ? collection.map((item) => item.id === entityId ? entity : item)
+      : [...collection, entity];
+
+  return { ...worldData, [collectionKey]: nextCollection };
+}
+
 type WorldDataProviderProps = {
   children: ReactNode;
 };
 
 export function WorldDataProvider({ children }: WorldDataProviderProps) {
+  const [worldData, setWorldData] = useState<WorldData | null>(null);
+  const [worldDataLoading, setWorldDataLoading] = useState(true);
+  const [worldDataError, setWorldDataError] = useState<string | null>(null);
   const [entities, setEntities] = useState<EntitySummary[]>([]);
   const [entityData, setEntityData] = useState<Record<string, EntityData>>({});
   const [entitiesLoading, setEntitiesLoading] = useState(true);
   const [entitiesError, setEntitiesError] = useState<string | null>(null);
+  const refreshWorldData = useCallback(async () => {
+    try {
+      setWorldDataLoading(true);
+      setWorldDataError(null);
+      const response = await fetch("http://localhost:8000/world");
+      if (!response.ok) throw new Error(`API returned ${response.status}`);
+      const result: WorldData = await response.json();
+      setWorldData(result);
+    } catch (error) {
+      setWorldDataError(error instanceof Error ? error.message : "Failed to load world data.");
+    } finally {
+      setWorldDataLoading(false);
+    }
+  }, []);
   const loadEntity = useCallback(async (entityId: string) => {
     const response = await fetch(`http://localhost:8000/entities/${entityId}`);
 
@@ -102,7 +166,8 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
 
   useEffect(() => {
     void refreshEntities();
-  }, [refreshEntities]);
+    void refreshWorldData();
+  }, [refreshEntities, refreshWorldData]);
 
   const getEntity = useCallback(
     (entityId: string) => entityData[entityId],
@@ -150,14 +215,43 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
                     ? updatedEntity.entity.name
                     : item.name,
               }
-            : item,
+          : item,
         ),
+      );
+      setWorldData((current) =>
+        updateWorldEntity(current, updatedEntity.entity_type, entityId, updatedEntity.entity),
       );
 
       return updatedEntity;
     },
     [],
   );
+  const deleteEntity = useCallback(async (entityId: string) => {
+    const entityType = entities.find((item) => item.id === entityId)?.entity_type
+      ?? entityData[entityId]?.entity_type;
+    const response = await fetch(`http://localhost:8000/entities/${entityId}`, {
+      method: "DELETE",
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      const message =
+        typeof result.detail === "string"
+          ? result.detail
+          : "Failed to delete entity.";
+      throw new Error(message);
+    }
+
+    setEntityData((current) => {
+      const next = { ...current };
+      delete next[entityId];
+      return next;
+    });
+    setEntities((current) => current.filter((item) => item.id !== entityId));
+    if (entityType) {
+      setWorldData((current) => updateWorldEntity(current, entityType, entityId, {}, true));
+    }
+  }, [entities, entityData]);
   const createEntity = useCallback(
     async (entityType: string, entity: Record<string, unknown>) => {
       const response = await fetch("http://localhost:8000/entities", {
@@ -200,6 +294,9 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
               : createdEntity.id,
         },
       ]);
+      setWorldData((current) =>
+        updateWorldEntity(current, createdEntity.entity_type, createdEntity.id, createdEntity.entity),
+      );
 
       return createdEntity;
     },
@@ -207,6 +304,10 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   );
   const value = useMemo(
     () => ({
+      worldData,
+      worldDataLoading,
+      worldDataError,
+      refreshWorldData,
       entities,
       entitiesLoading,
       entitiesError,
@@ -216,9 +317,14 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       loadCampaignReferences,
       refreshEntities,
       updateEntity,
+      deleteEntity,
       createEntity,
     }),
     [
+      worldData,
+      worldDataLoading,
+      worldDataError,
+      refreshWorldData,
       entities,
       entitiesLoading,
       entitiesError,
@@ -228,6 +334,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       loadCampaignReferences,
       refreshEntities,
       updateEntity,
+      deleteEntity,
       createEntity,
     ],
   );

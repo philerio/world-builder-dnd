@@ -37,6 +37,21 @@ def test_validation_result_can_record_error() -> None:
     assert not result.is_valid
     assert result.errors == ["Something went wrong."]
 
+
+def test_validation_result_warning_does_not_make_world_invalid() -> None:
+    from worldbuilder.validation.validator import ValidationResult
+
+    result = ValidationResult()
+    result.add_warning("Something may need attention.")
+
+    assert result.is_valid
+    assert result.errors == []
+    assert result.warnings == ["Something may need attention."]
+    assert result.issues == [{
+        "message": "Something may need attention.",
+        "severity": "warning",
+    }]
+
 def test_valid_reference() -> None:
     """An existing ID should pass reference validation."""
     from worldbuilder.validation.validator import ValidationResult, validate_reference
@@ -83,8 +98,10 @@ def test_character_relationship_can_reference_player_character() -> None:
     from worldbuilder.models.npc import NPC
     from worldbuilder.models.player_character import PlayerCharacter
     from worldbuilder.registry import WorldRegistry
-    from worldbuilder.validation.validator import ValidationResult
-    from worldbuilder.validation.validator import validate_character_relationships
+    from worldbuilder.validation.validator import (
+        ValidationResult,
+        validate_character_relationships,
+    )
 
     registry = WorldRegistry()
 
@@ -122,7 +139,6 @@ def test_character_city_reference_is_validated() -> None:
     """A character's city reference must point to an existing city."""
     from worldbuilder.models.npc import NPC
     from worldbuilder.registry import WorldRegistry
-    from worldbuilder.validation.validator import ValidationResult
     from worldbuilder.validation.validator import validate_registry
 
     registry = WorldRegistry()
@@ -141,6 +157,12 @@ def test_character_city_reference_is_validated() -> None:
     assert result.errors == [
         "Unknown city ID: reqrun",
     ]
+    assert result.issues == [{
+        "message": "Unknown city ID: reqrun",
+        "severity": "error",
+        "source_type": "npc",
+        "source_id": "test-npc",
+    }]
 
 def test_character_region_reference_is_validated() -> None:
     """A character's region reference must point to an existing region."""
@@ -428,6 +450,19 @@ def test_map_marker_reference_is_validated() -> None:
     registry = load_world_registry(
         Path("tests/data/test-world/world.yaml")
     )
+
+    result = validate_registry(registry)
+
+    assert result.is_valid
+
+def test_map_marker_without_linked_entity_is_valid() -> None:
+    registry = load_world_registry(
+        Path("tests/data/test-world/world.yaml")
+    )
+
+    map_object = registry.get_map("test-map")
+    assert map_object is not None
+    map_object.markers[0].entity_id = None
 
     result = validate_registry(registry)
 

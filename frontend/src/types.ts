@@ -54,6 +54,18 @@ export type City = {
   dm_notes?: string;
 };
 
+export type Location = {
+  id: string;
+  name: string;
+  description?: string;
+  location_type?: string;
+  continent?: string;
+  kingdom?: string;
+  region?: string;
+  details?: string;
+  dm_notes?: string;
+};
+
 export type CharacterRelationship = {
   character: string;
   relationship: string;
@@ -169,7 +181,7 @@ export type Artifact = {
 
 export type MapMarker = {
   id: string;
-  entity_id: string;
+  entity_id: string | null;
   type?: "point" | "area" | "path";
   x: number;
   y: number;
@@ -203,6 +215,7 @@ export type Lore = {
   name: string;
   description?: string;
   details?: string;
+  player_knowledge?: string;
   dm_notes?: string;
   campaigns?: string[];
 };
@@ -215,6 +228,7 @@ export type WorldData = {
   kingdoms: Kingdom[];
   regions: Region[];
   cities: City[];
+  locations?: Location[];
 
   npcs: NPC[];
   player_characters: PlayerCharacter[];
@@ -318,6 +332,7 @@ export type EntityFieldDefinition = {
   label: string;
   type: EntityFieldType;
   referenceType?: string;
+  referenceTypes?: string[];
   fields?: EntityFieldDefinition[];
   generated?: boolean;
   accordion?: boolean;
@@ -450,9 +465,17 @@ export type WorldClock = {
   status: "active" | "paused" | "completed";
 };
 
+export type SessionRecap = {
+  session: number;
+  played_on?: string;
+  summary?: string;
+  notes?: string;
+};
+
 export type CampaignStory = {
   beats: StoryBeat[];
   current_beat?: string;
   player_actions: PlayerAction[];
+  session_recaps?: SessionRecap[];
   world_clocks: WorldClock[];
 };

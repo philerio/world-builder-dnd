@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import type { Map, WorldData } from "../types";
+import type { Map } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
 
 type WorldMapMarkerProps = {
   marker: Map["markers"][number];
@@ -104,49 +104,22 @@ function WorldMapMarker({ marker, onOpenMap }: WorldMapMarkerProps) {
 
 function WorldMapPage() {
   const navigate = useNavigate();
-
-  const [worldMap, setWorldMap] = useState<Map | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data: WorldData) => {
-        const map = data.maps.find(
-          (candidate) => candidate.id === "elligaesia-world-map",
-        );
-
-        if (!map) {
-          throw new Error("World map not found");
-        }
-
-        setWorldMap(map);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const worldMap: Map | null = worldData?.maps.find(
+    (candidate) => candidate.id === "elligaesia-world-map",
+  ) ?? null;
 
   const openMap = (mapId: string) => {
     navigate(`/maps?map=${mapId}&from=world-map`);
   };
 
-  if (loading) {
+  if (worldDataLoading) {
     return <Typography color="text.secondary">Loading world map…</Typography>;
   }
 
-  if (error) {
+  if (worldDataError) {
     return (
-      <Typography color="error">Could not load world map: {error}</Typography>
+      <Typography color="error">Could not load world map: {worldDataError}</Typography>
     );
   }
 

@@ -1,19 +1,20 @@
 from pathlib import Path
-from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
+
+from worldbuilder.config.entity_types import get_entity_model
+from worldbuilder.loaders.world_loader import load_world_registry
+from worldbuilder.models.reference import EntityReference
 from worldbuilder.relationships import (
     get_campaign_related_entities,
+    get_entity_relationships,
     get_related_entities,
 )
-from worldbuilder.loaders.world_loader import load_world_registry
-from pydantic import ValidationError
-from worldbuilder.config.entity_types import (
-    get_entity_model,
-    get_entity_type,
-)
-from worldbuilder.config.entity_types import get_entity_model
 from worldbuilder.services.id_generator import generate_entity_id
 from worldbuilder.services.world_service import WorldService
+from worldbuilder.validation.validator import validate_registry
 
 app = FastAPI(
     title="D&D World Builder API",
@@ -32,6 +33,19 @@ WORLD_PATH = Path("worlds/elligaesia/world.yaml")
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/validation")
+def validate_world_data() -> dict:
+    """Report reference and structural issues in the loaded world."""
+    registry = load_world_registry(WORLD_PATH)
+    result = validate_registry(registry)
+    return {
+        "valid": result.is_valid,
+        "errors": result.errors,
+        "warnings": result.warnings,
+        "issues": result.issues,
+    }
 
 
 @app.get("/world")
@@ -190,6 +204,31 @@ def get_related(entity_id: str) -> list[dict[str, str]]:
     ]
 
 
+@app.get("/entities/{entity_id}/relationships")
+def get_entity_relationship_links(entity_id: str) -> dict[str, list[dict[str, str]]]:
+    registry = load_world_registry(WORLD_PATH)
+
+    if registry.get_entity(entity_id) is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Entity not found: {entity_id}",
+        )
+
+    outgoing, incoming = get_entity_relationships(registry, entity_id)
+
+    def serialize(references: list[EntityReference]) -> list[dict[str, str]]:
+        return [
+            {
+                "id": reference.id,
+                "entity_type": reference.entity_type,
+                "name": registry.get_entity(reference.id).name,
+            }
+            for reference in references
+        ]
+
+    return {"outgoing": serialize(outgoing), "incoming": serialize(incoming)}
+
+
 @app.put("/entities/{entity_id}")
 def update_entity(
     entity_id: str,
@@ -316,6 +355,21 @@ def delete_entity(entity_id: str) -> dict[str, str]:
         raise HTTPException(
             status_code=500,
             detail=f"No model configuration found for entity: {entity_id}",
+        )
+
+    _, incoming_references = get_entity_relationships(registry, entity_id)
+    if incoming_references:
+        reference_names = [
+            registry.get_entity(reference.id).name
+            for reference in incoming_references
+            if registry.get_entity(reference.id) is not None
+        ]
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Cannot delete {entity.name}; it is linked from: "
+                f"{', '.join(reference_names)}. Remove those links first."
+            ),
         )
 
     service = WorldService(WORLD_PATH.parent)

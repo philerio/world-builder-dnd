@@ -1,88 +1,153 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
   CardActionArea,
   CardContent,
+  Chip,
   Grid,
   Stack,
   Typography,
 } from "@mui/material";
 
-import type { City, Continent, Kingdom, Region, WorldData } from "../types";
-import useEntityIndex from "../hooks/useEntityIndex";
+import type { Location } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
+import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
+import formatStatusLabel from "../utils/formatStatusLabel";
+import { useWorldData } from "../context/WorldDataContext";
 
-type LocationCardProps = {
-  name: string;
-  description?: string;
-  secondaryText?: string;
-  secondaryContent?: React.ReactNode;
-  onOpen: () => void;
-};
+type LocationCategory = "Continent" | "Kingdom" | "Region" | "City" | "Location";
 
-type LocationData = {
+type LocationEntry = {
   id: string;
   name: string;
+  category: LocationCategory;
   description?: string;
-  secondaryText?: string;
-  secondaryContent?: React.ReactNode;
+  context?: string;
 };
 
 type LocationSectionProps = {
   title: string;
-  locations: LocationData[];
+  locations: LocationEntry[];
   onOpen: (id: string) => void;
 };
 
+type LocationCardProps = {
+  location: LocationEntry;
+  onOpen: () => void;
+};
+
 function LocationsPage() {
-  const [continents, setContinents] = useState<Continent[]>([]);
-  const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { getEntity } = useEntityIndex();
+  const { worldData, worldDataLoading, worldDataError } = useWorldData();
+  const continents = worldData?.continents ?? [];
+  const kingdoms = worldData?.kingdoms ?? [];
+  const regions = worldData?.regions ?? [];
+  const cities = worldData?.cities ?? [];
+  const places: Location[] = worldData?.locations ?? [];
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
 
-  const openMap = (mapId: string) => {
-    navigate(`/maps?map=${mapId}`);
+  const openMap = (mapId: string, entityId?: string, placeEntity = false) => {
+    const params = new URLSearchParams({ map: mapId });
+    if (entityId) params.set(placeEntity ? "placeEntity" : "focusEntity", entityId);
+    navigate(`/maps?${params.toString()}`);
   };
-  useEffect(() => {
-    fetch("http://localhost:8000/world")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data: WorldData) => {
-        setContinents(data.continents);
-        setKingdoms(data.kingdoms);
-        setRegions(data.regions);
-        setCities(data.cities);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
+  if (worldDataLoading) {
     return <Typography color="text.secondary">Loading locations…</Typography>;
   }
 
-  if (error) {
+  if (worldDataError) {
     return (
-      <Typography color="error">Could not load locations: {error}</Typography>
+      <Typography color="error">Could not load locations: {worldDataError}</Typography>
     );
   }
+
+  const nameById = new Map(
+    [...continents, ...kingdoms, ...regions, ...cities, ...places].map(
+      (entity) => [entity.id, entity.name] as const,
+    ),
+  );
+  const nameOf = (id?: string) => (id ? nameById.get(id) ?? id : undefined);
+  const allEntries: LocationEntry[] = [
+    ...continents.map((continent) => ({
+      id: continent.id,
+      name: continent.name,
+      category: "Continent" as const,
+      description: continent.description,
+      context: `${kingdoms.filter((kingdom) => kingdom.continent === continent.id).length} kingdoms · ${regions.filter((region) => region.continent === continent.id).length} regions`,
+    })),
+    ...kingdoms.map((kingdom) => ({
+      id: kingdom.id,
+      name: kingdom.name,
+      category: "Kingdom" as const,
+      description: kingdom.description,
+      context: [
+        kingdom.continent ? `Continent: ${nameOf(kingdom.continent)}` : undefined,
+        kingdom.capital ? `Capital: ${nameOf(kingdom.capital)}` : undefined,
+        `${cities.filter((city) => city.kingdom === kingdom.id).length} cities`,
+      ].filter(Boolean).join(" · "),
+    })),
+    ...regions.map((region) => ({
+      id: region.id,
+      name: region.name,
+      category: "Region" as const,
+      description: region.description,
+      context: [
+        region.continent ? `Continent: ${nameOf(region.continent)}` : undefined,
+        region.kingdom ? `Kingdom: ${nameOf(region.kingdom)}` : undefined,
+        `${cities.filter((city) => city.region === region.id).length} cities`,
+      ].filter(Boolean).join(" · "),
+    })),
+    ...cities.map((city) => ({
+      id: city.id,
+      name: city.name,
+      category: "City" as const,
+      description: city.description,
+      context: [
+        city.region ? `Region: ${nameOf(city.region)}` : undefined,
+        city.kingdom ? `Kingdom: ${nameOf(city.kingdom)}` : undefined,
+      ].filter(Boolean).join(" · "),
+    })),
+    ...places.map((place) => ({
+      id: place.id,
+      name: place.name,
+      category: "Location" as const,
+      description: place.description,
+      context: [
+        place.location_type ? formatStatusLabel(place.location_type) : undefined,
+        place.region ? `Region: ${nameOf(place.region)}` : undefined,
+        place.kingdom ? `Kingdom: ${nameOf(place.kingdom)}` : undefined,
+        place.continent ? `Continent: ${nameOf(place.continent)}` : undefined,
+      ].filter(Boolean).join(" · "),
+    })),
+  ];
+  const categories: LocationCategory[] = ["Continent", "Kingdom", "Region", "City", "Location"];
+  const sectionTitles: Record<LocationCategory, string> = {
+    Continent: "Continents",
+    Kingdom: "Kingdoms",
+    Region: "Regions",
+    City: "Cities",
+    Location: "Points of Interest",
+  };
+  const locationFilters: DashboardFilter[] = [{
+    key: "category",
+    label: "Type",
+    options: categories.map((category) => ({ value: category, label: sectionTitles[category] })),
+  }];
+  const search = filters.search?.toLowerCase() ?? "";
+  const filteredEntries = allEntries.filter((entry) => {
+    const matchesCategory = !filters.category || entry.category === filters.category;
+    const matchesSearch = !search || `${entry.name} ${entry.description ?? ""} ${entry.context ?? ""}`.toLowerCase().includes(search);
+    return matchesCategory && matchesSearch;
+  });
+  const hasActiveFilter = Boolean(search || filters.category);
+  const visibleCategories = categories.filter(
+    (category) => !hasActiveFilter || filteredEntries.some((entry) => entry.category === category),
+  );
 
   return (
     <Box>
@@ -108,96 +173,33 @@ function LocationsPage() {
         </Typography>
 
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Continents, kingdoms, and cities throughout the world.
+          Continents, kingdoms, regions, cities, and points of interest.
         </Typography>
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
-        <LocationSection
-          title="Continents"
-          locations={continents.map((continent) => ({
-            id: continent.id,
-            name: continent.name,
-            description: continent.description,
-            secondaryText: `${kingdoms.filter((kingdom) => kingdom.continent === continent.id).length} kingdoms`,
-          }))}
-          onOpen={openEntity}
+        <DashboardFilters
+          search={{ label: "Search locations", placeholder: "Name, region, kingdom…" }}
+          filters={locationFilters}
+          onChange={setFilters}
         />
-
-        <Box sx={{ my: 5 }}>
-          <Box
-            sx={{
-              borderTop: 1,
-              borderColor: "divider",
-            }}
-          />
-        </Box>
-
-        <LocationSection
-          title="Kingdoms"
-          locations={kingdoms.map((kingdom) => {
-            const continent = kingdom.continent
-              ? getEntity(kingdom.continent)
-              : undefined;
-
-            return {
-              id: kingdom.id,
-              name: kingdom.name,
-              description: kingdom.description,
-              secondaryText: kingdom.capital
-                ? `Capital: ${kingdom.capital}`
-                : undefined,
-              secondaryContent: continent ? (
-                <Typography
-                  component="button"
-                  type="button"
-                  variant="body2"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    openEntity(continent.id);
-                  }}
-                  sx={{
-                    p: 0,
-                    border: 0,
-                    background: "none",
-                    color: "text.secondary",
-                    font: "inherit",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
-                  }}
-                >
-                  {`Continent: ${continent.name} | ${cities.filter((city) => city.kingdom === kingdom.id).length} cities`}
-                </Typography>
-              ) : undefined,
-            };
-          })}
-          onOpen={openEntity}
-        />
-
-        <Box sx={{ my: 5 }}>
-          <Box
-            sx={{
-              borderTop: 1,
-              borderColor: "divider",
-            }}
-          />
-        </Box>
-
-        <LocationSection
-          title="Cities"
-          locations={cities.map((city) => ({
-            id: city.id,
-            name: city.name,
-            description: city.description,
-            secondaryText: city.region
-              ? getEntityName(city.region, regions)
-              : undefined,
-          }))}
-          onOpen={openEntity}
-        />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Showing {filteredEntries.length} of {allEntries.length} records
+        </Typography>
+        {filteredEntries.length === 0 && hasActiveFilter && (
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            No locations match these filters.
+          </Typography>
+        )}
+        {visibleCategories.map((category, index) => {
+          const entries = filteredEntries.filter((entry) => entry.category === category);
+          return (
+            <Box key={category} sx={{ mb: index === visibleCategories.length - 1 ? 0 : 5 }}>
+              {index > 0 && <Box sx={{ borderTop: 1, borderColor: "divider", mb: 4 }} />}
+              <LocationSection title={sectionTitles[category]} locations={entries} onOpen={openEntity} />
+            </Box>
+          );
+        })}
       </Box>
 
       <EntityDetailDrawer
@@ -220,7 +222,9 @@ function LocationSection({ title, locations, onOpen }: LocationSectionProps) {
 
       {locations.length === 0 ? (
         <Typography color="text.secondary">
-          No locations have been added yet.
+          {title === "Points of Interest"
+            ? "No points of interest have been added yet."
+            : `No ${title.toLowerCase()} have been added yet.`}
         </Typography>
       ) : (
         <Grid container spacing={2}>
@@ -233,13 +237,7 @@ function LocationSection({ title, locations, onOpen }: LocationSectionProps) {
                 lg: 4,
               }}
             >
-              <LocationCard
-                name={location.name}
-                description={location.description}
-                secondaryText={location.secondaryText}
-                secondaryContent={location.secondaryContent}
-                onOpen={() => onOpen(location.id)}
-              />
+              <LocationCard location={location} onOpen={() => onOpen(location.id)} />
             </Grid>
           ))}
         </Grid>
@@ -248,36 +246,38 @@ function LocationSection({ title, locations, onOpen }: LocationSectionProps) {
   );
 }
 
-function LocationCard({
-  name,
-  description,
-  secondaryText,
-  secondaryContent,
-  onOpen,
-}: LocationCardProps) {
+function LocationCard({ location, onOpen }: LocationCardProps) {
   return (
-    <Card>
-      <CardActionArea onClick={onOpen}>
-        <CardContent>
-          <Stack spacing={1.5}>
-            <Typography variant="h2" sx={{ fontSize: "1.2rem" }}>
-              {name}
-            </Typography>
+    <Card sx={{ height: "100%" }}>
+      <CardActionArea onClick={onOpen} sx={{ height: "100%" }}>
+        <CardContent sx={{ p: 3, height: "100%" }}>
+          <Stack spacing={1.5} sx={{ height: "100%" }}>
+            <Stack direction="row" sx={{ alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              <Typography variant="h2" sx={{ fontSize: "1.2rem", flex: 1 }}>
+                {location.name}
+              </Typography>
+              <Chip size="small" label={location.category} />
+            </Stack>
 
-            {secondaryContent ??
-              (secondaryText && (
-                <Typography variant="body2" color="text.secondary">
-                  {secondaryText}
-                </Typography>
-              ))}
+            {location.context && (
+              <Typography variant="body2" color="text.secondary">
+                {location.context}
+              </Typography>
+            )}
 
-            {description && (
+            {location.description && (
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ lineHeight: 1.6 }}
+                sx={{
+                  lineHeight: 1.6,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 4,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
               >
-                {description}
+                {location.description}
               </Typography>
             )}
           </Stack>
@@ -285,13 +285,6 @@ function LocationCard({
       </CardActionArea>
     </Card>
   );
-}
-
-function getEntityName<T extends { id: string; name: string }>(
-  id: string,
-  entities: T[],
-): string {
-  return entities.find((entity) => entity.id === id)?.name ?? id;
 }
 
 export default LocationsPage;

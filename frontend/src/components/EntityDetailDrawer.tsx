@@ -8,15 +8,30 @@ import {
   CircularProgress,
   Divider,
   Drawer,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   Typography,
   Alert,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Tooltip,
 } from "@mui/material";
 import { useEntityMaps } from "../hooks/useEntityMaps";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MapIcon from "@mui/icons-material/Map";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
 import PublicIcon from "@mui/icons-material/Public";
@@ -25,8 +40,11 @@ import EntityForm from "./EntityForm";
 import type { EntityResponse, EntitySummary } from "../types";
 import useEntityIndex from "../hooks/useEntityIndex";
 import useRelatedEntities from "../hooks/useRelatedEntities";
+import useEntityRelationships from "../hooks/useEntityRelationships";
 import { useWorldData } from "../context/WorldDataContext";
 import formatStatusLabel from "../utils/formatStatusLabel";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 
 type EntityDetailDrawerProps = {
   entityId: string | null;
@@ -35,7 +53,7 @@ type EntityDetailDrawerProps = {
   onOpenEntity: (id: string) => void;
   onBack: () => void;
   canGoBack: boolean;
-  onOpenMap?: (id: string) => void;
+  onOpenMap?: (id: string, entityId?: string, placeEntity?: boolean) => void;
 };
 
 const drawerWidth = 440;
@@ -59,12 +77,22 @@ function EntityDetailDrawer({
     getEntity: getSharedEntity,
     loadEntity,
     updateEntity,
+    deleteEntity,
   } = useWorldData();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   useEffect(() => {
     setIsEditing(false);
+    setDeleteDialogOpen(false);
+    setDeleteError(null);
   }, [entityId]);
   const sharedData = entityId ? getSharedEntity(entityId) : undefined;
   const currentData = sharedData ?? data;
+  const entityName =
+    typeof currentData?.entity.name === "string"
+      ? currentData.entity.name
+      : "entity";
   const handleEdit = () => {
     if (!currentData) {
       return;
@@ -89,6 +117,23 @@ function EntityDetailDrawer({
       setError(err instanceof Error ? err.message : "Failed to save changes.");
     } finally {
       setSaving(false);
+    }
+  };
+  const handleDelete = async () => {
+    if (!entityId) return;
+
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteEntity(entityId);
+      setDeleteDialogOpen(false);
+      onClose();
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Failed to delete this entity.",
+      );
+    } finally {
+      setDeleting(false);
     }
   };
   useEffect(() => {
@@ -160,17 +205,24 @@ function EntityDetailDrawer({
                 {isEditing ? "EDITING" : "ENTITY"}
               </Typography>
               {!isEditing && currentData && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mb: 2,
-                  }}
-                >
+                <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
                   <Button variant="outlined" onClick={handleEdit}>
                     Edit
                   </Button>
-                </Box>
+                  {currentData.entity_type !== "world" && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </Stack>
               )}
             </Box>
           </Stack>
@@ -251,6 +303,37 @@ function EntityDetailDrawer({
             />
           ))}
       </Box>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          if (!deleting) setDeleteDialogOpen(false);
+        }}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Delete {entityName}?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This permanently removes the entity file. Deletion is blocked while
+            other records link to this entity; remove those links first.
+          </DialogContentText>
+          {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => void handleDelete()}
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
   );
 }
@@ -263,12 +346,14 @@ function EntityContent({
 }: {
   data: EntityResponse;
   onOpenEntity?: (id: string) => void;
-  onOpenMap?: (id: string) => void;
+  onOpenMap?: (id: string, entityId?: string, placeEntity?: boolean) => void;
   getEntity: (id: string) => EntitySummary | undefined;
 }) {
   const entity = data.entity;
-  const { createEntity, updateEntity } = useWorldData();
+  const { createEntity, updateEntity, entities: worldEntities } = useWorldData();
   const { entities: relatedEntities } = useRelatedEntities(data.id);
+  const { outgoing, incoming, loading: relationshipsLoading } =
+    useEntityRelationships(data.id);
   const [creatingTimelineRecord, setCreatingTimelineRecord] = useState(false);
   const [timelineRecordError, setTimelineRecordError] = useState<string | null>(null);
   const [createdTimeline, setCreatedTimeline] = useState<{ sourceId: string; timelineId: string } | null>(null);
@@ -278,6 +363,10 @@ function EntityContent({
 
   const name = typeof entity.name === "string" ? entity.name : data.id;
   const { maps, loading: mapsLoading } = useEntityMaps(data.id);
+  const mappedMapIds = new Set(maps.map((map) => map.id));
+  const availableMaps = worldEntities
+    .filter((item) => item.entity_type === "map" && !mappedMapIds.has(item.id))
+    .map(({ id, name: mapName }) => ({ id, name: mapName }));
   const description =
     typeof entity.description === "string" ? entity.description : null;
   const existingTimelineId = (createdTimeline?.sourceId === data.id ? createdTimeline.timelineId : null)
@@ -349,9 +438,12 @@ function EntityContent({
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
       />
-      {relatedEntities.length > 0 && (
-        <EntityReferenceListField label="Related records" entityIds={relatedEntities.map((item) => item.id)} onOpenEntity={onOpenEntity} getEntity={getEntity} />
-      )}
+      <EntityConnections
+        outgoing={outgoing}
+        incoming={incoming}
+        loading={relationshipsLoading}
+        onOpenEntity={onOpenEntity}
+      />
       {data.entity_type === "world_event" && entity.status === "resolved" && (
         <Box>
           {existingTimelineId ? (
@@ -366,7 +458,13 @@ function EntityContent({
           {timelineRecordError && <Alert severity="error" sx={{ mt: 1 }}>{timelineRecordError}</Alert>}
         </Box>
       )}
-      <EntityMaps maps={maps} loading={mapsLoading} onOpenMap={onOpenMap} />
+      <EntityMaps
+        maps={maps}
+        availableMaps={availableMaps}
+        entityId={data.id}
+        loading={mapsLoading}
+        onOpenMap={onOpenMap}
+      />
       {typeof entity.dm_notes === "string" && entity.dm_notes.trim() !== "" && (
         <>
           <Divider />
@@ -418,6 +516,88 @@ type EntityReferenceListFieldProps = {
   onOpenEntity?: (id: string) => void;
   getEntity: (id: string) => EntitySummary | undefined;
 };
+
+type EntityConnectionsProps = {
+  outgoing: EntitySummary[];
+  incoming: EntitySummary[];
+  loading: boolean;
+  onOpenEntity?: (id: string) => void;
+};
+
+function EntityConnections({
+  outgoing,
+  incoming,
+  loading,
+  onOpenEntity,
+}: EntityConnectionsProps) {
+  const connectionCount = outgoing.length + incoming.length;
+
+  return (
+    <Accordion disableGutters elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Typography>Connections</Typography>
+          <Chip size="small" label={loading ? "…" : connectionCount} />
+        </Stack>
+      </AccordionSummary>
+      <AccordionDetails>
+        {loading ? (
+          <CircularProgress size={18} />
+        ) : connectionCount === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            No linked records found.
+          </Typography>
+        ) : (
+          <Stack spacing={2}>
+            <EntityConnectionGroup
+              label="Links to"
+              entities={outgoing}
+              onOpenEntity={onOpenEntity}
+            />
+            {outgoing.length > 0 && incoming.length > 0 && <Divider />}
+            <EntityConnectionGroup
+              label="Linked from"
+              entities={incoming}
+              onOpenEntity={onOpenEntity}
+            />
+          </Stack>
+        )}
+      </AccordionDetails>
+    </Accordion>
+  );
+}
+
+function EntityConnectionGroup({
+  label,
+  entities,
+  onOpenEntity,
+}: {
+  label: string;
+  entities: EntitySummary[];
+  onOpenEntity?: (id: string) => void;
+}) {
+  if (entities.length === 0) return null;
+
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, mt: 0.75 }}>
+        {entities.map((entity) => (
+          <Tooltip key={entity.id} title={formatEntityType(entity.entity_type)}>
+            <Chip
+              label={entity.name}
+              size="small"
+              clickable={Boolean(onOpenEntity)}
+              onClick={() => onOpenEntity?.(entity.id)}
+            />
+          </Tooltip>
+        ))}
+      </Stack>
+    </Box>
+  );
+}
 
 function EntityReferenceListField({
   label,
@@ -487,6 +667,15 @@ function EntityDetails({
   getEntity: (id: string) => EntitySummary | undefined;
 }) {
   switch (data.entity_type) {
+    case "world":
+      return (
+        <WorldDetails
+          entity={data.entity}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      );
+
     case "continent":
       return (
         <ContinentDetails
@@ -517,6 +706,15 @@ function EntityDetails({
     case "city":
       return (
         <CityDetails
+          entity={data.entity}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      );
+
+    case "location":
+      return (
+        <WorldLocationDetails
           entity={data.entity}
           onOpenEntity={onOpenEntity}
           getEntity={getEntity}
@@ -564,6 +762,15 @@ function EntityDetails({
     case "artifact":
       return <ArtifactDetails entity={data.entity} />;
 
+    case "lore":
+      return (
+        <LoreDetails
+          entity={data.entity}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      );
+
     case "map":
       return (
         <MapDetails
@@ -576,6 +783,52 @@ function EntityDetails({
     default:
       return null;
   }
+}
+
+function WorldDetails({
+  entity,
+  onOpenEntity,
+  getEntity,
+}: {
+  entity: Record<string, unknown>;
+  onOpenEntity?: (id: string) => void;
+  getEntity: (id: string) => EntitySummary | undefined;
+}) {
+  return (
+    <DetailSection title="World" icon={<PublicIcon />}>
+      <ReferenceField label="Version" value={entity.version} />
+      <ReferenceField label="Author" value={entity.author} />
+      <EntityReferenceListField
+        label="Continents"
+        entityIds={getStringArray(entity.continents)}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+    </DetailSection>
+  );
+}
+
+function LoreDetails({
+  entity,
+  onOpenEntity,
+  getEntity,
+}: {
+  entity: Record<string, unknown>;
+  onOpenEntity?: (id: string) => void;
+  getEntity: (id: string) => EntitySummary | undefined;
+}) {
+  return (
+    <DetailSection title="Lore" icon={<MenuBookIcon />}>
+      <TextField value={entity.player_knowledge} fallback="No player-facing knowledge recorded." />
+      <TextField value={entity.details} fallback="No additional details recorded." />
+      <EntityReferenceListField
+        label="Campaigns"
+        entityIds={getStringArray(entity.campaigns)}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+    </DetailSection>
+  );
 }
 
 function WorldStoryDetails({
@@ -770,6 +1023,49 @@ function KingdomDetails({
     </DetailSection>
   );
 }
+
+function WorldLocationDetails({
+  entity,
+  onOpenEntity,
+  getEntity,
+}: {
+  entity: Record<string, unknown>;
+  onOpenEntity?: (id: string) => void;
+  getEntity: (id: string) => EntitySummary | undefined;
+}) {
+  return (
+    <DetailSection title="Location" icon={<LocationOnIcon />}>
+      <ReferenceField
+        label="Type"
+        value={
+          typeof entity.location_type === "string"
+            ? formatStatusLabel(entity.location_type)
+            : undefined
+        }
+      />
+      <EntityReferenceField
+        label="Continent"
+        value={entity.continent}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+      <EntityReferenceField
+        label="Kingdom"
+        value={entity.kingdom}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+      <EntityReferenceField
+        label="Region"
+        value={entity.region}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+      <TextField value={entity.details} fallback="No additional details available." />
+    </DetailSection>
+  );
+}
+
 type CityDetailsProps = {
   entity: Record<string, unknown>;
   onOpenEntity?: (id: string) => void;
@@ -1443,11 +1739,16 @@ type EntityMapsProps = {
     id: string;
     name: string;
   }[];
+  availableMaps: {
+    id: string;
+    name: string;
+  }[];
+  entityId: string;
   loading: boolean;
-  onOpenMap?: (id: string) => void;
+  onOpenMap?: (id: string, entityId?: string, placeEntity?: boolean) => void;
 };
 
-function EntityMaps({ maps, loading, onOpenMap }: EntityMapsProps) {
+function EntityMaps({ maps, availableMaps, entityId, loading, onOpenMap }: EntityMapsProps) {
   if (loading) {
     return (
       <DetailSection title="Appears on Maps" icon={<MapIcon />}>
@@ -1458,7 +1759,7 @@ function EntityMaps({ maps, loading, onOpenMap }: EntityMapsProps) {
     );
   }
 
-  if (maps.length === 0) {
+  if (maps.length === 0 && (!onOpenMap || availableMaps.length === 0)) {
     return null;
   }
 
@@ -1476,9 +1777,28 @@ function EntityMaps({ maps, loading, onOpenMap }: EntityMapsProps) {
             key={map.id}
             label={map.name}
             clickable={Boolean(onOpenMap)}
-            onClick={() => onOpenMap?.(map.id)}
+            onClick={() => onOpenMap?.(map.id, entityId, false)}
           />
         ))}
+        {onOpenMap && availableMaps.length > 0 && (
+          <FormControl size="small" sx={{ minWidth: 220 }}>
+            <InputLabel id="entity-add-to-map-label">Add to map</InputLabel>
+            <Select
+              labelId="entity-add-to-map-label"
+              label="Add to map"
+              value=""
+              onChange={(event) => {
+                if (event.target.value) {
+                  onOpenMap(event.target.value, entityId, true);
+                }
+              }}
+            >
+              {availableMaps.map((map) => (
+                <MenuItem key={map.id} value={map.id}>{map.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
       </Stack>
     </DetailSection>
   );

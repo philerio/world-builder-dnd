@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
-import { Box, Button, Drawer, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, Typography } from "@mui/material";
 import type { MapMarker } from "../types";
 import { useWorldData } from "../context/WorldDataContext";
 import EntityField from "./EntityField";
@@ -11,8 +11,10 @@ type MarkerDrawerProps = {
   marker: MapMarker | null;
   mode: "create" | "edit";
   onClose: () => void;
-  onSave: (marker: MapMarker) => void;
+  onSave: (marker: MapMarker) => Promise<void>;
+  onDelete?: (markerId: string) => Promise<void>;
   onStartDrawing?: (type: "area" | "path", marker?: MapMarker) => void;
+  onEditShape?: (markerId: string) => void;
 };
 
 function MarkerDrawer({
@@ -21,9 +23,16 @@ function MarkerDrawer({
   mode,
   onClose,
   onSave,
+  onDelete,
   onStartDrawing,
+  onEditShape,
 }: MarkerDrawerProps) {
   const [formData, setFormData] = useState<MapMarker | null>(marker);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { entities } = useWorldData();
   const markerDefinition = ENTITY_FIELD_DEFINITIONS.map.find(
     (field) => field.name === "markers",
@@ -33,6 +42,7 @@ function MarkerDrawer({
 
   const visibleMarkerFields = markerFields.filter((field) => {
     if (field.hidden) return false;
+    if (field.name === "type") return false;
     if (field.name === "icon") {
       return markerType === "point";
     }
@@ -53,7 +63,18 @@ function MarkerDrawer({
   });
   useEffect(() => {
     setFormData(marker);
+    setError(null);
+    setDiscardOpen(false);
+    setDeleteOpen(false);
   }, [marker]);
+  const isDirty = Boolean(marker && formData && JSON.stringify(marker) !== JSON.stringify(formData));
+  const requestClose = () => {
+    if (isDirty) {
+      setDiscardOpen(true);
+      return;
+    }
+    onClose();
+  };
   const updateField = (fieldName: string, value: unknown) => {
     setFormData((current) => {
       if (!current) {
@@ -67,21 +88,32 @@ function MarkerDrawer({
     });
   };
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: 400, p: 3 }}>
+    <>
+    <Drawer anchor="right" open={open} onClose={requestClose}>
+      <Box sx={{ width: { xs: "min(100vw, 440px)", sm: 460 }, p: 3, boxSizing: "border-box", minHeight: "100%" }}>
         <Typography variant="overline" color="text.secondary">
           {mode === "create" ? "CREATE" : "EDITING"}
         </Typography>
 
         <Typography variant="h5" sx={{ mb: 3 }}>
-          Marker
+          {markerType === "point" ? "Point Marker" : markerType === "area" ? "Area Marker" : "Path Marker"}
         </Typography>
 
         {marker && (
           <Stack spacing={2}>
             <Typography variant="body2" color="text.secondary">
-              Position: {marker.x.toFixed(1)}, {marker.y.toFixed(1)}
+              Position: {typeof formData?.x === "number" ? formData.x.toFixed(1) : "—"}, {typeof formData?.y === "number" ? formData.y.toFixed(1) : "—"}
             </Typography>
+            {markerType === "point" && mode === "edit" && (
+              <Typography variant="caption" color="text.secondary">
+                Drag this marker on the map to move it; its position saves immediately.
+              </Typography>
+            )}
+            {(markerType === "area" || markerType === "path") && mode === "create" && (
+              <Typography variant="caption" color="text.secondary">
+                Shape preview stays on the map until you save or discard it.
+              </Typography>
+            )}
             <Stack spacing={2}>
               {formData &&
                 visibleMarkerFields.map((field) => (
@@ -97,7 +129,7 @@ function MarkerDrawer({
                   />
                 ))}
             </Stack>
-            {formData && mode === "create" && (
+            {formData && mode === "create" && formData.type === "point" && (
               <Stack direction="row" spacing={2}>
                 <Button
                   variant="outlined"
@@ -125,35 +157,59 @@ function MarkerDrawer({
               </Stack>
             )}
 
-            {formData &&
-              mode === "edit" &&
+            {formData && mode === "edit" &&
               (formData.type === "area" || formData.type === "path") && (
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    const shapeType = formData.type;
-                    if (shapeType === "area" || shapeType === "path") {
-                      onStartDrawing?.(shapeType, formData);
+                <Stack spacing={1}>
+                  <Button variant="outlined" disabled={saving || deleting} onClick={async () => {
+                    if (!formData || !onEditShape) return;
+                    setError(null);
+                    if (isDirty) {
+                      setSaving(true);
+                      try {
+                        await onSave(formData);
+                      } catch (saveError) {
+                        setError(saveError instanceof Error ? saveError.message : "Could not save this marker.");
+                        setSaving(false);
+                        return;
+                      }
+                      setSaving(false);
                     }
-                  }}
-                >
-                  Edit Shape
-                </Button>
+                    onEditShape(formData.id);
+                  }}>
+                    Edit Shape on Map
+                  </Button>
+                  <Typography variant="caption" color="text.secondary">
+                    Finish reshaping on the map to save the geometry. Marker details save below.
+                  </Typography>
+                </Stack>
               )}
+            {error && <Alert severity="error">{error}</Alert>}
+            {mode === "edit" && onDelete && (
+              <Button color="error" variant="outlined" onClick={() => setDeleteOpen(true)} disabled={saving || deleting}>
+                Delete Marker
+              </Button>
+            )}
             <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
               <Button
                 variant="contained"
-                onClick={() => {
-                  if (formData) {
-                    onSave(formData);
+                onClick={async () => {
+                  if (!formData) return;
+                  setSaving(true);
+                  setError(null);
+                  try {
+                    await onSave(formData);
+                  } catch (saveError) {
+                    setError(saveError instanceof Error ? saveError.message : "Could not save this marker.");
+                  } finally {
+                    setSaving(false);
                   }
                 }}
-                disabled={!formData}
+                disabled={!formData || saving || deleting}
               >
-                Save
+                {saving ? "Saving…" : "Save Details"}
               </Button>
 
-              <Button variant="outlined" onClick={onClose}>
+              <Button variant="outlined" onClick={requestClose} disabled={saving || deleting}>
                 Cancel
               </Button>
             </Stack>
@@ -161,6 +217,37 @@ function MarkerDrawer({
         )}
       </Box>
     </Drawer>
+    <Dialog open={discardOpen} onClose={() => setDiscardOpen(false)}>
+      <DialogTitle>Discard marker changes?</DialogTitle>
+      <DialogContent><Typography>Unsaved marker details will be lost.</Typography></DialogContent>
+      <DialogActions>
+        <Button onClick={() => setDiscardOpen(false)}>Keep Editing</Button>
+        <Button color="error" onClick={() => { setDiscardOpen(false); onClose(); }}>Discard</Button>
+      </DialogActions>
+    </Dialog>
+    <Dialog open={deleteOpen} onClose={() => !deleting && setDeleteOpen(false)}>
+      <DialogTitle>Delete this marker?</DialogTitle>
+      <DialogContent><Typography>This removes the marker from this map. The linked entity stays in your world.</Typography></DialogContent>
+      <DialogActions>
+        <Button onClick={() => setDeleteOpen(false)} disabled={deleting}>Cancel</Button>
+        <Button color="error" onClick={async () => {
+          if (!marker || !onDelete) return;
+          setDeleting(true);
+          setError(null);
+          try {
+            await onDelete(marker.id);
+          } catch (deleteError) {
+            setError(deleteError instanceof Error ? deleteError.message : "Could not delete this marker.");
+            setDeleteOpen(false);
+          } finally {
+            setDeleting(false);
+          }
+        }} disabled={deleting}>
+          {deleting ? "Deleting…" : "Delete Marker"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }
 

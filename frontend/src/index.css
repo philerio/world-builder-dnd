@@ -5,3 +5,26 @@ body,
   min-width: 320px;
   min-height: 100%;
 }
+
+.leaflet-popup.campaign-activity-popup .leaflet-popup-content-wrapper {
+  color: #f4f4f5;
+  background: #17191f;
+  border: 1px solid #b89b5e;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+}
+
+.leaflet-popup.campaign-activity-popup .leaflet-popup-tip {
+  background: #17191f;
+}
+
+.leaflet-popup.campaign-activity-popup .leaflet-popup-content {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  margin: 14px;
+  color: #f4f4f5;
+}
+
+.leaflet-popup.campaign-activity-popup .leaflet-popup-close-button {
+  color: #f4f4f5;
+}

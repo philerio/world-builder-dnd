@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Autocomplete,
@@ -9,7 +9,6 @@ import {
   Box,
   Button,
   Card,
-  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -18,13 +17,13 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  Grid,
   IconButton,
   LinearProgress,
   MenuItem,
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -41,6 +40,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import LinkIcon from "@mui/icons-material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EventIcon from "@mui/icons-material/Event";
+import HistoryIcon from "@mui/icons-material/History";
 import type {
   Campaign,
   CampaignStory,
@@ -51,6 +51,7 @@ import type {
   StoryContent,
   StoryContentNode,
   EntitySummary,
+  SessionRecap,
   WorldClock,
   WorldStory,
   WorldStoryThreadLink,
@@ -75,6 +76,8 @@ const BEAT_STATUSES: StoryBeatStatus[] = [
   "skipped",
   "changed",
 ];
+
+const CAMPAIGN_STATUSES = ["planned", "active", "paused", "completed"] as const;
 
 const CONSEQUENCE_STATUSES: StoryConsequence["status"][] = [
   "pending",
@@ -152,6 +155,13 @@ type CloseoutActionDraft = {
   consequence_ids: string[];
   world_stories: string[];
   world_story_threads: WorldStoryThreadLink[];
+};
+
+type SessionRecapDraft = {
+  session: string;
+  played_on: string;
+  summary: string;
+  notes: string;
 };
 
 type WorldEventDraft = {
@@ -431,12 +441,14 @@ function EntityIdMultiSelect({
   options,
   onChange,
   disabled = false,
+  size,
 }: {
   label: string;
   ids: string[];
   options: EntitySummary[];
   onChange: (ids: string[]) => void;
   disabled?: boolean;
+  size?: "small" | "medium";
 }) {
   const values = ids.map((id) => options.find((option) => option.id === id) ?? {
     id,
@@ -446,7 +458,8 @@ function EntityIdMultiSelect({
   const allOptions = [...options, ...values.filter((value) => !options.some((option) => option.id === value.id))];
 
   return (
-    <Autocomplete
+    <Autocomplete<EntitySummary, true, false, false>
+      fullWidth
       multiple
       options={allOptions}
       value={values}
@@ -456,12 +469,37 @@ function EntityIdMultiSelect({
       renderOption={(props, option) => (
         <li {...props} key={option.id}>
           <Stack>
-            <Typography variant="body2">{option.name}</Typography>
+            <Tooltip title={option.name}>
+              <Typography variant="body2">{option.name}</Typography>
+            </Tooltip>
             <Typography variant="caption" color="text.secondary">{option.entity_type.replaceAll("_", " ")}</Typography>
           </Stack>
         </li>
       )}
-      renderInput={(params) => <TextField {...params} label={label} placeholder="Search and select" />}
+      renderValue={(selected, getItemProps) =>
+        selected.map((option, index) => {
+          const { key, ...itemProps } = getItemProps({ index });
+
+          return (
+            <Tooltip key={key} title={option.name} enterDelay={400}>
+              <Chip
+                {...itemProps}
+                label={option.name}
+                size={size}
+                sx={{
+                  maxWidth: size === "small" ? 150 : 220,
+                  "& .MuiChip-label": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  },
+                }}
+              />
+            </Tooltip>
+          );
+        })
+      }
+      renderInput={(params) => <TextField {...params} label={label} placeholder="Search and select" size={size} />}
       disabled={disabled}
       noOptionsText="No matching entries"
     />
@@ -561,6 +599,51 @@ function isCampaignStory(value: Campaign["story"]): value is CampaignStory {
   return typeof value === "object" && value !== null && "beats" in value;
 }
 
+function CollapsibleDashboardSection({
+  eyebrow,
+  title,
+  children,
+  gridRow,
+  summaryAdornment,
+}: {
+  eyebrow: string;
+  title: string;
+  children: ReactNode;
+  gridRow: number;
+  summaryAdornment?: ReactNode;
+}) {
+  return (
+    <Card sx={{ gridRow: { xs: gridRow, lg: "auto" } }}>
+      <Accordion
+        defaultExpanded
+        disableGutters
+        elevation={0}
+        sx={{ bgcolor: "transparent", "&:before": { display: "none" } }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          sx={{
+            px: 2,
+            minHeight: 76,
+            "& .MuiAccordionSummary-content": { my: 1.5, minWidth: 0 },
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between", width: "100%", minWidth: 0, pr: 1 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="overline" color="text.secondary">{eyebrow}</Typography>
+              <Typography variant="h2">{title}</Typography>
+            </Box>
+            {summaryAdornment}
+          </Stack>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 2, pt: 0, pb: 2 }}>
+          {children}
+        </AccordionDetails>
+      </Accordion>
+    </Card>
+  );
+}
+
 function CampaignDashboardPage() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
@@ -581,6 +664,8 @@ function CampaignDashboardPage() {
   const [actionWorldStories, setActionWorldStories] = useState<string[]>([]);
   const [actionWorldStoryThreads, setActionWorldStoryThreads] = useState<WorldStoryThreadLink[]>([]);
   const [beatStatusFilter, setBeatStatusFilter] = useState<StoryBeatStatus | "all">("all");
+  const [beatConsequenceFilterIds, setBeatConsequenceFilterIds] = useState<string[]>([]);
+  const [beatEventFilterIds, setBeatEventFilterIds] = useState<string[]>([]);
   const [clockProgressFilter, setClockProgressFilter] = useState<ClockProgressFilter>("all");
   const [clockName, setClockName] = useState("");
   const [clockMaximum, setClockMaximum] = useState("3");
@@ -599,6 +684,11 @@ function CampaignDashboardPage() {
   const [worldEventSource, setWorldEventSource] = useState<WorldEventSourceDraft | null>(null);
   const [creatingWorldEvent, setCreatingWorldEvent] = useState(false);
   const [closeoutOpen, setCloseoutOpen] = useState(false);
+  const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
+  const [sessionHistoryFilter, setSessionHistoryFilter] = useState("all");
+  const [sessionRecapDialogOpen, setSessionRecapDialogOpen] = useState(false);
+  const [sessionRecapDraft, setSessionRecapDraft] = useState<SessionRecapDraft | null>(null);
+  const [editingSessionRecapNumber, setEditingSessionRecapNumber] = useState<number | null>(null);
   const [closeoutDrafts, setCloseoutDrafts] = useState<Record<string, CloseoutActionDraft>>({});
   const [closeoutSessionFilter, setCloseoutSessionFilter] = useState("all");
   const {
@@ -682,9 +772,6 @@ function CampaignDashboardPage() {
   const closeoutActions = unreviewedActions.filter((action) => closeoutSessionFilter === "all"
     || (closeoutSessionFilter === "unassigned" ? action.session === undefined : String(action.session) === closeoutSessionFilter));
   const clocks = campaignStory.world_clocks;
-  const filteredBeats = beatStatusFilter === "all"
-    ? beats
-    : beats.filter((beat) => beat.status === beatStatusFilter);
   const filteredClocks = clockProgressFilter === "all"
     ? clocks
     : clocks.filter((clock) => getClockProgress(clock) === clockProgressFilter);
@@ -731,6 +818,63 @@ function CampaignDashboardPage() {
     entity_type: "consequence",
     name: `${beat.name}: ${consequence.description}`,
   }));
+  const worldEventIds = new Set(worldEventOptions.map((event) => event.id));
+  const filteredBeats = beats.filter((beat) => {
+    if (beatStatusFilter !== "all" && beat.status !== beatStatusFilter) return false;
+
+    const outgoingConsequences = beat.consequences ?? [];
+    const incomingConsequences = consequences
+      .filter(({ consequence }) => consequence.leads_to?.includes(beat.id))
+      .map(({ consequence }) => consequence);
+    const relatedConsequences = [...outgoingConsequences, ...incomingConsequences];
+    if (beatConsequenceFilterIds.length && !relatedConsequences.some((consequence) => beatConsequenceFilterIds.includes(consequence.id))) {
+      return false;
+    }
+
+    const linkedEvents = new Set([
+      ...(beat.world_events ?? []),
+      ...(beat.events_content?.nodes ?? []).flatMap((node) => node.type === "entity_link" ? [node.entity_id] : []),
+      ...relatedConsequences.flatMap((consequence) => consequence.leads_to ?? []),
+    ].filter((id) => worldEventIds.has(id)));
+    if (beatEventFilterIds.length && !beatEventFilterIds.some((id) => linkedEvents.has(id))) return false;
+
+    return true;
+  });
+  const sessionHistorySessionValues = [...new Set([
+    ...actions.flatMap((action) => action.session === undefined ? [] : [String(action.session)]),
+    ...(campaignStory.session_recaps ?? []).map((recap) => String(recap.session)),
+  ])].sort((left, right) => Number(right) - Number(left));
+  const sessionHistoryGroups = (() => {
+    const groups = new Map<string, { label: string; session: number | null; actions: typeof actions; recap?: SessionRecap }>();
+    for (const recap of campaignStory.session_recaps ?? []) {
+      const key = String(recap.session);
+      if (sessionHistoryFilter !== "all" && sessionHistoryFilter !== key) continue;
+      groups.set(key, {
+        label: "Session " + key,
+        session: recap.session,
+        actions: [],
+        recap,
+      });
+    }
+    for (const action of actions) {
+      const key = action.session === undefined ? "unassigned" : String(action.session);
+      if (sessionHistoryFilter !== "all" && sessionHistoryFilter !== key) continue;
+      const group = groups.get(key) ?? {
+        label: key === "unassigned" ? "Session not set" : `Session ${key}`,
+        session: action.session ?? null,
+        actions: [],
+      };
+      group.actions.push(action);
+      groups.set(key, group);
+    }
+    return [...groups.entries()]
+      .sort(([left], [right]) => {
+        if (left === "unassigned") return 1;
+        if (right === "unassigned") return -1;
+        return Number(right) - Number(left);
+      })
+      .map(([, group]) => group);
+  })();
 
   const saveStory = async (nextStory: CampaignStory): Promise<boolean> => {
     if (!campaign || !campaignId) return false;
@@ -750,6 +894,103 @@ function CampaignDashboardPage() {
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const updateCampaignStatus = async (status: string) => {
+    if (!campaign || !campaignId || status === campaign.status) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const saved = await updateEntity(campaignId, { ...campaign, status });
+      setCampaign(saved.entity as unknown as Campaign);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Could not update campaign status.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openSessionRecap = (session?: number) => {
+    const existing = session === undefined
+      ? undefined
+      : campaignStory.session_recaps?.find((recap) => recap.session === session);
+    const nextSession = sessionHistorySessionValues.length
+      ? Math.max(...sessionHistorySessionValues.map(Number)) + 1
+      : 1;
+    setEditingSessionRecapNumber(existing?.session ?? null);
+    setSessionRecapDraft({
+      session: String(existing?.session ?? session ?? nextSession),
+      played_on: existing?.played_on ?? "",
+      summary: existing?.summary ?? "",
+      notes: existing?.notes ?? "",
+    });
+    setSessionRecapDialogOpen(true);
+  };
+
+  const generateSessionRecapDraft = () => {
+    if (!sessionRecapDraft) return;
+    const sessionNumber = Number.parseInt(sessionRecapDraft.session, 10);
+    if (!Number.isFinite(sessionNumber) || sessionNumber < 1) return;
+
+    const sessionActions = actions.filter((action) => action.session === sessionNumber);
+    if (!sessionActions.length) return;
+
+    const actionBeatsById = new Map<string, StoryBeat>();
+    const linkedConsequencesById = new Map<string, (typeof consequences)[number]>();
+    for (const action of sessionActions) {
+      const beat = beats.find((item) => item.id === action.story_beat);
+      if (beat) actionBeatsById.set(beat.id, beat);
+      for (const consequenceId of action.consequence_ids ?? []) {
+        const consequence = consequences.find((item) => item.consequence.id === consequenceId);
+        if (consequence) linkedConsequencesById.set(consequence.consequence.id, consequence);
+      }
+    }
+    const actionBeats = [...actionBeatsById.values()];
+    const linkedConsequences = [...linkedConsequencesById.values()];
+    const relatedEventIds = new Set([
+      ...actionBeats.flatMap((beat) => beat.world_events ?? []),
+      ...linkedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []),
+    ]);
+    const relatedEvents = worldEventOptions.filter((event) => relatedEventIds.has(event.id));
+    const resultingBeatIds = new Set(linkedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []));
+    const resultingBeats = beats.filter((beat) => resultingBeatIds.has(beat.id));
+
+    const sections = [
+      `During Session ${sessionNumber}, the party:\n${sessionActions.map((action) => {
+        const beat = beats.find((item) => item.id === action.story_beat);
+        return `- ${action.description}${beat ? ` (Plot Point: ${beat.name})` : ""}`;
+      }).join("\n")}`,
+    ];
+    if (actionBeats.length) sections.push(`Plot Points: ${actionBeats.map((beat) => beat.name).join(", ")}`);
+    if (linkedConsequences.length) {
+      sections.push(`Linked consequences:\n${linkedConsequences.map(({ consequence }) => `- ${consequence.description} (${formatStatusLabel(consequence.status)})`).join("\n")}`);
+    }
+    if (resultingBeats.length) sections.push(`Possible next Plot Points: ${resultingBeats.map((beat) => beat.name).join(", ")}`);
+    if (relatedEvents.length) sections.push(`Related events: ${relatedEvents.map((event) => event.name).join(", ")}`);
+
+    setSessionRecapDraft({ ...sessionRecapDraft, summary: sections.join("\n\n") });
+  };
+
+  const saveSessionRecap = async () => {
+    if (!sessionRecapDraft) return;
+    const sessionNumber = Number.parseInt(sessionRecapDraft.session, 10);
+    if (!Number.isFinite(sessionNumber) || sessionNumber < 1) return;
+    const recap: SessionRecap = {
+      session: sessionNumber,
+      played_on: optionalText(sessionRecapDraft.played_on),
+      summary: optionalText(sessionRecapDraft.summary),
+      notes: optionalText(sessionRecapDraft.notes),
+    };
+    const sessionRecaps = [
+      ...(campaignStory.session_recaps ?? []).filter((item) => item.session !== sessionNumber && item.session !== editingSessionRecapNumber),
+      recap,
+    ].sort((left, right) => left.session - right.session);
+    if (await saveStory({ ...campaignStory, session_recaps: sessionRecaps })) {
+      setSessionRecapDialogOpen(false);
+      setSessionRecapDraft(null);
+      setEditingSessionRecapNumber(null);
+      setSessionHistoryFilter(String(sessionNumber));
     }
   };
 
@@ -1222,6 +1463,16 @@ function CampaignDashboardPage() {
     setConsequenceDraft(null);
   };
 
+  const updateConsequenceTargetIds = (selectedIds: string[], options: EntitySummary[]) => {
+    if (!consequenceDraft) return;
+    const replacedIds = new Set(options.map((option) => option.id));
+    const preservedIds = textToList(consequenceDraft.leads_to).filter((id) => !replacedIds.has(id));
+    setConsequenceDraft({
+      ...consequenceDraft,
+      leads_to: listToText([...new Set([...preservedIds, ...selectedIds])]),
+    });
+  };
+
   const startClockEdit = (clock: WorldClock) => {
     setEditingClockId(clock.id);
     setClockDraft({
@@ -1347,6 +1598,10 @@ function CampaignDashboardPage() {
 
   if (!campaign) return null;
 
+  const campaignStatusOptions = [...new Set([...CAMPAIGN_STATUSES, campaign.status ?? "planned"])];
+  const recapSessionNumber = Number.parseInt(sessionRecapDraft?.session ?? "", 10);
+  const recapActionCount = actions.filter((action) => action.session === recapSessionNumber).length;
+
   return (
     <Box>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
@@ -1354,7 +1609,18 @@ function CampaignDashboardPage() {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="overline" color="text.secondary">CAMPAIGN DASHBOARD</Typography>
-        {campaign.status && <Chip size="small" label={formatStatusLabel(campaign.status)} />}
+        <FormControl size="small" sx={{ minWidth: 145 }}>
+          <Select
+            aria-label="Campaign status"
+            value={campaign.status ?? "planned"}
+            onChange={(event) => void updateCampaignStatus(event.target.value as string)}
+            disabled={saving}
+          >
+            {campaignStatusOptions.map((status) => (
+              <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         {saving && <Typography variant="caption" color="text.secondary">Saving…</Typography>}
       </Stack>
 
@@ -1372,17 +1638,19 @@ function CampaignDashboardPage() {
         </Alert>
       )}
 
-      <Grid container spacing={2.5}>
-        <Grid size={{ xs: 12, lg: 8 }}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start", gap: 2 }}>
-                <Box>
-                  <Typography variant="overline" color="text.secondary">IN PLAY</Typography>
-                  <Typography variant="h2" sx={{ mt: 0.5 }}>Current Plot Point</Typography>
-                </Box>
-                {currentBeat && <Chip color="primary" label={formatStatusLabel(currentBeat.status)} />}
-              </Stack>
+      <Box sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 7fr) minmax(0, 5fr)" },
+        gap: 2.5,
+        alignItems: "start",
+      }}>
+        <Stack spacing={2.5} sx={{ display: { xs: "contents", lg: "flex" }, minWidth: 0 }}>
+          <CollapsibleDashboardSection
+            eyebrow="IN PLAY"
+            title="Current Plot Point"
+            gridRow={1}
+            summaryAdornment={currentBeat && <Chip color="primary" label={formatStatusLabel(currentBeat.status)} />}
+          >
               {currentBeat ? (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="h3">{currentBeat.name}</Typography>
@@ -1458,141 +1726,78 @@ function CampaignDashboardPage() {
                   </Button>
                 </DialogActions>
               </Dialog>
-            </CardContent>
-          </Card>
-        </Grid>
+          </CollapsibleDashboardSection>
 
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Typography variant="overline" color="text.secondary">QUICK LOG</Typography>
-              <Typography variant="h2" sx={{ mt: 0.5, mb: 2 }}>Player Action</Typography>
+          <CollapsibleDashboardSection
+            eyebrow="PLANNING"
+            title="Plot Points"
+            gridRow={4}
+            summaryAdornment={<Chip size="small" label={`${filteredBeats.length} / ${beats.length}`} />}
+          >
+              <Stack spacing={1} sx={{ mb: 1.5 }}>
+                <Stack direction={{ xs: "column", md: "row" }} spacing={1} sx={{ alignItems: { md: "flex-start" } }}>
+                  <FormControl size="small" sx={{ minWidth: 145, flex: 1 }}>
+                    <Select aria-label="Filter plot points by status" value={beatStatusFilter} onChange={(event) => setBeatStatusFilter(event.target.value as StoryBeatStatus | "all")}>
+                      <MenuItem value="all">All statuses</MenuItem>
+                      {BEAT_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <EntityIdMultiSelect
+                      label="Filter by consequence"
+                      ids={beatConsequenceFilterIds}
+                      options={consequenceOptions}
+                      onChange={setBeatConsequenceFilterIds}
+                      size="small"
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <EntityIdMultiSelect
+                      label="Filter by event"
+                      ids={beatEventFilterIds}
+                      options={worldEventOptions}
+                      onChange={setBeatEventFilterIds}
+                      size="small"
+                    />
+                  </Box>
+                </Stack>
+                {(beatStatusFilter !== "all" || beatConsequenceFilterIds.length > 0 || beatEventFilterIds.length > 0) && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setBeatStatusFilter("all");
+                      setBeatConsequenceFilterIds([]);
+                      setBeatEventFilterIds([]);
+                    }}
+                    sx={{ alignSelf: "flex-end" }}
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </Stack>
               <Stack spacing={1.5}>
-                <TextField
-                  label="What did the party do?"
-                  value={actionDescription}
-                  onChange={(event) => setActionDescription(event.target.value)}
-                  multiline
-                  minRows={2}
-                  disabled={saving || legacyStory}
-                />
-                <TextField label="Session (optional)" type="number" value={actionSessionInput} onChange={(event) => setActionSessionInput(event.target.value)} disabled={saving || legacyStory} />
-                <WorldStoryLinksEditor
-                  worldStoryIds={actionWorldStories}
-                  threadLinks={actionWorldStoryThreads}
-                  worldStoryOptions={worldStoryOptions}
-                  threadOptions={worldStoryThreadOptions}
-                  onChange={(worldStoryIds, threadLinks) => { setActionWorldStories(worldStoryIds); setActionWorldStoryThreads(threadLinks); }}
-                  disabled={saving || legacyStory}
-                />
-                <Button variant="contained" startIcon={<AddIcon />} onClick={addAction} disabled={!actionDescription.trim() || saving || legacyStory}>
-                  Log Action
-                </Button>
-              </Stack>
-              <Divider sx={{ my: 2.5 }} />
-              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1, gap: 1 }}>
-                <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-              <Typography variant="subtitle2">Recent actions</Typography>
-                  <Chip size="small" label={`${unreviewedActions.length} to review`} color={unreviewedActions.length ? "warning" : "default"} />
-                </Stack>
-                <Button size="small" onClick={openSessionCloseout} disabled={!actions.length || saving || legacyStory}>Session closeout</Button>
-              </Stack>
-              {actions.length ? (
-                <Stack spacing={1.25} sx={{ maxHeight: 360, overflowY: "auto", pr: 0.5 }}>
-                  {actions.map((action) => {
-                    const linkedBeat = beats.find((beat) => beat.id === action.story_beat);
-                    return <Box key={action.id}>
-                      {editingActionId === action.id && actionDraft ? (
-                        <Stack spacing={1}>
-                          <TextField label="Player action" value={actionDraft.description} onChange={(event) => setActionDraft({ ...actionDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <TextField label="Notes" value={actionDraft.notes} onChange={(event) => setActionDraft({ ...actionDraft, notes: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                            <TextField label="Session" type="number" value={actionDraft.session} onChange={(event) => setActionDraft({ ...actionDraft, session: event.target.value })} disabled={saving} />
-                            <FormControl size="small" fullWidth>
-                              <Select displayEmpty aria-label="Related plot point" value={actionDraft.story_beat} onChange={(event) => setActionDraft({ ...actionDraft, story_beat: event.target.value as string })} disabled={saving}>
-                                <MenuItem value=""><em>No related plot point</em></MenuItem>
-                                {beats.map((beat) => <MenuItem key={beat.id} value={beat.id}>{beat.name}</MenuItem>)}
-                              </Select>
-                            </FormControl>
-                          </Stack>
-                          <EntityIdMultiSelect label="Consequences" ids={textToList(actionDraft.consequence_ids)} options={consequenceOptions} onChange={(ids) => setActionDraft({ ...actionDraft, consequence_ids: listToText(ids) })} disabled={saving} />
-                          <WorldStoryLinksEditor
-                            worldStoryIds={actionDraft.world_stories}
-                            threadLinks={actionDraft.world_story_threads}
-                            worldStoryOptions={worldStoryOptions}
-                            threadOptions={worldStoryThreadOptions}
-                            onChange={(worldStoryIds, threadLinks) => setActionDraft({ ...actionDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
-                            disabled={saving}
-                          />
-                          <Stack direction="row" spacing={1}>
-                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveActionEdit(action.id)} disabled={saving || !actionDraft.description.trim()}>Save</Button>
-                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingActionId(null); setActionDraft(null); }} disabled={saving}>Cancel</Button>
-                          </Stack>
-                        </Stack>
-                      ) : <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2">{action.description}</Typography>
-                          {linkedBeat && <Typography variant="caption" color="text.secondary">During {linkedBeat.name}</Typography>}
-                          {action.reviewed && <Chip size="small" color="success" label="Reviewed" sx={{ mt: 0.5 }} />}
-                          <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
-                        </Box>
-                        <Stack spacing={0} sx={{ alignItems: "flex-end", flex: "0 0 auto" }}>
-                          <Stack direction="row" spacing={0.25}>
-                            <IconButton aria-label="Edit player action" title="Edit player action" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => startActionEdit(action)} disabled={saving || legacyStory || (editingActionId !== null && editingActionId !== action.id)}>
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton aria-label={`Delete player action ${action.description}`} title="Delete player action" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => setDeleteTarget({ kind: "player action", id: action.id, label: action.description })} disabled={saving || legacyStory}>
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                          <IconButton
-                            aria-label={`Create world event from player action: ${action.description}`}
-                            title="Create world event"
-                            size="small"
-                            onClick={() => startWorldEventFromAction(action)}
-                            disabled={saving || creatingWorldEvent || legacyStory}
-                            sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
-                          >
-                            <Box sx={{ position: "relative", display: "inline-flex", width: 20, height: 20 }}>
-                              <EventIcon fontSize="small" />
-                              <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
-                            </Box>
-                          </IconButton>
-                        </Stack>
-                      </Stack>}
-                    </Box>;
-                  })}
-                </Stack>
-              ) : <Typography variant="body2" color="text.secondary">No actions logged yet.</Typography>}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="overline" color="text.secondary">PLANNING</Typography>
-                <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, mt: 0.5 }}>
-                  <Typography variant="h2">Plot Points</Typography>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                    <Chip size="small" label={`${filteredBeats.length} / ${beats.length}`} />
-                    <FormControl size="small" sx={{ minWidth: 145 }}>
-                      <Select aria-label="Filter plot points by status" value={beatStatusFilter} onChange={(event) => setBeatStatusFilter(event.target.value as StoryBeatStatus | "all")}>
-                        <MenuItem value="all">All statuses</MenuItem>
-                        {BEAT_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </Stack>
-              </Box>
-              <Stack spacing={1.5} sx={{ mt: 2 }}>
                 {filteredBeats.length ? filteredBeats.map((beat) => (
                   <Box key={beat.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
                     <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1 }}>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontWeight: 600 }}>{beat.name}</Typography>
                         {(beat.description || beat.description_content?.nodes.length) && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}><PlotPointDescription beat={beat} onOpenEntity={openEntity} /></Typography>}
+                        {consequences.some(({ consequence }) => consequence.leads_to?.includes(beat.id)) && (
+                          <Stack direction="row" spacing={0.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap", mt: 0.75 }}>
+                            <Typography variant="caption" color="text.secondary">Possible after:</Typography>
+                            {consequences
+                              .filter(({ consequence }) => consequence.leads_to?.includes(beat.id))
+                              .map(({ beat: sourceBeat, consequence }) => (
+                                <Chip
+                                  key={consequence.id}
+                                  size="small"
+                                  variant="outlined"
+                                  label={consequence.description}
+                                  title={`From ${sourceBeat.name}`}
+                                />
+                              ))}
+                          </Stack>
+                        )}
                         <WorldStoryReferenceChips worldStoryIds={beat.world_stories ?? []} threadLinks={beat.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
                       </Box>
                       <Stack direction="row" sx={{ gap: 0.5, alignItems: "center", justifyContent: { xs: "flex-end", sm: "flex-start" }, flexShrink: 0 }}>
@@ -1707,27 +1912,240 @@ function CampaignDashboardPage() {
                 <TextField label="Optional notes" value={beatDescription} onChange={(event) => setBeatDescription(event.target.value)} multiline minRows={2} disabled={saving || legacyStory} />
                 <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={addBeat} disabled={!beatName.trim() || saving || legacyStory}>Add Plot Point</Button></Box>
               </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="overline" color="text.secondary">THREATS &amp; TIMING</Typography>
-                <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, mt: 0.5 }}>
-                  <Typography variant="h2">World Clocks</Typography>
-                  <FormControl size="small" sx={{ minWidth: 145 }}>
-                    <Select aria-label="Filter world clocks by progress" value={clockProgressFilter} onChange={(event) => setClockProgressFilter(event.target.value as ClockProgressFilter)}>
-                      <MenuItem value="all">All clocks</MenuItem>
-                      <MenuItem value="not_started">Not started</MenuItem>
-                      <MenuItem value="started">Started</MenuItem>
-                      <MenuItem value="finished">Finished</MenuItem>
-                    </Select>
-                  </FormControl>
+          </CollapsibleDashboardSection>
+        </Stack>
+        <Stack spacing={2.5} sx={{ display: { xs: "contents", lg: "flex" }, minWidth: 0 }}>
+          <CollapsibleDashboardSection eyebrow="QUICK LOG" title="Player Action" gridRow={2}>
+              <Stack spacing={1.5}>
+                <TextField
+                  label="What did the party do?"
+                  value={actionDescription}
+                  onChange={(event) => setActionDescription(event.target.value)}
+                  multiline
+                  minRows={2}
+                  disabled={saving || legacyStory}
+                />
+                <TextField label="Session (optional)" type="number" value={actionSessionInput} onChange={(event) => setActionSessionInput(event.target.value)} disabled={saving || legacyStory} />
+                <WorldStoryLinksEditor
+                  worldStoryIds={actionWorldStories}
+                  threadLinks={actionWorldStoryThreads}
+                  worldStoryOptions={worldStoryOptions}
+                  threadOptions={worldStoryThreadOptions}
+                  onChange={(worldStoryIds, threadLinks) => { setActionWorldStories(worldStoryIds); setActionWorldStoryThreads(threadLinks); }}
+                  disabled={saving || legacyStory}
+                />
+                <Button variant="contained" startIcon={<AddIcon />} onClick={addAction} disabled={!actionDescription.trim() || saving || legacyStory}>
+                  Log Action
+                </Button>
+              </Stack>
+              <Divider sx={{ my: 2.5 }} />
+              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1, gap: 1 }}>
+                <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
+              <Typography variant="subtitle2">Recent actions</Typography>
+                  <Chip size="small" label={`${unreviewedActions.length} to review`} color={unreviewedActions.length ? "warning" : "default"} />
                 </Stack>
-              </Box>
+                <Stack direction="row" spacing={0.5}>
+                  <Button size="small" startIcon={<HistoryIcon />} onClick={() => setSessionHistoryOpen(true)} disabled={legacyStory}>History</Button>
+                  <Button size="small" onClick={openSessionCloseout} disabled={!actions.length || saving || legacyStory}>Session closeout</Button>
+                </Stack>
+              </Stack>
+              {actions.length ? (
+                <Stack spacing={1.25} sx={{ maxHeight: 360, overflowY: "auto", pr: 0.5 }}>
+                  {actions.map((action) => {
+                    const linkedBeat = beats.find((beat) => beat.id === action.story_beat);
+                    return <Box key={action.id}>
+                      {editingActionId === action.id && actionDraft ? (
+                        <Stack spacing={1}>
+                          <TextField label="Player action" value={actionDraft.description} onChange={(event) => setActionDraft({ ...actionDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
+                          <TextField label="Notes" value={actionDraft.notes} onChange={(event) => setActionDraft({ ...actionDraft, notes: event.target.value })} multiline minRows={2} disabled={saving} />
+                          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                            <TextField label="Session" type="number" value={actionDraft.session} onChange={(event) => setActionDraft({ ...actionDraft, session: event.target.value })} disabled={saving} />
+                            <FormControl size="small" fullWidth>
+                              <Select displayEmpty aria-label="Related plot point" value={actionDraft.story_beat} onChange={(event) => setActionDraft({ ...actionDraft, story_beat: event.target.value as string })} disabled={saving}>
+                                <MenuItem value=""><em>No related plot point</em></MenuItem>
+                                {beats.map((beat) => <MenuItem key={beat.id} value={beat.id}>{beat.name}</MenuItem>)}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                          <EntityIdMultiSelect label="Consequences" ids={textToList(actionDraft.consequence_ids)} options={consequenceOptions} onChange={(ids) => setActionDraft({ ...actionDraft, consequence_ids: listToText(ids) })} disabled={saving} />
+                          <WorldStoryLinksEditor
+                            worldStoryIds={actionDraft.world_stories}
+                            threadLinks={actionDraft.world_story_threads}
+                            worldStoryOptions={worldStoryOptions}
+                            threadOptions={worldStoryThreadOptions}
+                            onChange={(worldStoryIds, threadLinks) => setActionDraft({ ...actionDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
+                            disabled={saving}
+                          />
+                          <Stack direction="row" spacing={1}>
+                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveActionEdit(action.id)} disabled={saving || !actionDraft.description.trim()}>Save</Button>
+                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingActionId(null); setActionDraft(null); }} disabled={saving}>Cancel</Button>
+                          </Stack>
+                        </Stack>
+                      ) : <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="body2">{action.description}</Typography>
+                          {linkedBeat && <Typography variant="caption" color="text.secondary">During {linkedBeat.name}</Typography>}
+                          {action.reviewed && <Chip size="small" color="success" label="Reviewed" sx={{ mt: 0.5 }} />}
+                          <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                        </Box>
+                        <Stack spacing={0} sx={{ alignItems: "flex-end", flex: "0 0 auto" }}>
+                          <Stack direction="row" spacing={0.25}>
+                            <IconButton aria-label="Edit player action" title="Edit player action" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => startActionEdit(action)} disabled={saving || legacyStory || (editingActionId !== null && editingActionId !== action.id)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton aria-label={`Delete player action ${action.description}`} title="Delete player action" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => setDeleteTarget({ kind: "player action", id: action.id, label: action.description })} disabled={saving || legacyStory}>
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                          <IconButton
+                            aria-label={`Create world event from player action: ${action.description}`}
+                            title="Create world event"
+                            size="small"
+                            onClick={() => startWorldEventFromAction(action)}
+                            disabled={saving || creatingWorldEvent || legacyStory}
+                            sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
+                          >
+                            <Box sx={{ position: "relative", display: "inline-flex", width: 20, height: 20 }}>
+                              <EventIcon fontSize="small" />
+                              <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
+                            </Box>
+                          </IconButton>
+                        </Stack>
+                      </Stack>}
+                    </Box>;
+                  })}
+                </Stack>
+              ) : <Typography variant="body2" color="text.secondary">No actions logged yet.</Typography>}
+          </CollapsibleDashboardSection>
+
+          <CollapsibleDashboardSection eyebrow="FOLLOW THROUGH" title="Consequences" gridRow={3}>
+              <Stack spacing={1.25}>
+                {consequences.length ? consequences.map(({ beat, consequence }) => (
+                  <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      {editingConsequenceId === consequence.id && consequenceDraft ? (
+                        <Stack spacing={1}>
+                          <TextField label="Description" value={consequenceDraft.description} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
+                          <TextField label="Trigger" value={consequenceDraft.trigger} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, trigger: event.target.value })} disabled={saving} />
+                          <TextField label="Player action" value={consequenceDraft.player_action} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, player_action: event.target.value })} disabled={saving} />
+                          <TextField label="Timing" value={consequenceDraft.timing} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, timing: event.target.value })} disabled={saving} />
+                          <FormControl size="small" fullWidth>
+                            <Select aria-label="Consequence status" value={consequenceDraft.status} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, status: event.target.value as StoryConsequence["status"] })} disabled={saving}>
+                              {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+                            </Select>
+                          </FormControl>
+                          <Typography variant="caption" color="text.secondary">
+                            If this consequence happens, these plot points or world events may follow.
+                          </Typography>
+                          <EntityIdMultiSelect
+                            label="Possible next plot points"
+                            ids={textToList(consequenceDraft.leads_to).filter((id) => plotPointOptions.some((option) => option.id === id))}
+                            options={plotPointOptions}
+                            onChange={(ids) => updateConsequenceTargetIds(ids, plotPointOptions)}
+                            disabled={saving}
+                          />
+                          <EntityIdMultiSelect
+                            label="Related world events"
+                            ids={textToList(consequenceDraft.leads_to).filter((id) => worldEventOptions.some((option) => option.id === id))}
+                            options={worldEventOptions}
+                            onChange={(ids) => updateConsequenceTargetIds(ids, worldEventOptions)}
+                            disabled={saving}
+                          />
+                          <WorldStoryLinksEditor
+                            worldStoryIds={consequenceDraft.world_stories}
+                            threadLinks={consequenceDraft.world_story_threads}
+                            worldStoryOptions={worldStoryOptions}
+                            threadOptions={worldStoryThreadOptions}
+                            onChange={(worldStoryIds, threadLinks) => setConsequenceDraft({ ...consequenceDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
+                            disabled={saving}
+                          />
+                          <Stack direction="row" spacing={1}>
+                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveConsequenceEdit(beat.id, consequence.id)} disabled={saving || !consequenceDraft.description.trim()}>Save</Button>
+                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingConsequenceId(null); setConsequenceDraft(null); }} disabled={saving}>Cancel</Button>
+                          </Stack>
+                        </Stack>
+                      ) : <>
+                        <Typography>{consequence.description}</Typography>
+                        <Typography variant="caption" color="text.secondary">From {beat.name}{consequence.timing ? ` · ${consequence.timing}` : ""}</Typography>
+                        <WorldStoryReferenceChips worldStoryIds={consequence.world_stories ?? []} threadLinks={consequence.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                        {consequence.leads_to?.map((id) => {
+                          const nextBeat = beats.find((item) => item.id === id);
+                          const event = worldEventOptions.find((item) => item.id === id);
+                          if (nextBeat) {
+                            return <Chip key={id} size="small" label={nextBeat.name} title="Possible next plot point" variant="outlined" sx={{ mt: 0.75, mr: 0.5 }} />;
+                          }
+                          if (event) {
+                            return <Chip key={id} size="small" label={event.name} title="Related world event" variant="outlined" clickable onClick={() => openEntity(event.id)} sx={{ mt: 0.75, mr: 0.5 }} />;
+                          }
+                          return null;
+                        })}
+                      </>}
+                    </Box>
+                    {editingConsequenceId !== consequence.id && <>
+                      <FormControl size="small" sx={{ minWidth: 130 }}>
+                        <Select value={consequence.status} aria-label={`Status for consequence ${consequence.description}`} onChange={(event) => updateConsequenceStatus(beat.id, consequence.id, event.target.value as StoryConsequence["status"])} disabled={saving || legacyStory}>
+                          {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                      <Stack spacing={0} sx={{ alignItems: "flex-end", flex: "0 0 auto" }}>
+                        <Stack direction="row" spacing={0.25}>
+                          <IconButton aria-label="Edit consequence" title="Edit consequence" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => startConsequenceEdit(consequence)} disabled={saving || legacyStory || (editingConsequenceId !== null && editingConsequenceId !== consequence.id)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton aria-label={`Delete consequence ${consequence.description}`} title="Delete consequence" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => setDeleteTarget({ kind: "consequence", id: consequence.id, parentBeatId: beat.id, label: consequence.description })} disabled={saving || legacyStory}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                        <IconButton
+                          aria-label={`Create world event from consequence: ${consequence.description}`}
+                          title="Create world event"
+                          size="small"
+                          onClick={() => startWorldEventFromConsequence(beat, consequence)}
+                          disabled={saving || creatingWorldEvent || legacyStory}
+                          sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
+                        >
+                          <Box sx={{ position: "relative", display: "inline-flex", width: 20, height: 20 }}>
+                            <EventIcon fontSize="small" />
+                            <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
+                          </Box>
+                        </IconButton>
+                      </Stack>
+                    </>}
+                  </Stack>
+                )) : <Typography color="text.secondary">No consequences recorded. Add one once an action has a possible follow-on effect.</Typography>}
+              </Stack>
+              <Divider sx={{ my: 2.5 }} />
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <TextField fullWidth label={currentBeat ? `New consequence for ${currentBeat.name}` : "Set a current beat to add a consequence"} value={consequenceDescription} onChange={(event) => setConsequenceDescription(event.target.value)} disabled={saving || legacyStory || !currentBeat} />
+                <IconButton
+                  aria-label="Add consequence"
+                  title="Add consequence"
+                  color="primary"
+                  onClick={addConsequence}
+                  disabled={!consequenceDescription.trim() || !currentBeat || saving || legacyStory}
+                  sx={{ width: 44, height: 44, flex: "0 0 44px", borderRadius: "50%" }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Stack>
+          </CollapsibleDashboardSection>
+
+          <CollapsibleDashboardSection
+            eyebrow="THREATS &amp; TIMING"
+            title="World Clocks"
+            gridRow={5}
+            summaryAdornment={<Chip size="small" label={`${filteredClocks.length} / ${clocks.length}`} />}
+          >
+              <Stack direction="row" sx={{ justifyContent: "flex-end", mb: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 145 }}>
+                  <Select aria-label="Filter world clocks by progress" value={clockProgressFilter} onChange={(event) => setClockProgressFilter(event.target.value as ClockProgressFilter)}>
+                    <MenuItem value="all">All clocks</MenuItem>
+                    <MenuItem value="not_started">Not started</MenuItem>
+                    <MenuItem value="started">Started</MenuItem>
+                    <MenuItem value="finished">Finished</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
               <Stack spacing={2}>
                 {filteredClocks.length ? filteredClocks.map((clock) => (
                   <Box key={clock.id}>
@@ -1794,95 +2212,9 @@ function CampaignDashboardPage() {
                 <TextField label="Steps to completion" type="number" value={clockMaximum} slotProps={{ htmlInput: { min: 1 } }} onChange={(event) => setClockMaximum(event.target.value)} disabled={saving || legacyStory} />
                 <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={addClock} disabled={!clockName.trim() || saving || legacyStory}>Add Clock</Button></Box>
               </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="overline" color="text.secondary">FOLLOW THROUGH</Typography>
-              <Typography variant="h2" sx={{ mt: 0.5 }}>Consequences</Typography>
-              <Stack spacing={1.25} sx={{ mt: 2 }}>
-                {consequences.length ? consequences.map(({ beat, consequence }) => (
-                  <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      {editingConsequenceId === consequence.id && consequenceDraft ? (
-                        <Stack spacing={1}>
-                          <TextField label="Description" value={consequenceDraft.description} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <TextField label="Trigger" value={consequenceDraft.trigger} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, trigger: event.target.value })} disabled={saving} />
-                          <TextField label="Player action" value={consequenceDraft.player_action} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, player_action: event.target.value })} disabled={saving} />
-                          <TextField label="Timing" value={consequenceDraft.timing} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, timing: event.target.value })} disabled={saving} />
-                          <FormControl size="small" fullWidth>
-                            <Select aria-label="Consequence status" value={consequenceDraft.status} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, status: event.target.value as StoryConsequence["status"] })} disabled={saving}>
-                              {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                            </Select>
-                          </FormControl>
-                          <EntityIdMultiSelect label="Leads to plot points or world events" ids={textToList(consequenceDraft.leads_to)} options={[...plotPointOptions, ...worldEventOptions]} onChange={(ids) => setConsequenceDraft({ ...consequenceDraft, leads_to: listToText(ids) })} disabled={saving} />
-                          <WorldStoryLinksEditor
-                            worldStoryIds={consequenceDraft.world_stories}
-                            threadLinks={consequenceDraft.world_story_threads}
-                            worldStoryOptions={worldStoryOptions}
-                            threadOptions={worldStoryThreadOptions}
-                            onChange={(worldStoryIds, threadLinks) => setConsequenceDraft({ ...consequenceDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
-                            disabled={saving}
-                          />
-                          <Stack direction="row" spacing={1}>
-                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveConsequenceEdit(beat.id, consequence.id)} disabled={saving || !consequenceDraft.description.trim()}>Save</Button>
-                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingConsequenceId(null); setConsequenceDraft(null); }} disabled={saving}>Cancel</Button>
-                          </Stack>
-                        </Stack>
-                      ) : <>
-                        <Typography>{consequence.description}</Typography>
-                        <Typography variant="caption" color="text.secondary">From {beat.name}{consequence.timing ? ` · ${consequence.timing}` : ""}</Typography>
-                        <WorldStoryReferenceChips worldStoryIds={consequence.world_stories ?? []} threadLinks={consequence.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
-                        {consequence.leads_to?.map((id) => worldEventOptions.find((event) => event.id === id)).filter((event): event is EntitySummary => Boolean(event)).map((event) => (
-                          <Chip key={event.id} size="small" label={event.name} variant="outlined" clickable onClick={() => openEntity(event.id)} sx={{ mt: 0.75, mr: 0.5 }} />
-                        ))}
-                      </>}
-                    </Box>
-                    {editingConsequenceId !== consequence.id && <>
-                      <FormControl size="small" sx={{ minWidth: 130 }}>
-                        <Select value={consequence.status} aria-label={`Status for consequence ${consequence.description}`} onChange={(event) => updateConsequenceStatus(beat.id, consequence.id, event.target.value as StoryConsequence["status"])} disabled={saving || legacyStory}>
-                          {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                        </Select>
-                      </FormControl>
-                      <Stack spacing={0} sx={{ alignItems: "flex-end", flex: "0 0 auto" }}>
-                        <Stack direction="row" spacing={0.25}>
-                          <IconButton aria-label="Edit consequence" title="Edit consequence" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => startConsequenceEdit(consequence)} disabled={saving || legacyStory || (editingConsequenceId !== null && editingConsequenceId !== consequence.id)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton aria-label={`Delete consequence ${consequence.description}`} title="Delete consequence" size="small" sx={{ width: 36, height: 36, minWidth: 36, flex: "0 0 36px", borderRadius: "50%" }} onClick={() => setDeleteTarget({ kind: "consequence", id: consequence.id, parentBeatId: beat.id, label: consequence.description })} disabled={saving || legacyStory}>
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Stack>
-                        <IconButton
-                          aria-label={`Create world event from consequence: ${consequence.description}`}
-                          title="Create world event"
-                          size="small"
-                          onClick={() => startWorldEventFromConsequence(beat, consequence)}
-                          disabled={saving || creatingWorldEvent || legacyStory}
-                          sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
-                        >
-                          <Box sx={{ position: "relative", display: "inline-flex", width: 20, height: 20 }}>
-                            <EventIcon fontSize="small" />
-                            <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
-                          </Box>
-                        </IconButton>
-                      </Stack>
-                    </>}
-                  </Stack>
-                )) : <Typography color="text.secondary">No consequences recorded. Add one once an action has a possible follow-on effect.</Typography>}
-              </Stack>
-              <Divider sx={{ my: 2.5 }} />
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
-                <TextField fullWidth label={currentBeat ? `New consequence for ${currentBeat.name}` : "Set a current beat to add a consequence"} value={consequenceDescription} onChange={(event) => setConsequenceDescription(event.target.value)} disabled={saving || legacyStory || !currentBeat} />
-                <Button variant="outlined" startIcon={<AddIcon />} onClick={addConsequence} disabled={!consequenceDescription.trim() || !currentBeat || saving || legacyStory} sx={{ whiteSpace: "nowrap" }}>Add Consequence</Button>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+          </CollapsibleDashboardSection>
+        </Stack>
+      </Box>
 
       <Dialog open={closeoutOpen} onClose={() => !saving && setCloseoutOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>Session closeout</DialogTitle>
@@ -1959,6 +2291,167 @@ function CampaignDashboardPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCloseoutOpen(false)} disabled={saving}>Done</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={sessionHistoryOpen} onClose={() => setSessionHistoryOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>Session history</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
+              <Typography color="text.secondary">
+                Review logged player actions, their Plot Points, consequences, and linked events.
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <Select aria-label="Filter history by session" value={sessionHistoryFilter} onChange={(event) => setSessionHistoryFilter(event.target.value)}>
+                    <MenuItem value="all">All sessions</MenuItem>
+                    <MenuItem value="unassigned">Session not set</MenuItem>
+                    {sessionHistorySessionValues.map((session) => <MenuItem key={session} value={session}>Session {session}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <Button startIcon={<AddIcon />} onClick={() => openSessionRecap()} disabled={saving}>Add recap</Button>
+              </Stack>
+            </Stack>
+            {sessionHistoryGroups.length === 0 ? (
+              <Typography color="text.secondary">No sessions match this filter. Add a recap to start a session record.</Typography>
+            ) : sessionHistoryGroups.map((group) => (
+              <Stack key={group.label} spacing={1}>
+                <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="h3" sx={{ fontSize: "1.05rem" }}>{group.label}</Typography>
+                  {group.session !== null && (
+                    <Button size="small" onClick={() => openSessionRecap(group.session!)} disabled={saving}>
+                      {group.recap ? "Edit recap" : "Add recap"}
+                    </Button>
+                  )}
+                </Stack>
+                {group.recap && (
+                  <Box sx={{ p: 1.5, border: 1, borderColor: "primary.light", borderRadius: 1.5, bgcolor: "action.hover" }}>
+                    <Stack spacing={0.5}>
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                        <Typography variant="subtitle2">Session recap</Typography>
+                        {group.recap.played_on && <Typography variant="caption" color="text.secondary">{group.recap.played_on}</Typography>}
+                      </Stack>
+                      {group.recap.summary && <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.summary}</Typography>}
+                      {group.recap.notes && <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.notes}</Typography>}
+                      {!group.recap.summary && !group.recap.notes && <Typography variant="body2" color="text.secondary">No recap text yet.</Typography>}
+                    </Stack>
+                  </Box>
+                )}
+                {group.actions.map((action) => {
+                  const relatedBeat = beats.find((beat) => beat.id === action.story_beat);
+                  const relatedConsequences = consequences.filter(({ consequence }) => action.consequence_ids?.includes(consequence.id));
+                  const resultingEvents = [...new Set(relatedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []))]
+                    .map((eventId) => worldEventOptions.find((event) => event.id === eventId))
+                    .filter((event): event is EntitySummary => Boolean(event));
+
+                  return (
+                    <Box key={action.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                      <Stack spacing={0.75}>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "flex-start" } }}>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 600 }}>{action.description}</Typography>
+                            {relatedBeat && <Typography variant="caption" color="text.secondary">During {relatedBeat.name}</Typography>}
+                          </Box>
+                          <Chip size="small" label={action.reviewed ? "Reviewed" : "Needs review"} color={action.reviewed ? "success" : "warning"} />
+                        </Stack>
+                        {action.notes && <Typography variant="body2" color="text.secondary">{action.notes}</Typography>}
+                        {relatedConsequences.length > 0 && (
+                          <Stack spacing={0.5}>
+                            {relatedConsequences.map(({ consequence, beat }) => (
+                              <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} spacing={0.75} sx={{ alignItems: { sm: "center" } }}>
+                                <Typography variant="body2">{consequence.description}</Typography>
+                                <Chip size="small" variant="outlined" label={formatStatusLabel(consequence.status)} />
+                                {beat.id !== relatedBeat?.id && <Typography variant="caption" color="text.secondary">From {beat.name}</Typography>}
+                              </Stack>
+                            ))}
+                          </Stack>
+                        )}
+                        {resultingEvents.length > 0 && (
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                            {resultingEvents.map((event) => <Chip key={event.id} size="small" icon={<EventIcon />} label={event.name} clickable onClick={() => openEntity(event.id)} />)}
+                          </Stack>
+                        )}
+                        <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            ))}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSessionHistoryOpen(false)}>Close</Button>
+          <Button onClick={() => { setSessionHistoryOpen(false); openSessionCloseout(); }} disabled={!actions.length || saving}>Review actions</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={sessionRecapDialogOpen} onClose={() => !saving && setSessionRecapDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{editingSessionRecapNumber === null ? "Add session recap" : `Edit Session ${editingSessionRecapNumber} recap`}</DialogTitle>
+        <DialogContent>
+          {sessionRecapDraft && (
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <TextField
+                label="Session number"
+                type="number"
+                slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                value={sessionRecapDraft.session}
+                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, session: event.target.value })}
+                required
+                disabled={saving}
+              />
+              <TextField
+                label="Date played (optional)"
+                type="date"
+                slotProps={{ inputLabel: { shrink: true } }}
+                value={sessionRecapDraft.played_on}
+                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, played_on: event.target.value })}
+                disabled={saving}
+              />
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
+                <Typography variant="caption" color="text.secondary">
+                  {recapActionCount
+                    ? `${recapActionCount} logged ${recapActionCount === 1 ? "action" : "actions"} for Session ${recapSessionNumber}.`
+                    : "No logged actions match this session number."}
+                </Typography>
+                <Button
+                  size="small"
+                  title="Replaces the summary with an editable draft from this session’s actions."
+                  onClick={generateSessionRecapDraft}
+                  disabled={!recapActionCount || saving}
+                >
+                  Generate from actions
+                </Button>
+              </Stack>
+              <TextField
+                label="Session summary"
+                value={sessionRecapDraft.summary}
+                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, summary: event.target.value })}
+                multiline
+                minRows={3}
+                disabled={saving}
+              />
+              <TextField
+                label="Notes (optional)"
+                value={sessionRecapDraft.notes}
+                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, notes: event.target.value })}
+                multiline
+                minRows={2}
+                disabled={saving}
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSessionRecapDialogOpen(false)} disabled={saving}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => void saveSessionRecap()}
+            disabled={saving || !sessionRecapDraft?.session.trim() || Number.parseInt(sessionRecapDraft?.session ?? "", 10) < 1}
+          >
+            {saving ? "Saving…" : "Save recap"}
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -37,11 +37,12 @@ function DashboardFilters({
 }: DashboardFiltersProps) {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const includeSearch = Boolean(search);
 
   useEffect(() => {
     const values: Record<string, string> = {};
 
-    if (search) {
+    if (includeSearch) {
       values.search = searchValue;
     }
 
@@ -52,7 +53,7 @@ function DashboardFilters({
     });
 
     onChange(values);
-  }, [search, searchValue, filterValues, onChange]);
+  }, [includeSearch, searchValue, filterValues, onChange]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilterValues((current) => ({

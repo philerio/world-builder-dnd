@@ -44,6 +44,8 @@ import formatStatusLabel from "../utils/formatStatusLabel";
 import type { Campaign, CampaignStory, EntityData, EntitySummary, WorldClock, WorldEvent, WorldStory, WorldStoryContribution, WorldStoryThread } from "../types";
 
 const THREAD_STATUSES = ["active", "planned", "paused", "resolved", "changed"];
+const EMPTY_EVENTS: WorldEvent[] = [];
+const EMPTY_CAMPAIGNS: Campaign[] = [];
 type ClockProgressFilter = "all" | "not_started" | "started" | "finished";
 type WorldClockDraft = {
   name: string;
@@ -67,10 +69,10 @@ function linesToList(text: string) {
 export default function WorldStoryDashboardPage() {
   const { storyId = "" } = useParams();
   const navigate = useNavigate();
-  const { entities, updateEntity, createEntity } = useWorldData();
+  const { entities, updateEntity, createEntity, worldData } = useWorldData();
   const [story, setStory] = useState<WorldStory | null>(null);
-  const [events, setEvents] = useState<WorldEvent[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const events = worldData?.world_events ?? EMPTY_EVENTS;
+  const campaigns = worldData?.campaigns ?? EMPTY_CAMPAIGNS;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,22 +100,16 @@ export default function WorldStoryDashboardPage() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      fetch(`http://localhost:8000/entities/${storyId}`),
-      fetch("http://localhost:8000/world"),
-    ])
-      .then(async ([entityResponse, worldResponse]) => {
+    fetch(`http://localhost:8000/entities/${storyId}`)
+      .then(async (entityResponse) => {
         if (!entityResponse.ok) throw new Error(`Could not load story (${entityResponse.status}).`);
-        if (!worldResponse.ok) throw new Error(`Could not load world data (${worldResponse.status}).`);
-        return [await entityResponse.json() as EntityData, await worldResponse.json() as { world_events: WorldEvent[]; campaigns: Campaign[] }] as const;
+        return await entityResponse.json() as EntityData;
       })
-      .then(([entityData, worldData]) => {
+      .then((entityData) => {
         if (!active) return;
         setError(null);
         if (entityData.entity_type !== "world_story") throw new Error("The selected entity is not a World Story.");
         setStory(entityData.entity as unknown as WorldStory);
-        setEvents(worldData.world_events ?? []);
-        setCampaigns(worldData.campaigns ?? []);
       })
       .catch((err: Error) => { if (active) setError(err.message); })
       .finally(() => { if (active) setLoading(false); });
@@ -325,7 +321,7 @@ export default function WorldStoryDashboardPage() {
     try {
       const selected = new Set(selectedEventIds);
       const updates = events.filter((event) => selected.has(event.id) || story.world_events.includes(event.id) || event.world_stories.includes(story.id));
-      const updatedEvents = await Promise.all(updates.map(async (event) => {
+      await Promise.all(updates.map(async (event) => {
         const world_stories = selected.has(event.id)
           ? [...new Set([...event.world_stories, story.id])]
           : event.world_stories.filter((id) => id !== story.id);
@@ -337,13 +333,11 @@ export default function WorldStoryDashboardPage() {
             : storyLinks)];
         }
         if (JSON.stringify(world_stories) === JSON.stringify(event.world_stories)
-          && JSON.stringify(world_story_threads) === JSON.stringify(event.world_story_threads)) return event;
-        const result = await updateEntity(event.id, { ...event, world_stories, world_story_threads });
-        return result.entity as unknown as WorldEvent;
+          && JSON.stringify(world_story_threads) === JSON.stringify(event.world_story_threads)) return;
+        await updateEntity(event.id, { ...event, world_stories, world_story_threads });
       }));
       const saved = await updateEntity(storyId, { ...story, world_events: selectedEventIds });
       setStory(saved.entity as unknown as WorldStory);
-      setEvents((current) => current.map((event) => updatedEvents.find((updated) => updated.id === event.id) ?? event));
       setEventDialogOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update linked background events.");
@@ -357,7 +351,7 @@ export default function WorldStoryDashboardPage() {
     setSaving(true);
     setError(null);
     try {
-      const created = await createEntity("world_event", {
+      await createEntity("world_event", {
         name: eventName.trim(),
         description: eventDescription.trim() || undefined,
         type: "background",
@@ -368,8 +362,6 @@ export default function WorldStoryDashboardPage() {
         locations: [],
         characters: [],
       });
-      const createdEvent = created.entity as unknown as WorldEvent;
-      setEvents((current) => [...current, createdEvent]);
       setCreateEventOpen(false);
       setEventName("");
       setEventDescription("");

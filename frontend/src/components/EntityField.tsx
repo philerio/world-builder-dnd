@@ -1,3 +1,4 @@
+import type { HTMLAttributes } from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -53,6 +54,48 @@ function EntityField({
   onChange,
   disabled,
 }: EntityFieldProps) {
+  const getReferenceOptions = () => {
+    const allowedTypes = field.referenceTypes ??
+      (field.referenceType ? [field.referenceType] : null);
+    const matchingEntities = entities.filter(
+      (entity) => !allowedTypes || allowedTypes.includes(entity.entity_type),
+    );
+    const existingIds = new Set(matchingEntities.map((entity) => entity.id));
+    const storedIds = Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string")
+      : typeof value === "string"
+        ? [value]
+        : [];
+
+    // Keep stale references visible and removable instead of silently dropping
+    // them when the referenced record is missing or has changed type.
+    const staleReferences = storedIds
+      .filter((id) => !existingIds.has(id))
+      .map((id) => ({
+        id,
+        entity_type: "unknown",
+        name: "Unavailable record",
+      }));
+
+    return [...matchingEntities, ...staleReferences];
+  };
+
+  const renderReferenceOption = (
+    props: HTMLAttributes<HTMLLIElement>,
+    option: EntityFieldProps["entities"][number],
+  ) => (
+    <Box component="li" {...props} key={option.id}>
+      <Stack sx={{ minWidth: 0 }}>
+        <Typography noWrap>{option.name}</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {option.entity_type === "unknown"
+            ? "Missing reference"
+            : option.entity_type.replaceAll("_", " ")}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+
   switch (field.type) {
     case "text":
       return (
@@ -134,23 +177,21 @@ function EntityField({
         />
       );
     case "reference": {
-      const matchingEntities = entities.filter(
-        (entity) =>
-          !field.referenceType || entity.entity_type === field.referenceType,
-      );
+      const options = getReferenceOptions();
 
       const selectedEntity =
         typeof value === "string"
-          ? (matchingEntities.find((entity) => entity.id === value) ?? null)
+          ? (options.find((entity) => entity.id === value) ?? null)
           : null;
 
       return (
         <Autocomplete
-          options={matchingEntities}
+          options={options}
           value={selectedEntity}
           onChange={(_, selected) => onChange(selected?.id ?? null)}
           getOptionLabel={(option) => option.name}
           isOptionEqualToValue={(option, selected) => option.id === selected.id}
+          renderOption={renderReferenceOption}
           disabled={disabled}
           renderInput={(params) => (
             <TextField {...params} label={field.label} />
@@ -159,25 +200,25 @@ function EntityField({
       );
     }
     case "referenceArray": {
-      const matchingEntities = entities.filter(
-        (entity) =>
-          !field.referenceType || entity.entity_type === field.referenceType,
-      );
+      const options = getReferenceOptions();
 
       const selectedEntities = Array.isArray(value)
-        ? matchingEntities.filter((entity) => value.includes(entity.id))
+        ? options.filter((entity) => value.includes(entity.id))
         : [];
 
       return (
         <Autocomplete
           multiple
-          options={matchingEntities}
+          options={options}
           value={selectedEntities}
           onChange={(_, selected) =>
             onChange(selected.map((entity) => entity.id))
           }
           getOptionLabel={(option) => option.name}
           isOptionEqualToValue={(option, selected) => option.id === selected.id}
+          renderOption={renderReferenceOption}
+          filterSelectedOptions
+          disableCloseOnSelect
           disabled={disabled}
           renderInput={(params) => (
             <TextField {...params} label={field.label} />
