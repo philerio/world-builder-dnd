@@ -1,16 +1,24 @@
+import json
 from pathlib import Path
+from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import ValidationError
 
 from worldbuilder.config.entity_types import get_entity_model
 from worldbuilder.loaders.world_loader import load_world_registry
 from worldbuilder.models.reference import EntityReference
+from worldbuilder.models.world import World
 from worldbuilder.relationships import (
     get_campaign_related_entities,
     get_entity_relationships,
     get_related_entities,
+)
+from worldbuilder.services.data_health_service import (
+    index_yaml_sources,
+    scan_yaml_sources,
 )
 from worldbuilder.services.id_generator import generate_entity_id
 from worldbuilder.services.world_service import WorldService
@@ -28,6 +36,87 @@ app.add_middleware(
     allow_headers=["*"],
 )
 WORLD_PATH = Path("worlds/elligaesia/world.yaml")
+MAP_ASSETS_PATH = WORLD_PATH.parent / "map_assets"
+MAX_MAP_ASSET_BYTES = 5 * 1024 * 1024
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _read_map_asset_default_sizes() -> dict[str, int]:
+    try:
+        stored_settings = json.loads((MAP_ASSETS_PATH / ".stamp-settings.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(stored_settings, dict):
+        return {}
+    return {
+        filename: size
+        for filename, size in stored_settings.items()
+        if isinstance(filename, str) and type(size) is int and 24 <= size <= 256
+    }
+
+
+@app.get("/map-assets")
+def list_map_assets() -> dict[str, list[dict[str, str | int]]]:
+    MAP_ASSETS_PATH.mkdir(parents=True, exist_ok=True)
+    default_sizes = _read_map_asset_default_sizes()
+    assets = [
+        {
+            "name": path.stem.rsplit("_", maxsplit=1)[0].replace("_", " "),
+            "image_path": f"/map-assets/{path.name}",
+            "default_size": default_sizes.get(path.name, 72),
+        }
+        for path in sorted(MAP_ASSETS_PATH.glob("*.png"), key=lambda item: item.name.lower())
+        if path.is_file()
+    ]
+    return {"assets": assets}
+
+
+@app.put("/map-assets/{filename}/settings")
+def update_map_asset_settings(filename: str, payload: dict) -> dict[str, str | int]:
+    if Path(filename).name != filename or not filename.endswith(".png"):
+        raise HTTPException(status_code=404, detail="Map image not found.")
+    if not (MAP_ASSETS_PATH / filename).is_file():
+        raise HTTPException(status_code=404, detail="Map image not found.")
+
+    default_size = payload.get("default_size")
+    if type(default_size) is not int or not 24 <= default_size <= 256:
+        raise HTTPException(status_code=422, detail="Default stamp size must be a whole number from 24 to 256.")
+
+    MAP_ASSETS_PATH.mkdir(parents=True, exist_ok=True)
+    settings = _read_map_asset_default_sizes()
+    settings[filename] = default_size
+    (MAP_ASSETS_PATH / ".stamp-settings.json").write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+    return {"image_path": f"/map-assets/{filename}", "default_size": default_size}
+
+
+@app.post("/map-assets")
+async def upload_map_asset(request: Request, name: str = "Building") -> dict[str, str | int]:
+    content_type = request.headers.get("content-type", "").split(";", maxsplit=1)[0].strip().lower()
+    if content_type != "image/png":
+        raise HTTPException(status_code=415, detail="Only PNG building images are supported.")
+
+    image_bytes = await request.body()
+    if len(image_bytes) > MAX_MAP_ASSET_BYTES:
+        raise HTTPException(status_code=413, detail="PNG files must be 5 MB or smaller.")
+    if len(image_bytes) <= len(PNG_SIGNATURE) or not image_bytes.startswith(PNG_SIGNATURE):
+        raise HTTPException(status_code=415, detail="The uploaded file is not a valid PNG image.")
+
+    safe_name = "".join(character.lower() if character.isalnum() else "_" for character in Path(name).stem)
+    safe_name = "_".join(part for part in safe_name.split("_") if part)[:48] or "building"
+    filename = f"{safe_name}_{uuid4().hex[:12]}.png"
+    MAP_ASSETS_PATH.mkdir(parents=True, exist_ok=True)
+    (MAP_ASSETS_PATH / filename).write_bytes(image_bytes)
+    return {"name": safe_name.replace("_", " "), "image_path": f"/map-assets/{filename}", "default_size": 72}
+
+
+@app.get("/map-assets/{filename}")
+def get_map_asset(filename: str) -> FileResponse:
+    if Path(filename).name != filename or not filename.endswith(".png"):
+        raise HTTPException(status_code=404, detail="Map image not found.")
+    image_path = MAP_ASSETS_PATH / filename
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="Map image not found.")
+    return FileResponse(image_path, media_type="image/png")
 
 
 @app.get("/health")
@@ -37,15 +126,178 @@ def health_check() -> dict[str, str]:
 
 @app.get("/validation")
 def validate_world_data() -> dict:
-    """Report reference and structural issues in the loaded world."""
-    registry = load_world_registry(WORLD_PATH)
-    result = validate_registry(registry)
+    """Report broken YAML files and references across the loaded world."""
+    issues = scan_yaml_sources(WORLD_PATH)
+    if not issues:
+        try:
+            registry = load_world_registry(WORLD_PATH)
+            result = validate_registry(registry)
+            source_index = index_yaml_sources(WORLD_PATH)
+            for issue in result.issues:
+                source = source_index.get((issue.get("source_type", ""), issue.get("source_id", "")))
+                if source:
+                    issue.update(source)
+                issues.append(issue)
+        except Exception as exc:
+            issues.append({
+                "message": f"Could not load the world registry: {exc}",
+                "severity": "error",
+                "source_type": "world",
+                "file_name": "world.yaml",
+                "source_path": "world.yaml",
+            })
+
+    errors = [issue["message"] for issue in issues if issue.get("severity") == "error"]
+    warnings = [issue["message"] for issue in issues if issue.get("severity") == "warning"]
     return {
-        "valid": result.is_valid,
-        "errors": result.errors,
-        "warnings": result.warnings,
-        "issues": result.issues,
+        "valid": not errors,
+        "errors": errors,
+        "warnings": warnings,
+        "issues": issues,
     }
+
+
+@app.get("/data-health/yaml/{entity_type}/{file_name}")
+def get_data_health_yaml(entity_type: str, file_name: str) -> dict[str, str]:
+    """Read an allow-listed YAML source file, including files that fail to parse."""
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        content, path = service.read_yaml_source(entity_type, file_name)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"content": content, "path": str(path.relative_to(WORLD_PATH.parent))}
+
+
+@app.put("/data-health/yaml/{entity_type}/{file_name}")
+def update_data_health_yaml(entity_type: str, file_name: str, payload: dict) -> dict[str, str]:
+    """Validate and save an allow-listed YAML source file."""
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise HTTPException(status_code=422, detail="content must be a string.")
+
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        path = service.update_yaml_source(entity_type, file_name, content)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"path": str(path.relative_to(WORLD_PATH.parent))}
+
+
+@app.post("/data-health/yaml/{entity_type}/{file_name}/preview")
+def preview_data_health_yaml(entity_type: str, file_name: str, payload: dict) -> dict[str, str | bool]:
+    """Validate proposed YAML and return a diff without writing the file."""
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise HTTPException(status_code=422, detail="content must be a string.")
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        return service.preview_yaml_source(entity_type, file_name, content)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/data-health/yaml/{entity_type}/{file_name}/replace-reference")
+def prepare_data_health_reference_repair(entity_type: str, file_name: str, payload: dict) -> dict:
+    """Prepare a safe, exact reference replacement and return its diff for review."""
+    reference_type = payload.get("reference_type")
+    reference_path = payload.get("reference_path")
+    expected_id = payload.get("reference_id")
+    replacement_id = payload.get("replacement_id")
+    if (
+        not isinstance(reference_type, str)
+        or not isinstance(reference_path, list)
+        or any(not isinstance(part, (str, int)) or isinstance(part, bool) for part in reference_path)
+        or not isinstance(expected_id, str)
+        or not isinstance(replacement_id, str)
+    ):
+        raise HTTPException(status_code=422, detail="A reference type, path, current ID, and replacement ID are required.")
+
+    try:
+        registry = load_world_registry(WORLD_PATH)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Could not load world entities for reference selection: {exc}") from exc
+    collections = {
+        "character": (registry.npcs, registry.player_characters),
+        "location": (registry.cities, registry.locations, registry.regions, registry.kingdoms),
+        "entity": (
+            registry.continents, registry.kingdoms, registry.regions, registry.cities,
+            registry.locations, registry.npcs, registry.player_characters, registry.campaigns,
+            registry.world_events, registry.timeline_events, registry.lores,
+            registry.artifacts, registry.maps, registry.world_stories,
+        ),
+    }
+    if reference_type in collections:
+        exists = any(replacement_id in collection for collection in collections[reference_type])
+    else:
+        collection = getattr(registry, {
+            "continent": "continents",
+            "kingdom": "kingdoms",
+            "region": "regions",
+            "city": "cities",
+            "location": "locations",
+            "npc": "npcs",
+            "world_story": "world_stories",
+            "world_event": "world_events",
+            "timeline_event": "timeline_events",
+            "player_character": "player_characters",
+            "campaign": "campaigns",
+            "lore": "lores",
+            "artifact": "artifacts",
+            "map": "maps",
+        }.get(reference_type, ""), None)
+        exists = isinstance(collection, dict) and replacement_id in collection
+    if not exists:
+        raise HTTPException(status_code=422, detail=f"The selected ID is not a valid {reference_type}.")
+
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        return service.prepare_reference_repair(
+            entity_type,
+            file_name,
+            reference_path,
+            expected_id,
+            replacement_id,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/data-health/yaml/{entity_type}/{file_name}/backups")
+def list_data_health_yaml_backups(entity_type: str, file_name: str) -> list[dict[str, str | int]]:
+    """List saved YAML versions for a source file."""
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        return service.list_yaml_backups(entity_type, file_name)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/data-health/yaml/{entity_type}/{file_name}/restore")
+def restore_data_health_yaml_backup(
+    entity_type: str,
+    file_name: str,
+    payload: dict,
+) -> dict[str, str]:
+    """Restore a saved YAML version, keeping the current content as another backup."""
+    backup_id = payload.get("backup_id")
+    if not isinstance(backup_id, str):
+        raise HTTPException(status_code=422, detail="backup_id must be a string.")
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        path = service.restore_yaml_backup(entity_type, file_name, backup_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"path": str(path.relative_to(WORLD_PATH.parent))}
 
 
 @app.get("/world")
@@ -101,6 +353,10 @@ def get_world() -> dict:
             story.model_dump(mode="json")
             for story in registry.world_stories.values()
         ],
+        "dm_scratchpad_entries": [
+            entry.model_dump(mode="json")
+            for entry in registry.dm_scratchpad_entries.values()
+        ],
     }
 
 
@@ -147,6 +403,7 @@ def list_entities() -> list[dict[str, str]]:
         registry.maps,
         registry.locations,
         registry.world_stories,
+        registry.dm_scratchpad_entries,
     ]
 
     for collection in collections:
@@ -227,6 +484,54 @@ def get_entity_relationship_links(entity_id: str) -> dict[str, list[dict[str, st
         ]
 
     return {"outgoing": serialize(outgoing), "incoming": serialize(incoming)}
+
+
+@app.get("/entities/{entity_id}/yaml")
+def get_entity_yaml(entity_id: str) -> dict[str, str]:
+    """Return the authored YAML source for an entity."""
+    registry = load_world_registry(WORLD_PATH)
+    if registry.get_entity(entity_id) is None:
+        raise HTTPException(status_code=404, detail=f"Entity not found: {entity_id}")
+
+    entity_type = registry.get_entity_type(entity_id)
+    model = World if entity_type == "world" else get_entity_model(entity_type or "")
+    if model is None:
+        raise HTTPException(status_code=500, detail=f"No model configuration found for entity: {entity_id}")
+
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        content, path = service.read_entity_yaml(entity_id, model)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return {"content": content, "path": str(path.relative_to(WORLD_PATH.parent))}
+
+
+@app.put("/entities/{entity_id}/yaml")
+def update_entity_yaml(entity_id: str, payload: dict) -> dict[str, str]:
+    """Validate and save edited YAML source for an existing entity."""
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise HTTPException(status_code=422, detail="content must be a string.")
+
+    registry = load_world_registry(WORLD_PATH)
+    if registry.get_entity(entity_id) is None:
+        raise HTTPException(status_code=404, detail=f"Entity not found: {entity_id}")
+
+    entity_type = registry.get_entity_type(entity_id)
+    model = World if entity_type == "world" else get_entity_model(entity_type or "")
+    if model is None:
+        raise HTTPException(status_code=500, detail=f"No model configuration found for entity: {entity_id}")
+
+    service = WorldService(WORLD_PATH.parent)
+    try:
+        path = service.update_entity_yaml(entity_id, model, content)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return {"id": entity_id, "path": str(path.relative_to(WORLD_PATH.parent))}
 
 
 @app.put("/entities/{entity_id}")

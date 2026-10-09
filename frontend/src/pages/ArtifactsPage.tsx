@@ -17,6 +17,7 @@ import useEntityDrawer from "../hooks/useEntityDrawer";
 import type { Artifact } from "../types";
 import { useWorldData } from "../context/WorldDataContext";
 import DashboardFilters from "../components/filters/DashboardFilters";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 type ArtifactCardProps = {
   artifact: Artifact;
@@ -25,7 +26,7 @@ type ArtifactCardProps = {
 
 function ArtifactsPage() {
   const { worldData, worldDataLoading, worldDataError } = useWorldData();
-  const artifacts = worldData?.artifacts ?? [];
+  const artifacts = sortEntitiesByName(worldData?.artifacts ?? []);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
@@ -47,7 +48,7 @@ function ArtifactsPage() {
       .filter(Boolean)
       .join(" ")
       .toLowerCase()
-      .includes(normalizedSearch),
+      .includes(normalizedSearch) && matchesEntityTag(artifact, filters.tag),
   );
 
   return (
@@ -82,6 +83,7 @@ function ArtifactsPage() {
       <Box sx={{ p: { xs: 3, md: 5 } }}>
         <DashboardFilters
           search={{ label: "Search artifacts", placeholder: "Name or details…" }}
+          taggedEntities={artifacts}
           onChange={setFilters}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

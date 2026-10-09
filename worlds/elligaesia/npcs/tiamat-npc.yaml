@@ -1,0 +1,14 @@
+id: tiamat-npc
+name: Tiamat
+description: Goddess of wealth, greed, and vengeance
+role: God
+alignment: Lawful Evil
+details: 'Portfolio: wealth, greed, and vengeance. Suggested cleric domains: Trickery and War.
+  Symbol: a five-pointed star with curved points.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

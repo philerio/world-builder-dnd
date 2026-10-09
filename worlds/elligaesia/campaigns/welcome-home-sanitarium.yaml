@@ -31,11 +31,6 @@ player_characters:
 - sirr
 - freya
 - aerith
-world_stories:
-- bane-overarching-story
-world_story_threads:
-- world_story_id: bane-overarching-story
-  thread_id: dwarmar-artifacts-activate
 outcome: null
 consequences: null
 story:
@@ -156,7 +151,9 @@ story:
     - The original draft calls the destination Nevarro. Current world records identify
       the matching floating city as Stratos; confirm whether Nevarro is an earlier
       name or a separate place.
-    - The elves independently learned to activate Stratos's Dwarmar mechanism. Gnomes independently use Dwarmar power sources to operate flying ships. These sources contain remnants of Bane's power, but neither people knows this.
+    - The elves independently learned to activate Stratos's Dwarmar mechanism. Gnomes
+      independently use Dwarmar power sources to operate flying ships. These sources
+      contain remnants of Bane's power, but neither people knows this.
     possible_approaches:
     - Ask Dorith why the city has no ordinary workers in its halls.
     - Compare his account with the history shown in the old paintings.
@@ -201,7 +198,10 @@ story:
       '
     secrets:
     - The bees do not power the ship; magic does. Wicket lets people believe otherwise.
-    - Wicket uses orc souls to help power The Hive's ancient Dwarmar source. Gnomes independently learned to use Dwarmar power sources for their flying ships, while the elves independently activated Stratos's source. Each contains a remnant of Bane's power, but no one aboard knows this.
+    - Wicket uses orc souls to help power The Hive's ancient Dwarmar source. Gnomes
+      independently learned to use Dwarmar power sources for their flying ships, while
+      the elves independently activated Stratos's source. Each contains a remnant
+      of Bane's power, but no one aboard knows this.
     - Wicket's arrangement with the queen of the bees involves protecting her lands
       from orc invaders in exchange for the bees' labor; the source notes do not clarify
       the orcs' exact role in that bargain.
@@ -225,7 +225,16 @@ story:
     player_characters:
     - sirr
     - freya
-    consequences: []
+    consequences:
+    - id: 11b46ec0-aaff-4083-b038-51032a15a671
+      description: Killing guards aboard the ship will anger the queen.
+      trigger: Bodies of dead bees found on the ship.
+      player_action: null
+      timing: null
+      status: pending
+      leads_to: []
+      world_stories: []
+      world_story_threads: []
     world_events: []
     world_stories:
     - bane-overarching-story
@@ -537,7 +546,7 @@ story:
   - id: sirr-killed-guard-bees
     description: Sirr killed two guard bees outside the engine room without alerting
       anyone.
-    session: null
+    session: 1
     story_beat: explore-the-hive
     consequence_ids: []
     world_stories: []
@@ -546,4 +555,5 @@ story:
     notes: The source comment recorded Sirr at 12 HP at that point; treat this as
       a snapshot, not guaranteed current hit points.
   session_recaps: []
+  session_preps: []
   world_clocks: []

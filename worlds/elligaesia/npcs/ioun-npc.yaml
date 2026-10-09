@@ -1,0 +1,14 @@
+id: ioun-npc
+name: Ioun
+description: Goddess of knowledge
+role: God
+alignment: True Neutral
+details: 'Portfolio: knowledge. Suggested cleric domain: Knowledge.
+  Symbol: a crook shaped like a stylized eye.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

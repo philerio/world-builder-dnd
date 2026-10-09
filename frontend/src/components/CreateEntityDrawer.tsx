@@ -3,8 +3,10 @@ import {
   Box,
   Button,
   CircularProgress,
+  Checkbox,
   Divider,
   Drawer,
+  FormControlLabel,
   MenuItem,
   Stack,
   TextField,
@@ -18,7 +20,7 @@ import { ENTITY_TYPES } from "../types";
 type CreateEntityDrawerProps = {
   open: boolean;
   onClose: () => void;
-  onCreated: (entityId: string) => void;
+  onCreated: (entityId: string, keepOpen: boolean) => void;
 };
 
 const drawerWidth = 440;
@@ -33,6 +35,7 @@ function CreateEntityDrawer({
   const [entityType, setEntityType] = useState("city");
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
+  const [createAnother, setCreateAnother] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedTypeLabel = useMemo(
@@ -43,7 +46,7 @@ function CreateEntityDrawer({
 
   const handleEntityTypeChange = (newType: string) => {
     setEntityType(newType);
-    setFormData({});
+    setFormData((current) => ({ ...(Array.isArray(current.tags) ? { tags: current.tags } : {}) }));
     setError(null);
   };
 
@@ -73,11 +76,10 @@ function CreateEntityDrawer({
         name,
       });
 
-      setFormData({});
-      setEntityType("city");
-
-      onCreated(createdEntity.id);
-      onClose();
+      const retainedTags = Array.isArray(formData.tags) ? formData.tags : [];
+      setFormData(createAnother && retainedTags.length ? { tags: retainedTags } : {});
+      if (!createAnother) setEntityType("city");
+      onCreated(createdEntity.id, createAnother);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create entity.");
     } finally {
@@ -176,6 +178,17 @@ function CreateEntityDrawer({
             borderColor: "divider",
           }}
         >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={createAnother}
+                onChange={(event) => setCreateAnother(event.target.checked)}
+                disabled={saving}
+              />
+            }
+            label="Create another"
+            sx={{ mb: 1 }}
+          />
           <Stack
             direction="row"
             sx={{
@@ -193,7 +206,7 @@ function CreateEntityDrawer({
               disabled={saving}
               startIcon={saving ? <CircularProgress size={16} /> : undefined}
             >
-              {saving ? "Creating…" : "Create Entity"}
+              {saving ? "Creating…" : createAnother ? "Create and add another" : "Create Entity"}
             </Button>
           </Stack>
         </Box>

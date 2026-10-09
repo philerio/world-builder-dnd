@@ -1,0 +1,19 @@
+id: avandra-npc
+name: Avandra
+description: Goddess of change and luck
+created: '2026-10-08T22:25:13.009282'
+updated: '2026-10-08T22:25:13.009287'
+role: God
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: change and luck. Suggested cleric domain: Trickery.
+  Symbol: three stacked wavy lines.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

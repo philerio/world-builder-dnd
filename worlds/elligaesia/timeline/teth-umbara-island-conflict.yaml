@@ -1,34 +1,34 @@
 id: teth-umbara-island-conflict
 name: Teth and Umbara Contest the Mysterious Island
+description: 'Teth and Umbara enter into conflict over a mysterious island that has
+  appeared in the ocean.
 
-description: >
-  Teth and Umbara enter into conflict over a mysterious island
-  that has appeared in the ocean.
-
+  '
+tags: []
+created: '2026-10-08T23:39:45.391089'
+updated: '2026-10-08T23:39:45.391092'
 era: Modern Era
 date: null
-
+chronology_order: 700
 locations: []
-
 kingdoms:
-  - teth
-  - umbara
+- teth
+- umbara
 characters: []
 campaigns:
-  - the-unforgiven
+- the-unforgiven
 world_stories:
-  - bane-overarching-story
+- bane-overarching-story
 world_story_threads:
-  - world_story_id: bane-overarching-story
-    thread_id: influence-unleashed
-
+- world_story_id: bane-overarching-story
+  thread_id: influence-unleashed
+source_world_event_id: null
 consequences:
-  - Teth and Umbara are drawn into conflict.
-  - Relations between the two nations deteriorate.
-  - The mysterious island becomes a potential source of future conflict.
+- Teth and Umbara are drawn into conflict.
+- Relations between the two nations deteriorate.
+- The mysterious island becomes a potential source of future conflict.
+dm_notes: 'The island''s appearance and resulting conflict are consequences of Bane''s
+  influence, unleashed after The Unforgiven. The people involved do not know this.
+  The exact mechanism and any connection to a specific artifact have not been established.
 
-dm_notes: >
-  The island's appearance and resulting conflict are consequences of Bane's
-  influence, unleashed after The Unforgiven. The people involved do not know
-  this. The exact mechanism and any connection to a specific artifact have not
-  been established.
+  '

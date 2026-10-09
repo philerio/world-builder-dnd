@@ -1,0 +1,19 @@
+id: erathis-npc
+name: Erathis
+description: Goddess of civilization and invention
+created: '2026-10-08T22:30:34.177902'
+updated: '2026-10-08T22:30:34.177905'
+role: God
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: civilization and invention. Suggested cleric domain: Knowledge.
+  Symbol: the upper half of a clockwork gear.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

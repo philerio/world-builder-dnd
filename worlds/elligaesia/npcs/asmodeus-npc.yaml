@@ -1,0 +1,19 @@
+id: asmodeus-npc
+name: Asmodeus
+description: God of tyranny
+created: '2026-10-08T22:22:50.014842'
+updated: '2026-10-08T22:22:50.014849'
+role: God
+alignment: Lawful Evil
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: tyranny and domination. Suggested cleric domain: Trickery.
+  Symbol: three triangles in tight formation.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

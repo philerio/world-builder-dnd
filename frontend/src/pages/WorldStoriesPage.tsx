@@ -16,10 +16,11 @@ import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
 import { useWorldData } from "../context/WorldDataContext";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 export default function WorldStoriesPage() {
   const { worldData, worldDataLoading, worldDataError } = useWorldData();
-  const stories = worldData?.world_stories ?? [];
+  const stories = sortEntitiesByName(worldData?.world_stories ?? []);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
@@ -32,7 +33,8 @@ export default function WorldStoriesPage() {
   const search = filters.search?.trim().toLowerCase() ?? "";
   const filteredStories = stories.filter((story) =>
     (!search || [story.name, story.description, story.overview].filter(Boolean).join(" ").toLowerCase().includes(search))
-    && (!filters.status || story.status === filters.status),
+    && (!filters.status || story.status === filters.status)
+    && matchesEntityTag(story, filters.tag),
   );
 
   return (
@@ -61,6 +63,7 @@ export default function WorldStoriesPage() {
               <DashboardFilters
                 search={{ label: "Search world stories", placeholder: "Name or overview…" }}
                 filters={storyFilters}
+                taggedEntities={stories}
                 onChange={setFilters}
               />
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

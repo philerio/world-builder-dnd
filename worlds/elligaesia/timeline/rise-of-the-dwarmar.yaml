@@ -1,17 +1,20 @@
 id: rise-of-the-dwarmar
 name: Rise of the Dwarmar
+description: 'The Dwarmar rise to prominence in the ancient history of Elligaesia.
 
-description: >
-  The Dwarmar rise to prominence in the ancient history of Elligaesia.
-
+  '
+tags: []
+created: '2026-10-08T23:39:45.355436'
+updated: '2026-10-08T23:39:45.355442'
 era: Ancient Era
 date: null
-
+chronology_order: 100
 locations: []
 kingdoms: []
 characters: []
 campaigns: []
-
+world_stories: []
+world_story_threads: []
+source_world_event_id: null
 consequences: []
-
 dm_notes: null

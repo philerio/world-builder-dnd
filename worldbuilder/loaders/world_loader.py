@@ -17,6 +17,7 @@ from worldbuilder.models.continent import Continent
 from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.player_character import PlayerCharacter
 from worldbuilder.models.world_story import WorldStory
+from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
 
 
 def load_world_registry(path: Path) -> WorldRegistry:
@@ -82,5 +83,8 @@ def load_world_registry(path: Path) -> WorldRegistry:
         WorldStory,
     ):
         registry.add_world_story(story)
+
+    for entry in load_yaml_directory(path.parent / "dm_scratchpad", DmScratchpadEntry):
+        registry.add_dm_scratchpad_entry(entry)
 
     return registry

@@ -54,6 +54,18 @@ function EntityField({
   onChange,
   disabled,
 }: EntityFieldProps) {
+  const normalizeTags = (values: unknown[]): string[] => {
+    const seen = new Set<string>();
+    return values.flatMap((item) => {
+      if (typeof item !== "string") return [];
+      const tag = item.trim();
+      const key = tag.toLocaleLowerCase();
+      if (!tag || seen.has(key)) return [];
+      seen.add(key);
+      return [tag];
+    });
+  };
+
   const getReferenceOptions = () => {
     const allowedTypes = field.referenceTypes ??
       (field.referenceType ? [field.referenceType] : null);
@@ -369,10 +381,25 @@ function EntityField({
               ? entities.find((candidate) => candidate.id === entityId)
               : null;
 
-            const markerName =
-              typeof itemData.label === "string" && itemData.label.trim()
+            const titleField = fields.find((item) => item.name === field.accordionTitleField);
+            const titleValue = titleField ? itemData[titleField.name] : undefined;
+            const titleOption = titleField?.options?.find((option) => option.value === titleValue);
+            const titleEntity = titleField?.type === "reference" && typeof titleValue === "string"
+              ? entities.find((candidate) => candidate.id === titleValue)
+              : null;
+            const linkedEvent = typeof itemData.event_id === "string"
+              ? entities.find((candidate) => candidate.id === itemData.event_id)
+              : null;
+            const configuredTitle = titleOption?.label
+              ?? titleEntity?.name
+              ?? (typeof titleValue === "string" || typeof titleValue === "number"
+                ? `${titleField?.name === "session" ? "Session " : ""}${titleValue}`
+                : null);
+            const markerName = configuredTitle
+              ? `${configuredTitle}${linkedEvent ? ` · ${linkedEvent.name}` : ""}`
+              : typeof itemData.label === "string" && itemData.label.trim()
                 ? itemData.label
-                : (entity?.name ?? "Unnamed Entity");
+                : (entity?.name ?? linkedEvent?.name ?? "Unnamed Entity");
 
             return (
               <Accordion
@@ -480,6 +507,22 @@ function EntityField({
           minRows={3}
           helperText="Enter one item per line."
           disabled={disabled}
+        />
+      );
+    }
+    case "tagArray": {
+      const tags = normalizeTags(Array.isArray(value) ? value : []);
+      return (
+        <Autocomplete
+          multiple
+          freeSolo
+          options={[]}
+          value={tags}
+          onChange={(_, selected) => onChange(normalizeTags(selected))}
+          disabled={disabled}
+          renderInput={(params) => (
+            <TextField {...params} label={field.label} helperText="Add a tag and press Enter." />
+          )}
         />
       );
     }

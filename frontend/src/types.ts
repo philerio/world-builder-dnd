@@ -2,9 +2,22 @@ export type World = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   version: string;
   author: string;
   continents: string[];
+};
+
+export type DMScratchpadEntry = {
+  id: string;
+  name: string;
+  description?: string;
+  tags?: string[];
+  content: string;
+  status: "inbox" | "developing" | "promoted" | "archived";
+  promoted_entity_id?: string;
+  promoted_subentity_id?: string;
+  promoted_as?: string;
 };
 export type EntitySummary = {
   id: string;
@@ -15,6 +28,7 @@ export type Continent = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   details?: string;
   dm_notes?: string;
 };
@@ -30,6 +44,7 @@ export type Kingdom = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   ruler?: string;
   capital?: string;
   continent?: string;
@@ -39,6 +54,7 @@ export type Region = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   kingdom?: string;
   continent?: string;
 };
@@ -47,6 +63,7 @@ export type City = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   kingdom?: string;
   region?: string;
   population?: number;
@@ -58,6 +75,7 @@ export type Location = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   location_type?: string;
   continent?: string;
   kingdom?: string;
@@ -82,6 +100,9 @@ export type Character = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
+  race?: string;
+  alignment?: string;
   role?: string;
   city?: string;
   region?: string;
@@ -106,6 +127,7 @@ export type Campaign = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   created?: string;
   updated?: string;
 
@@ -127,6 +149,7 @@ export type WorldEvent = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   type?: string;
   status?: string;
   locations: string[];
@@ -158,8 +181,13 @@ export type TimelineEvent = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   era?: string;
   date?: string;
+  date_start?: string;
+  date_end?: string;
+  date_precision?: "exact" | "year" | "approximate" | "range" | "unknown";
+  chronology_order?: number;
   locations: string[];
   kingdoms: string[];
   characters: string[];
@@ -167,14 +195,33 @@ export type TimelineEvent = {
   world_stories: string[];
   world_story_threads: WorldStoryThreadLink[];
   source_world_event_id?: string;
+  event_links?: TimelineEventLink[];
+  campaign_sources?: TimelineCampaignSource[];
   consequences: string[];
   dm_notes?: string;
+};
+
+export type TimelineEventLink = {
+  event_id: string;
+  relationship: "caused_by" | "leads_to" | "related_to";
+};
+
+export type TimelineCampaignSource = {
+  campaign_id: string;
+  session?: number;
+  plot_point_ids: string[];
+  plot_point_names: string[];
+  consequence_ids: string[];
+  consequence_descriptions: string[];
+  player_action_ids: string[];
+  player_action_descriptions: string[];
 };
 
 export type Artifact = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   details?: string;
   dm_notes?: string;
 };
@@ -182,12 +229,19 @@ export type Artifact = {
 export type MapMarker = {
   id: string;
   entity_id: string | null;
+  layer_id?: string | null;
+  z_index?: number;
   type?: "point" | "area" | "path";
   x: number;
   y: number;
   points?: [number, number][];
   label?: string;
   icon?: string;
+  icon_image?: string;
+  icon_size?: number;
+  rotation?: number;
+  mirror_x?: boolean;
+  mirror_y?: boolean;
   linked_map?: string;
   visible: boolean;
   dm_only: boolean;
@@ -197,23 +251,35 @@ export type MapMarker = {
   fill_opacity?: number;
 };
 
+export type MapLayer = {
+  id: string;
+  name: string;
+};
+
 export type Map = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   map_type?: string;
   parent_map?: string;
   entity_id?: string;
   image_path?: string;
+  canvas_width?: number;
+  canvas_height?: number;
   details?: string;
   dm_notes?: string;
   markers: MapMarker[];
+  layers?: MapLayer[];
 };
 
 export type Lore = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
+  common_knowledge?: string;
+  common_knowledge_locations?: string[];
   details?: string;
   player_knowledge?: string;
   dm_notes?: string;
@@ -243,6 +309,7 @@ export type WorldData = {
 
   maps: Map[];
   world_stories: WorldStory[];
+  dm_scratchpad_entries?: DMScratchpadEntry[];
 };
 
 export type WorldStoryContribution = {
@@ -273,6 +340,7 @@ export type WorldStory = {
   id: string;
   name: string;
   description?: string;
+  tags?: string[];
   overview?: string;
   status: string;
   characters: string[];
@@ -303,6 +371,7 @@ export const ENTITY_TYPES = [
   { value: "lore", label: "Lore" },
   { value: "artifact", label: "Artifact" },
   { value: "map", label: "Map" },
+  { value: "dm_scratchpad_entry", label: "DM Scratchpad Entry" },
 ];
 
 export type EntityData = {
@@ -318,6 +387,7 @@ export type EntityFieldType =
   | "reference"
   | "referenceArray"
   | "array"
+  | "tagArray"
   | "objectArray"
   | "autocomplete"
   | "color"
@@ -361,6 +431,19 @@ export type StoryContentNode =
 
 export type StoryContent = { nodes: StoryContentNode[] };
 
+export type StoryBeatCheck = {
+  id: string;
+  name: string;
+  category: "notice" | "approach" | "obstacle";
+  description?: string;
+  roll_type: "skill_check" | "ability_check" | "saving_throw" | "passive" | "contested";
+  ability?: "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
+  skill?: string;
+  dc?: number;
+  success?: string;
+  failure?: string;
+};
+
 export type StoryBeat = {
   id: string;
   name: string;
@@ -386,6 +469,9 @@ export type StoryBeat = {
 
   // Things the DM is prepared for the players to do
   possible_approaches?: string[];
+
+  // DM-facing checks and outcomes for possible notices, approaches, or obstacles
+  checks?: StoryBeatCheck[];
 
   // Other story beats this can lead toward
   leads_to?: string[];
@@ -470,6 +556,15 @@ export type SessionRecap = {
   played_on?: string;
   summary?: string;
   notes?: string;
+  timeline_event_id?: string;
+};
+
+export type SessionPrep = {
+  session: number;
+  agenda?: string;
+  dm_notes?: string;
+  plot_point_ids: string[];
+  reference_ids: string[];
 };
 
 export type CampaignStory = {
@@ -477,5 +572,6 @@ export type CampaignStory = {
   current_beat?: string;
   player_actions: PlayerAction[];
   session_recaps?: SessionRecap[];
+  session_preps?: SessionPrep[];
   world_clocks: WorldClock[];
 };

@@ -22,12 +22,49 @@ const theme = createTheme({
             'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 
         h1: {
-            fontSize: "2.25rem",
+            fontSize: "2rem",
             fontWeight: 600,
         },
 
         h2: {
-            fontSize: "1.4rem",
+            fontSize: "1.25rem",
+            fontWeight: 600,
+        },
+
+        h3: {
+            fontSize: "1.125rem",
+            fontWeight: 600,
+        },
+
+        h4: {
+            fontSize: "1.05rem",
+            fontWeight: 600,
+        },
+
+        h5: {
+            fontSize: "0.95rem",
+            fontWeight: 600,
+        },
+
+        h6: {
+            fontSize: "0.9rem",
+            fontWeight: 600,
+        },
+
+        body1: {
+            fontSize: "0.95rem",
+        },
+
+        body2: {
+            fontSize: "0.85rem",
+        },
+
+        subtitle1: {
+            fontSize: "0.95rem",
+        },
+
+        subtitle2: {
+            fontSize: "0.85rem",
             fontWeight: 600,
         },
     },

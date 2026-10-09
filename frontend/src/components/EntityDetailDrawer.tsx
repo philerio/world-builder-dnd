@@ -37,7 +37,7 @@ import EventIcon from "@mui/icons-material/Event";
 import PublicIcon from "@mui/icons-material/Public";
 import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 import EntityForm from "./EntityForm";
-import type { EntityResponse, EntitySummary } from "../types";
+import type { CampaignStorySource, EntityResponse, EntitySummary } from "../types";
 import useEntityIndex from "../hooks/useEntityIndex";
 import useRelatedEntities from "../hooks/useRelatedEntities";
 import useEntityRelationships from "../hooks/useEntityRelationships";
@@ -379,9 +379,13 @@ function EntityContent({
     setCreatingTimelineRecord(true);
     setTimelineRecordError(null);
     try {
+      const campaignSources = Array.isArray(entity.story_sources)
+        ? entity.story_sources as CampaignStorySource[]
+        : [];
       const timeline = await createEntity("timeline_event", {
         name,
         description: description ?? undefined,
+        date_precision: "unknown",
         locations: getStringArray(entity.locations),
         kingdoms: [],
         characters: getStringArray(entity.characters),
@@ -390,6 +394,15 @@ function EntityContent({
         world_stories: getStringArray(entity.world_stories),
         world_story_threads: Array.isArray(entity.world_story_threads) ? entity.world_story_threads : [],
         source_world_event_id: data.id,
+        campaign_sources: campaignSources.map((source) => ({
+          campaign_id: source.campaign_id,
+          plot_point_ids: source.plot_point_id ? [source.plot_point_id] : [],
+          plot_point_names: source.plot_point_name ? [source.plot_point_name] : [],
+          consequence_ids: source.consequence_ids ?? [],
+          consequence_descriptions: source.consequence_descriptions ?? [],
+          player_action_ids: source.player_action_ids ?? [],
+          player_action_descriptions: source.player_action_descriptions ?? [],
+        })),
         dm_notes: typeof entity.dm_notes === "string" ? entity.dm_notes : undefined,
       });
       setCreatedTimeline({ sourceId: data.id, timelineId: timeline.id });
@@ -430,6 +443,11 @@ function EntityContent({
           >
             {description}
           </Typography>
+        )}
+        {getStringArray(entity.tags).length > 0 && (
+          <Stack direction="row" useFlexGap sx={{ gap: 0.75, flexWrap: "wrap", mt: 1.5 }}>
+            {getStringArray(entity.tags).map((tag) => <Chip key={tag} size="small" variant="outlined" label={tag} />)}
+          </Stack>
         )}
       </Box>
 
@@ -817,8 +835,29 @@ function LoreDetails({
   onOpenEntity?: (id: string) => void;
   getEntity: (id: string) => EntitySummary | undefined;
 }) {
+  const commonKnowledgeLocations = getStringArray(entity.common_knowledge_locations);
+  const commonKnowledge = typeof entity.common_knowledge === "string" ? entity.common_knowledge : "";
+  const hasCommonKnowledge = commonKnowledge.trim().length > 0;
+
   return (
     <DetailSection title="Lore" icon={<MenuBookIcon />}>
+      {hasCommonKnowledge && (
+        <Box>
+          <Typography variant="caption" color="text.secondary">Common Knowledge</Typography>
+          <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>{commonKnowledge}</Typography>
+        </Box>
+      )}
+      {hasCommonKnowledge && commonKnowledgeLocations.length === 0 && (
+        <ReferenceField label="Common Knowledge Scope" value="Widespread" />
+      )}
+      {commonKnowledgeLocations.length > 0 && (
+        <EntityReferenceListField
+          label="Common in Locations"
+          entityIds={commonKnowledgeLocations}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      )}
       <TextField value={entity.player_knowledge} fallback="No player-facing knowledge recorded." />
       <TextField value={entity.details} fallback="No additional details recorded." />
       <EntityReferenceListField
@@ -1315,6 +1354,8 @@ function CharacterDetails({
   return (
     <DetailSection title="Character" icon={<PeopleIcon />}>
       <ReferenceField label="Role" value={entity.role} />
+      <ReferenceField label="Race" value={entity.race} />
+      <ReferenceField label="Alignment" value={entity.alignment} />
       <TextListField label="Motives" value={entity.motives} />
 
       <TextListField label="Goals" value={entity.goals} />
@@ -1442,12 +1483,24 @@ function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
   const storySources = Array.isArray(entity.story_sources)
     ? entity.story_sources.filter((source): source is Record<string, unknown> => typeof source === "object" && source !== null)
     : [];
+  const timelineEventLinks = Array.isArray(entity.event_links)
+    ? entity.event_links.filter((link): link is Record<string, unknown> => typeof link === "object" && link !== null)
+    : [];
+  const timelineCampaignSources = Array.isArray(entity.campaign_sources)
+    ? entity.campaign_sources.filter((source): source is Record<string, unknown> => typeof source === "object" && source !== null)
+    : [];
+  const structuredDate = [entity.date_start, entity.date_end]
+    .filter((value): value is string => typeof value === "string" && value.length > 0)
+    .join(" – ");
 
   return (
     <DetailSection title="Event" icon={<EventIcon />}>
       <ReferenceField label="Type" value={entity.type} />
 
       <ReferenceField label="Status" value={typeof entity.status === "string" ? formatStatusLabel(entity.status) : undefined} />
+      <ReferenceField label="Era" value={entity.era} />
+      <ReferenceField label="Date" value={structuredDate || entity.date} />
+      <ReferenceField label="Date precision" value={typeof entity.date_precision === "string" ? formatStatusLabel(entity.date_precision) : undefined} />
 
       <EntityReferenceListField
         label="Locations"
@@ -1496,6 +1549,44 @@ function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
             <Stack spacing={0.25} sx={{ mt: 0.25 }}>
               {campaignId && <Button size="small" onClick={() => onOpenEntity?.(campaignId)} sx={{ alignSelf: "flex-start", px: 0, minWidth: 0 }}>{campaignName}</Button>}
               {typeof source.plot_point_name === "string" && <Typography variant="body2">Plot point: {source.plot_point_name}</Typography>}
+              {consequenceDescriptions.map((description, consequenceIndex) => <Typography key={`${consequenceIndex}-${description}`} variant="body2">Consequence: {description}</Typography>)}
+              {actionDescriptions.map((description, actionIndex) => <Typography key={`${actionIndex}-${description}`} variant="caption" color="text.secondary">Action: {description}</Typography>)}
+            </Stack>
+          </Box>
+        );
+      })}
+
+      {timelineEventLinks.length > 0 && (
+        <Stack spacing={0.5}>
+          <Typography variant="caption" color="text.secondary">EVENT CONNECTIONS</Typography>
+          {timelineEventLinks.map((link, index) => {
+            const eventId = typeof link.event_id === "string" ? link.event_id : "";
+            if (!eventId) return null;
+            const relationship = typeof link.relationship === "string"
+              ? formatStatusLabel(link.relationship)
+              : "Related to";
+            const eventName = getEntity(eventId)?.name ?? eventId;
+            return (
+              <Button key={`${eventId}-${index}`} size="small" onClick={() => onOpenEntity?.(eventId)} sx={{ alignSelf: "flex-start", px: 0, minWidth: 0 }}>
+                {relationship} · {eventName}
+              </Button>
+            );
+          })}
+        </Stack>
+      )}
+
+      {timelineCampaignSources.map((source, index) => {
+        const campaignId = typeof source.campaign_id === "string" ? source.campaign_id : "";
+        const campaignName = campaignId ? getEntity(campaignId)?.name ?? campaignId : "Campaign";
+        const plotPoints = getStringArray(source.plot_point_names);
+        const consequenceDescriptions = getStringArray(source.consequence_descriptions);
+        const actionDescriptions = getStringArray(source.player_action_descriptions);
+        return (
+          <Box key={`${campaignId}-${String(source.session ?? index)}`}>
+            <Typography variant="caption" color="text.secondary">CREATED FROM CAMPAIGN PLAY</Typography>
+            <Stack spacing={0.25} sx={{ mt: 0.25 }}>
+              {campaignId && <Button size="small" onClick={() => onOpenEntity?.(campaignId)} sx={{ alignSelf: "flex-start", px: 0, minWidth: 0 }}>{campaignName}{typeof source.session === "number" ? ` · Session ${source.session}` : ""}</Button>}
+              {plotPoints.map((name) => <Typography key={name} variant="body2">Plot Point: {name}</Typography>)}
               {consequenceDescriptions.map((description, consequenceIndex) => <Typography key={`${consequenceIndex}-${description}`} variant="body2">Consequence: {description}</Typography>)}
               {actionDescriptions.map((description, actionIndex) => <Typography key={`${actionIndex}-${description}`} variant="caption" color="text.secondary">Action: {description}</Typography>)}
             </Stack>

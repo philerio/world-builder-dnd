@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { EntityData, EntitySummary, WorldData } from "../types";
+import { sortEntitiesByName } from "../utils/entityTags";
 
 
 type WorldDataContextValue = {
@@ -55,7 +56,21 @@ const ENTITY_COLLECTIONS: Record<string, keyof WorldData> = {
   artifact: "artifacts",
   map: "maps",
   world_story: "world_stories",
+  dm_scratchpad_entry: "dm_scratchpad_entries",
 };
+
+const SORTED_WORLD_COLLECTIONS = [...new Set([...Object.values(ENTITY_COLLECTIONS), "worlds" as const])];
+
+function sortWorldEntitiesByName(data: WorldData): WorldData {
+  const sorted = { ...data };
+  for (const key of SORTED_WORLD_COLLECTIONS) {
+    const collection = sorted[key] as unknown as { name: string }[] | undefined;
+    if (collection) {
+      (sorted as unknown as Record<string, unknown>)[key] = sortEntitiesByName(collection);
+    }
+  }
+  return sorted;
+}
 
 function updateWorldEntity(
   worldData: WorldData | null,
@@ -79,7 +94,24 @@ function updateWorldEntity(
       ? collection.map((item) => item.id === entityId ? entity : item)
       : [...collection, entity];
 
-  return { ...worldData, [collectionKey]: nextCollection };
+  return sortWorldEntitiesByName({ ...worldData, [collectionKey]: nextCollection });
+}
+
+function findWorldEntityData(worldData: WorldData | null, entityId: string): EntityData | undefined {
+  if (!worldData) return undefined;
+  if (worldData.world?.id === entityId) {
+    return { id: entityId, entity_type: "world", entity: worldData.world as unknown as Record<string, unknown> };
+  }
+
+  for (const [entityType, collectionKey] of Object.entries(ENTITY_COLLECTIONS)) {
+    const collection = worldData[collectionKey] as unknown as { id: string }[] | undefined;
+    const entity = collection?.find((item) => item.id === entityId);
+    if (entity) {
+      return { id: entityId, entity_type: entityType, entity: entity as Record<string, unknown> };
+    }
+  }
+
+  return undefined;
 }
 
 type WorldDataProviderProps = {
@@ -101,7 +133,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       const response = await fetch("http://localhost:8000/world");
       if (!response.ok) throw new Error(`API returned ${response.status}`);
       const result: WorldData = await response.json();
-      setWorldData(result);
+      setWorldData(sortWorldEntitiesByName(result));
     } catch (error) {
       setWorldDataError(error instanceof Error ? error.message : "Failed to load world data.");
     } finally {
@@ -154,7 +186,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
 
       const data: EntitySummary[] = await response.json();
 
-      setEntities(data);
+      setEntities(sortEntitiesByName(data));
     } catch (error) {
       setEntitiesError(
         error instanceof Error ? error.message : "Failed to load entities.",
@@ -170,8 +202,8 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   }, [refreshEntities, refreshWorldData]);
 
   const getEntity = useCallback(
-    (entityId: string) => entityData[entityId],
-    [entityData],
+    (entityId: string) => entityData[entityId] ?? findWorldEntityData(worldData, entityId),
+    [entityData, worldData],
   );
 
   const updateEntity = useCallback(
@@ -206,7 +238,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       }));
 
       setEntities((current) =>
-        current.map((item) =>
+        sortEntitiesByName(current.map((item) =>
           item.id === entityId
             ? {
                 ...item,
@@ -216,7 +248,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
                     : item.name,
               }
           : item,
-        ),
+        )),
       );
       setWorldData((current) =>
         updateWorldEntity(current, updatedEntity.entity_type, entityId, updatedEntity.entity),
@@ -247,7 +279,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       delete next[entityId];
       return next;
     });
-    setEntities((current) => current.filter((item) => item.id !== entityId));
+    setEntities((current) => sortEntitiesByName(current.filter((item) => item.id !== entityId)));
     if (entityType) {
       setWorldData((current) => updateWorldEntity(current, entityType, entityId, {}, true));
     }
@@ -283,7 +315,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
         [createdEntity.id]: createdEntity,
       }));
 
-      setEntities((current) => [
+      setEntities((current) => sortEntitiesByName([
         ...current,
         {
           id: createdEntity.id,
@@ -293,7 +325,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
               ? createdEntity.entity.name
               : createdEntity.id,
         },
-      ]);
+      ]));
       setWorldData((current) =>
         updateWorldEntity(current, createdEntity.entity_type, createdEntity.id, createdEntity.entity),
       );

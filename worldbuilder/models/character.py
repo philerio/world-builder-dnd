@@ -6,6 +6,8 @@ from .base import WorldObject
 
 
 class Character(WorldObject):
+    race: str | None = None
+    alignment: str | None = None
     role: str | None = None
     city: str | None = None
     region: str | None = None

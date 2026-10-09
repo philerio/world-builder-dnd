@@ -1,0 +1,50 @@
+id: zeffo-undead-campaign
+name: Zeffo Undead
+description: Rumors have spread of undead appearing in the woods of Zeffo.
+tags: []
+created: '2026-10-08T23:58:57.776875'
+updated: '2026-10-08T23:58:57.776880'
+overview: Rumors have spread of undead appearing in the woods of Zeffo.
+status: planned
+locations:
+- the-woods-of-zeffo-location
+npcs: []
+player_characters: []
+outcome: null
+consequences: null
+story:
+  beats:
+  - id: opening-zeffo-undead-sightings
+    name: Zeffo Undead
+    description: 'Rumors have spread of undead appearing in the woods of Zeffo.
+
+      '
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 0
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    leads_to: []
+    locations:
+    - the-woods-of-zeffo-location
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events:
+    - zeffo-undead-sightings
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: influence-unleashed
+  current_beat: opening-zeffo-undead-sightings
+  player_actions: []
+  session_recaps: []
+  session_preps: []
+  world_clocks: []

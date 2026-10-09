@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import {
+  Alert,
   Autocomplete,
   Badge,
   Box,
@@ -29,6 +30,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import PeopleIcon from "@mui/icons-material/People";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import EventIcon from "@mui/icons-material/Event";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DiamondIcon from "@mui/icons-material/Diamond";
 import MapIcon from "@mui/icons-material/Map";
@@ -36,6 +38,7 @@ import WorldMapPage from "./pages/WorldMapPage";
 import StarsIcon from "@mui/icons-material/Stars";
 import SearchIcon from "@mui/icons-material/Search";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import NoteAltIcon from "@mui/icons-material/NoteAlt";
 
 import type { WorldData } from "./types";
 import WorldPage from "./pages/WorldPage";
@@ -44,6 +47,7 @@ import CharactersPage from "./pages/CharactersPage";
 import CampaignsPage from "./pages/CampaignsPage";
 import CampaignDashboardPage from "./pages/CampaignDashboardPage";
 import EventsPage from "./pages/EventsPage";
+import TimelineGraphPage from "./pages/TimelineGraphPage";
 import LorePage from "./pages/LorePage";
 import ArtifactsPage from "./pages/ArtifactsPage";
 import MapsPage from "./pages/MapsPage";
@@ -57,6 +61,7 @@ import useEntityDrawer from "./hooks/useEntityDrawer";
 import { useWorldData } from "./context/WorldDataContext";
 import type { EntitySummary } from "./types";
 import DataHealthPage from "./pages/DataHealthPage";
+import DMScratchpadPage from "./pages/DMScratchpadPage";
 
 const drawerWidth = 240;
 type SidebarProps = {
@@ -96,9 +101,19 @@ const navigation = [
     icon: <MenuBookIcon />,
   },
   {
+    path: "/scratchpad",
+    label: "DM Scratchpad",
+    icon: <NoteAltIcon />,
+  },
+  {
     path: "/events",
     label: "Events",
     icon: <EventIcon />,
+  },
+  {
+    path: "/timeline",
+    label: "Timeline Graph",
+    icon: <TimelineIcon />,
   },
   {
     path: "/world-stories",
@@ -457,11 +472,21 @@ function AppContent() {
   const {
     entities,
     entitiesLoading,
+    refreshEntities,
+    refreshWorldData,
+    loadEntity,
     worldData: data,
     worldDataLoading,
     worldDataError,
   } = useWorldData();
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } = useEntityDrawer();
+
+  const handleDataHealthSave = async (savedEntityId?: string) => {
+    await Promise.all([refreshEntities(), refreshWorldData()]);
+    if (savedEntityId && !worldDataError) {
+      await loadEntity(savedEntityId);
+    }
+  };
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -499,12 +524,18 @@ function AppContent() {
 
   if (worldDataError) {
     return (
-      <Box sx={{ p: 5 }}>
-        <Typography variant="h2">Could not load world</Typography>
-
-        <Typography color="error" sx={{ mt: 2 }}>
-          {worldDataError}
-        </Typography>
+      <Box sx={{ p: { xs: 2, md: 4 } }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="h2" sx={{ mb: 1 }}>Could not load world</Typography>
+          <Typography>{worldDataError}</Typography>
+          <Typography sx={{ mt: 1 }}>Use Data Health below to repair a YAML file, then save and recheck.</Typography>
+        </Alert>
+        <DataHealthPage
+          onOpenEntity={() => undefined}
+          onValidationReport={setHealthCounts}
+          onDataSaved={handleDataHealthSave}
+          entities={entities}
+        />
       </Box>
     );
   }
@@ -527,8 +558,8 @@ function AppContent() {
       <CreateEntityDrawer
         open={createDrawerOpen}
         onClose={() => setCreateDrawerOpen(false)}
-        onCreated={() => {
-          setCreateDrawerOpen(false);
+        onCreated={(_entityId, keepOpen) => {
+          if (!keepOpen) setCreateDrawerOpen(false);
         }}
       />
       <Dialog open={searchOpen} onClose={() => setSearchOpen(false)} fullWidth maxWidth="sm">
@@ -592,17 +623,29 @@ function AppContent() {
           <Route path="/locations" element={<LocationsPage />} />
           <Route path="/characters" element={<CharactersPage data={data} />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/scratchpad" element={<DMScratchpadPage />} />
           <Route
             path="/campaigns/:campaignId"
             element={<CampaignDashboardPage />}
           />
           <Route path="/events" element={<EventsPage />} />
+          <Route path="/timeline" element={<TimelineGraphPage />} />
           <Route path="/world-stories" element={<WorldStoriesPage />} />
           <Route path="/world-stories/:storyId" element={<WorldStoryDashboardPage />} />
           <Route path="/lore" element={<LorePage />} />
           <Route path="/artifacts" element={<ArtifactsPage />} />
           <Route path="/maps" element={<MapsPage />} />
-          <Route path="/data-health" element={<DataHealthPage onOpenEntity={openEntity} onValidationReport={setHealthCounts} />} />
+          <Route
+            path="/data-health"
+            element={
+              <DataHealthPage
+                onOpenEntity={openEntity}
+                onValidationReport={setHealthCounts}
+                onDataSaved={handleDataHealthSave}
+                entities={entities}
+              />
+            }
+          />
         </Routes>
       </Box>
     </Box>

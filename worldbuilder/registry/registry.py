@@ -13,6 +13,7 @@ from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.lore import Lore
 from worldbuilder.models.player_character import PlayerCharacter
 from worldbuilder.models.world_story import WorldStory
+from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
 
 class WorldRegistry:
     """Registry of all loaded world entities."""
@@ -33,6 +34,7 @@ class WorldRegistry:
         self.maps: dict[str, Map] = {}
         self.locations: dict[str, Location] = {}
         self.world_stories: dict[str, WorldStory] = {}
+        self.dm_scratchpad_entries: dict[str, DmScratchpadEntry] = {}
         
     def _ensure_unique_id(self, entity_id: str) -> None:
         """Ensure an entity ID is unique across the registry."""
@@ -52,6 +54,7 @@ class WorldRegistry:
             self.locations,
             self.maps,
             self.world_stories,
+            self.dm_scratchpad_entries,
         )
 
         if any(entity_id in collection for collection in collections):
@@ -274,6 +277,12 @@ class WorldRegistry:
     def get_world_story(self, story_id: str) -> WorldStory | None:
         return self.world_stories.get(story_id)
 
+    def add_dm_scratchpad_entry(self, entry: DmScratchpadEntry) -> None:
+        if entry.id in self.dm_scratchpad_entries:
+            raise ValueError(f"Duplicate DM scratchpad entry ID: {entry.id}")
+        self._ensure_unique_id(entry.id)
+        self.dm_scratchpad_entries[entry.id] = entry
+
     def add_map(self, map_object: Map) -> None:
         """Add a map to the registry."""
         if map_object.id in self.maps:
@@ -308,6 +317,7 @@ class WorldRegistry:
             self.maps,
             self.locations,
             self.world_stories,
+            self.dm_scratchpad_entries,
         )
 
         for collection in collections:
@@ -348,4 +358,6 @@ class WorldRegistry:
             return "location"
         if entity_id in self.world_stories:
             return "world_story"
+        if entity_id in self.dm_scratchpad_entries:
+            return "dm_scratchpad_entry"
         return None

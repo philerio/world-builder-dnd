@@ -1,0 +1,19 @@
+id: bahamut-npc
+name: Bahamut
+description: God of justice and nobility
+created: '2026-10-08T22:26:04.109187'
+updated: '2026-10-08T22:26:04.109192'
+role: God
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: justice and nobility. Suggested cleric domains: Life and War.
+  Symbol: a dragon head in profile, facing left.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

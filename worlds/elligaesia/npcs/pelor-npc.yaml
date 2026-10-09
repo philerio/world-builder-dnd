@@ -1,0 +1,14 @@
+id: pelor-npc
+name: Pelor
+description: God of the sun and agriculture
+role: God
+alignment: Neutral Good
+details: 'Portfolio: the sun and agriculture. Suggested cleric domains: Life and Light.
+  Symbol: a circle with six outwardly radiating points.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

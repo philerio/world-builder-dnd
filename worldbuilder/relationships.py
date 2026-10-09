@@ -77,6 +77,7 @@ def get_entity_relationships(
         registry.maps,
         registry.locations,
         registry.world_stories,
+        registry.dm_scratchpad_entries,
     )
     entities = [entity for collection in collections for entity in collection.values()]
     known_ids = {entity.id for entity in entities}
@@ -224,6 +225,20 @@ def get_related_entities(
             EntityReference(id=campaign_id, entity_type="campaign")
             for campaign_id in entity.campaigns
             if campaign_id in registry.campaigns
+        )
+        references.extend(
+            EntityReference(id=link.event_id, entity_type=(
+                "timeline_event" if link.event_id in registry.timeline_events else "world_event"
+            ))
+            for link in entity.event_links
+            if (link.event_id in registry.timeline_events or link.event_id in registry.world_events)
+            and link.event_id not in {reference.id for reference in references}
+        )
+        references.extend(
+            EntityReference(id=source.campaign_id, entity_type="campaign")
+            for source in entity.campaign_sources
+            if source.campaign_id in registry.campaigns
+            and source.campaign_id not in {reference.id for reference in references}
         )
         return references
 

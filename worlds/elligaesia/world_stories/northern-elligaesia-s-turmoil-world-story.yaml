@@ -1,0 +1,27 @@
+id: northern-elligaesia-s-turmoil-world-story
+name: Northern Elligaesia's Turmoil
+description: The rulers of the various kingdoms in Northern Elligaesia are putting
+  out a call to adventurers to help put a stop to the unrest appearing in their region.
+tags: []
+created: '2026-10-08T23:56:15.966698'
+updated: '2026-10-08T23:56:15.966704'
+overview: null
+status: active
+characters: []
+campaigns: []
+world_events: []
+world_clocks: []
+threads:
+- id: c4f59999-01a8-460b-b57f-0d5aa40bf444
+  name: The Rulers Call for Help
+  description: A message has been sent out to all kingdoms in Northern Elligaesia
+    that their country needs their help. They are to meet in the capital city of Ryloth
+  status: active
+  campaigns: []
+  world_events:
+  - batik-trade-route-collapse
+  - serenno-civil-war-event
+  - teth-umbara-island-conflict-event
+  - zeffo-undead-sightings
+  - elligaesia-trade-dispute
+contributions: []

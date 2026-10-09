@@ -6,7 +6,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Stack,
   TextField,
 } from "@mui/material";
 
@@ -27,17 +26,31 @@ type DashboardFiltersProps = {
     placeholder?: string;
   };
   filters?: DashboardFilter[];
+  taggedEntities?: { tags?: string[] }[];
   onChange: (filters: Record<string, string>) => void;
 };
 
 function DashboardFilters({
   search,
   filters = [],
+  taggedEntities = [],
   onChange,
 }: DashboardFiltersProps) {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const includeSearch = Boolean(search);
+  const tagOptions = [...new Map(
+    taggedEntities
+      .flatMap((entity) => entity.tags ?? [])
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .map((tag) => [tag.toLocaleLowerCase(), tag] as const),
+  ).values()].sort((first, second) =>
+    first.localeCompare(second, undefined, { sensitivity: "base" }),
+  );
+  const visibleFilters = tagOptions.length > 0
+    ? [...filters, { key: "tag", label: "Tag", options: tagOptions.map((tag) => ({ value: tag, label: tag })) }]
+    : filters;
 
   useEffect(() => {
     const values: Record<string, string> = {};
@@ -82,11 +95,14 @@ function DashboardFilters({
         backgroundColor: "background.paper",
       }}
     >
-      <Stack
-        direction={{ xs: "column", md: "row" }}
+      <Box
         sx={{
-          gap: 2,
-          alignItems: { xs: "stretch", md: "center" },
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+          gap: 1.5,
+          alignItems: "center",
+          minWidth: 0,
         }}
       >
         {search && (
@@ -97,14 +113,19 @@ function DashboardFilters({
             onChange={(event) => setSearchValue(event.target.value)}
             size="small"
             sx={{
-              minWidth: { md: 260 },
-              flex: 1,
+              minWidth: 0,
+              width: "100%",
+              gridColumn: { xs: "auto", lg: "span 2" },
             }}
           />
         )}
 
-        {filters.map((filter) => (
-          <FormControl key={filter.key} size="small" sx={{ minWidth: 160 }}>
+        {visibleFilters.map((filter) => (
+          <FormControl
+            key={filter.key}
+            size="small"
+            sx={{ minWidth: 0, width: "100%" }}
+          >
             <InputLabel>{filter.label}</InputLabel>
 
             <Select
@@ -129,12 +150,16 @@ function DashboardFilters({
           <Button
             variant="text"
             onClick={clearFilters}
-            sx={{ whiteSpace: "nowrap" }}
+            sx={{
+              whiteSpace: "nowrap",
+              gridColumn: "1 / -1",
+              justifySelf: "end",
+            }}
           >
             Clear filters
           </Button>
         )}
-      </Stack>
+      </Box>
     </Box>
   );
 }

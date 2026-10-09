@@ -1,0 +1,792 @@
+id: teth-map
+name: Teth
+description: An editable town map layout.
+created: '2026-10-07T17:43:55.269522'
+updated: '2026-10-07T17:43:55.269527'
+map_type: Town schematic
+parent_map: elligaesia-map
+image_path: null
+canvas_width: 2400
+canvas_height: 1680
+details: null
+dm_notes: null
+markers:
+- id: fe23ecf8-2fe7-4638-91e9-b9c780cfc262
+  entity_id: null
+  type: area
+  points:
+  - - 19.169279787096663
+    - 18.92653821279291
+  - - 26.750260641067932
+    - 19.0754563978399
+  - - 26.666893213830797
+    - 27.732150217767757
+  - - 19.002544932622403
+    - 27.791717491786546
+  x: 19.169279787096663
+  y: 18.92653821279291
+  label: Town center
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#c99d52'
+  fill_opacity: 0.48
+- id: 9465b422-6915-4f58-855c-a45298ee224d
+  entity_id: null
+  type: area
+  points:
+  - - 7.666536432897051
+    - 1.1330634625007412
+  - - 32.66653643289705
+    - 1.1330634625007412
+  - - 32.66653643289705
+    - 8.216396795834074
+  - - 7.666536432897051
+    - 8.216396795834074
+  x: 7.666536432897051
+  y: 1.1330634625007412
+  label: North district
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#73916b'
+  fill_opacity: 0.48
+- id: ba7ed8fd-9b08-4283-8855-1148b93f9481
+  entity_id: null
+  type: area
+  points:
+  - - 13.584358924269063
+    - 30.178019299551085
+  - - 38.58435892426906
+    - 30.178019299551085
+  - - 38.58435892426906
+    - 37.67801929955108
+  - - 13.584358924269063
+    - 37.67801929955108
+  x: 13.584358924269063
+  y: 30.178019299551085
+  label: South district
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#8a9ca5'
+  fill_opacity: 0.48
+- id: 90686544-fc15-4e78-a1f3-2c84f278b6ab
+  entity_id: null
+  type: path
+  points:
+  - - 3.333333333333333
+    - 20.833333333333332
+  - - 38.33333333333333
+    - 20.833333333333332
+  x: 0.0
+  y: 0.0
+  label: Main street
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#80643f'
+  fill_opacity: 0.85
+- id: 19cd7358-0da3-461c-aa36-322a2bdf1f6c
+  entity_id: null
+  type: path
+  points:
+  - - 20.833333333333332
+    - 3.333333333333333
+  - - 20.833333333333332
+    - 38.33333333333333
+  x: 0.0
+  y: 0.0
+  label: Cross street
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#80643f'
+  fill_opacity: 0.85
+- id: 3190a775-c6e6-46d9-8d49-726ae58a22f6
+  entity_id: null
+  type: area
+  points:
+  - - 30.547542756734405
+    - 13.973280048448132
+  - - 34.71420942340107
+    - 13.973280048448132
+  - - 34.71420942340107
+    - 18.1399467151148
+  - - 30.547542756734405
+    - 18.1399467151148
+  x: 30.547542756734405
+  y: 13.973280048448132
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: ca910af1-3bfd-410b-8a74-8c507f37ff2c
+  entity_id: null
+  type: area
+  points:
+  - - 21.54215745539569
+    - 10.931720396269156
+  - - 29.875490788729024
+    - 10.931720396269156
+  - - 29.958351915746633
+    - 18.215714754103068
+  - - 21.66660001432047
+    - 18.215714754103068
+  x: 21.54215745539569
+  y: 10.931720396269156
+  label: New building
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#c99d52'
+  fill_opacity: 0.35
+- id: c14ef2c1-e2ef-4720-b461-8bb17789055b
+  entity_id: null
+  type: path
+  points:
+  - - 15.726951909190705
+    - 21.266569424979615
+  - - 15.726951909190705
+    - 29.59990275831295
+  x: 15.726951909190705
+  y: 21.266569424979615
+  label: New corridor
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#80643f'
+  fill_opacity: 0.85
+- id: 56d92914-cb12-46bf-993c-4c1c9e40620b
+  entity_id: null
+  type: area
+  points:
+  - - 4.2664327273608125
+    - 30.860631302937367
+  - - 8.433099394027481
+    - 30.860631302937367
+  - - 8.433099394027481
+    - 35.027297969604035
+  - - 4.2664327273608125
+    - 35.027297969604035
+  x: 4.2664327273608125
+  y: 30.860631302937367
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: 1890b59d-37a4-4a03-924a-723ae95d6ebb
+  entity_id: null
+  type: point
+  points: []
+  x: 36.31900085798077
+  y: 7.986264117948985
+  label: null
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: location
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: e0ff72a2-d86b-4abd-8897-2bd1ae292c0f
+  entity_id: null
+  type: area
+  points:
+  - - 4.056354123314889
+    - 8.466925230336443
+  - - 8.223020789981554
+    - 8.466925230336443
+  - - 8.223020789981554
+    - 12.633591897003114
+  - - 4.056354123314889
+    - 12.633591897003114
+  x: 4.056354123314889
+  y: 8.466925230336443
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: 6022b098-1663-43ac-a9ba-647fff8e4c3f
+  entity_id: null
+  type: area
+  points:
+  - - 2.083333333333333
+    - 14.583333333333332
+  - - 12.5
+    - 14.583333333333332
+  - - 12.5
+    - 25.0
+  - - 2.083333333333333
+    - 25.0
+  x: 2.083333333333333
+  y: 14.583333333333332
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: 87341a6d-2503-4f7d-be48-3ad03ef6d322
+  entity_id: null
+  type: area
+  points:
+  - - 30.608335760596653
+    - 22.643480790774436
+  - - 34.77500242726332
+    - 22.643480790774436
+  - - 34.77500242726332
+    - 26.810147457441097
+  - - 30.608335760596653
+    - 26.810147457441097
+  x: 30.608335760596653
+  y: 22.643480790774436
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: 60357fc2-1cd9-494c-945b-c3d3875ae56e
+  entity_id: null
+  type: area
+  points:
+  - - 34.94333018038223
+    - 13.899242337636014
+  - - 39.109996847048905
+    - 13.899242337636014
+  - - 39.109996847048905
+    - 18.065909004302682
+  - - 34.94333018038223
+    - 18.065909004302682
+  x: 34.94333018038223
+  y: 13.899242337636014
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: e7580d37-b997-408a-8b2d-beccd16c5433
+  entity_id: null
+  type: area
+  points:
+  - - 14.583333333333332
+    - 10.416666666666666
+  - - 18.75
+    - 10.416666666666666
+  - - 18.75
+    - 14.583333333333332
+  - - 14.583333333333332
+    - 14.583333333333332
+  x: 14.583333333333332
+  y: 10.416666666666666
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: 0a69c5f6-0ff6-4170-b10a-1b25dd67fdd3
+  entity_id: null
+  type: area
+  points:
+  - - 4.3084567095645685
+    - 26.50639236662295
+  - - 8.475123376231235
+    - 26.50639236662295
+  - - 8.475123376231235
+    - 30.673059033289622
+  - - 4.3084567095645685
+    - 30.673059033289622
+  x: 4.3084567095645685
+  y: 26.50639236662295
+  label: New room
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#7b9b91'
+  fill_opacity: 0.35
+- id: ef6c5690-d9cc-4d19-aab9-f093bddab6b0
+  entity_id: null
+  type: area
+  points:
+  - - 12.677358553916788
+    - 41.322421144998486
+  - - 18.077358553916785
+    - 41.322421144998486
+  - - 18.077358553916785
+    - 53.9224211449985
+  - - 25.27735855391679
+    - 53.9224211449985
+  - - 25.27735855391679
+    - 41.322421144998486
+  - - 30.677358553916793
+    - 41.322421144998486
+  - - 30.677358553916793
+    - 59.322421144998486
+  - - 12.677358553916788
+    - 59.322421144998486
+  x: 12.677358553916788
+  y: 41.322421144998486
+  label: New U-shaped building
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#c99d52'
+  fill_opacity: 0.35
+- id: 1ed096c9-ef8d-4d58-9f9d-cfb96104dec1
+  entity_id: null
+  type: area
+  points:
+  - - 49.36025204304227
+    - 27.855000256139434
+  - - 54.76025204304227
+    - 27.855000256139434
+  - - 54.76025204304227
+    - 40.45500025613944
+  - - 61.96025204304226
+    - 40.45500025613944
+  - - 61.96025204304226
+    - 27.855000256139434
+  - - 67.36025204304227
+    - 27.855000256139434
+  - - 67.36025204304227
+    - 45.855000256139434
+  - - 49.36025204304227
+    - 45.855000256139434
+  x: 49.36025204304227
+  y: 27.855000256139434
+  label: New U-shaped building
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#c99d52'
+  fill_opacity: 0.35
+- id: 0f6aad09-3953-4c17-ad29-60d035e241b1
+  entity_id: null
+  type: area
+  points:
+  - - 51.61069158201472
+    - 9.174722213450718
+  - - 57.010691582014715
+    - 9.174722213450718
+  - - 57.010691582014715
+    - 21.77472221345072
+  - - 64.21069158201472
+    - 21.77472221345072
+  - - 64.21069158201472
+    - 9.174722213450718
+  - - 69.61069158201471
+    - 9.174722213450718
+  - - 69.61069158201471
+    - 27.174722213450718
+  - - 51.61069158201472
+    - 27.174722213450718
+  x: 51.61069158201472
+  y: 9.174722213450718
+  label: New U-shaped building
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: false
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#c99d52'
+  fill_opacity: 0.35
+- id: 557a5193-74a7-4406-a1f1-e9e2c4a34285
+  entity_id: null
+  type: point
+  points: []
+  x: 36.20833333333333
+  y: 47.17270024306322
+  label: New timber cottage
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 78
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 24322453-2a7f-4e5d-8484-f55f9f91bcc9
+  entity_id: null
+  type: point
+  points: []
+  x: 39.125
+  y: 47.26372353985412
+  label: New timber cottage
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: c253e600-6ea2-4de5-a408-86caa6a34872
+  entity_id: null
+  type: point
+  points: []
+  x: 41.90626424431855
+  y: 47.21728626339516
+  label: New timber cottage
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: aaca41c5-1f16-4b58-bf55-4aa93fcf13c1
+  entity_id: null
+  type: point
+  points: []
+  x: 44.6249755811682
+  y: 47.26193724008243
+  label: New timber cottage
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: d83fd67c-b523-430d-8139-661dc6af7841
+  entity_id: null
+  type: point
+  points: []
+  x: 47.3749755811682
+  y: 47.2619697182601
+  label: New timber tavern
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_tavern_c53e9f102b64.png
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 749e81c1-6480-4f8a-87e9-5e11ae03ed92
+  entity_id: null
+  type: point
+  points: []
+  x: 50.916642247834865
+  y: 46.36904761904762
+  label: New stone market shop
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/stone_market_shop_b42d8e0f21a3.png
+  icon_size: 113
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 61c5f666-f7f9-426b-9021-770e234b11d1
+  entity_id: null
+  type: point
+  points: []
+  x: 55.791621898808366
+  y: 43.72020561706043
+  label: New stone chapel
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/stone_chapel_d64fa013c5b7.png
+  icon_size: 194
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: bca92826-b992-4e6a-a86c-54e022fb6a0a
+  entity_id: null
+  type: point
+  points: []
+  x: 33.29168294588787
+  y: 47.20234847420328
+  label: New timber cottage copy
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: f05847e4-6182-4f18-8724-bcb539f3e439
+  entity_id: null
+  type: point
+  points: []
+  x: 41.74933255193072
+  y: 57.02290013483484
+  label: New timber cottage copy
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 78
+  rotation: 180.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 34e7325d-6715-41ee-a370-ee1a907d6369
+  entity_id: null
+  type: point
+  points: []
+  x: 38.83266588526405
+  y: 56.93187683804394
+  label: New timber cottage copy
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 180.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 0d8bdbcc-4b02-46c9-86f7-a9f8755348ee
+  entity_id: null
+  type: point
+  points: []
+  x: 36.0514016409455
+  y: 56.9783141145029
+  label: New timber cottage copy
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 180.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+- id: 5e0223e9-ee27-486a-8e33-17db95d7f77e
+  entity_id: null
+  type: point
+  points: []
+  x: 33.33269030409585
+  y: 56.93366313781563
+  label: New timber cottage copy
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/timber_cottage_a31b7c4d91e2.png
+  icon_size: 72
+  rotation: 180.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+linked_map: null
+entity_id: teth
+tooltip: null

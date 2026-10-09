@@ -1,0 +1,14 @@
+id: torog-npc
+name: Torog
+description: God of the Underdark
+role: God
+alignment: Neutral Evil
+details: 'Portfolio: the Underdark. Suggested cleric domain: Death.
+  Symbol: a T attached to a circular shackle.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

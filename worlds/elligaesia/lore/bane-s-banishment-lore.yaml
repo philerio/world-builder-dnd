@@ -1,0 +1,17 @@
+id: bane-s-banishment-lore
+name: Bane's Banishment
+description: The god known as Bane was banished from the realm of the gods many centuries
+  ago.
+tags: []
+created: '2026-10-08T23:21:44.743441'
+updated: '2026-10-08T23:21:44.743445'
+player_knowledge: null
+common_knowledge: 'Bane was banished by the gods trying to cease power. The mountains
+  of Bane were created as a way to punish mortals for following Bane''s influence.  '
+common_knowledge_locations:
+- elligaesia
+details: 'Bane meddled in the affairs of mortals, and tried to create an army to help
+  him rule the Realm of the Gods. The majority of the gods banded together to cast
+  him out and trap him in the body of a mortal. '
+dm_notes: null
+campaigns: []

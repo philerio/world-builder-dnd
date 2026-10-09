@@ -18,6 +18,7 @@ import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 type CampaignCardProps = {
   campaign: Campaign;
@@ -28,7 +29,7 @@ type CampaignCardProps = {
 function CampaignsPage() {
   const navigate = useNavigate();
   const { worldData, worldDataLoading, worldDataError } = useWorldData();
-  const campaigns = worldData?.campaigns ?? [];
+  const campaigns = sortEntitiesByName(worldData?.campaigns ?? []);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
@@ -55,7 +56,8 @@ function CampaignsPage() {
     const searchableText = [campaign.name, campaign.description, campaign.overview, campaign.outcome]
       .filter(Boolean).join(" ").toLowerCase();
     return (!search || searchableText.includes(search))
-      && (!filters.status || campaign.status === filters.status);
+      && (!filters.status || campaign.status === filters.status)
+      && matchesEntityTag(campaign, filters.tag);
   });
 
   return (
@@ -90,6 +92,7 @@ function CampaignsPage() {
         <DashboardFilters
           search={{ label: "Search campaigns", placeholder: "Name, overview, or outcome…" }}
           filters={campaignFilters}
+          taggedEntities={campaigns}
           onChange={setFilters}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

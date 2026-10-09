@@ -1,0 +1,22 @@
+id: moradin-npc
+name: Moradin
+description: 'God of creation. Was the god that decided the other gods should banish
+  Bane. '
+tags: []
+created: '2026-10-08T23:16:50.974591'
+updated: '2026-10-08T23:16:50.974593'
+race: null
+alignment: Lawful Good
+role: God
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: creation. Suggested cleric domains: Knowledge and War. Symbol:
+  a flaming anvil.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

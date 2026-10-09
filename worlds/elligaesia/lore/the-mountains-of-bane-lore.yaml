@@ -1,0 +1,18 @@
+id: the-mountains-of-bane-lore
+name: The Mountains of Bane
+description: 'Mountain range dividing the continent of Elligaesia. Erected by the
+  gods to weaken those who live on the continent for following Bane''s influence. '
+tags: []
+created: '2026-10-08T23:23:57.727432'
+updated: '2026-10-08T23:23:57.727435'
+player_knowledge: null
+common_knowledge: 'The mountains are covered with monsters, and are very dangerous
+  to cross. A few centuries ago, powerful mages managed to create a trade route between
+  the northern and southern portions of the continent. '
+common_knowledge_locations:
+- elligaesia
+- north-elligaesia
+- batik
+details: null
+dm_notes: ''
+campaigns: []

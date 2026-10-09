@@ -73,6 +73,21 @@ class StoryConsequence(BaseModel):
     world_story_threads: list[WorldStoryThreadLink] = Field(default_factory=list)
 
 
+class StoryBeatCheck(BaseModel):
+    """A DM-facing notice, approach, or obstacle with its check and outcomes."""
+
+    id: str
+    name: str
+    category: Literal["notice", "approach", "obstacle"] = "notice"
+    description: str | None = None
+    roll_type: Literal["skill_check", "ability_check", "saving_throw", "passive", "contested"] = "skill_check"
+    ability: Literal["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] | None = None
+    skill: str | None = None
+    dc: int | None = Field(default=None, ge=1, le=40)
+    success: str | None = None
+    failure: str | None = None
+
+
 class StoryBeat(BaseModel):
     id: str
     name: str
@@ -98,6 +113,9 @@ class StoryBeat(BaseModel):
     secrets: list[str] = Field(default_factory=list)
 
     possible_approaches: list[str] = Field(default_factory=list)
+
+    # Optional structured checks and outcomes for notices, approaches, or obstacles.
+    checks: list[StoryBeatCheck] = Field(default_factory=list)
 
     leads_to: list[str] = Field(default_factory=list)
 
@@ -154,6 +172,17 @@ class SessionRecap(BaseModel):
     played_on: str | None = None
     summary: str | None = None
     notes: str | None = None
+    timeline_event_id: str | None = None
+
+
+class SessionPrep(BaseModel):
+    """A flexible, editable preparation sheet for one campaign session."""
+
+    session: int
+    agenda: str | None = None
+    dm_notes: str | None = None
+    plot_point_ids: list[str] = Field(default_factory=list)
+    reference_ids: list[str] = Field(default_factory=list)
 
 
 class CampaignStory(BaseModel):
@@ -164,5 +193,7 @@ class CampaignStory(BaseModel):
     player_actions: list[PlayerAction] = Field(default_factory=list)
 
     session_recaps: list[SessionRecap] = Field(default_factory=list)
+
+    session_preps: list[SessionPrep] = Field(default_factory=list)
 
     world_clocks: list[WorldClock] = Field(default_factory=list)

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, TextField, Typography } from "@mui/material";
 import type { MapMarker } from "../types";
 import { useWorldData } from "../context/WorldDataContext";
 import EntityField from "./EntityField";
@@ -128,6 +128,17 @@ function MarkerDrawer({
                     disabled={false}
                   />
                 ))}
+              {formData?.icon_image && markerType === "point" && (
+                <TextField
+                  label="Building footprint size (map units)"
+                  type="number"
+                  size="small"
+                  value={formData.icon_size ?? 72}
+                  slotProps={{ htmlInput: { min: 24, max: 256 } }}
+                  onChange={(event) => updateField("icon_size", Math.max(24, Math.min(256, Number(event.target.value) || 24)))}
+                  helperText="This size follows map zoom. Adjust this placed copy independently."
+                />
+              )}
             </Stack>
             {formData && mode === "create" && formData.type === "point" && (
               <Stack direction="row" spacing={2}>

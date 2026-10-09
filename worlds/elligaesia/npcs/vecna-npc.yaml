@@ -1,0 +1,14 @@
+id: vecna-npc
+name: Vecna
+description: God of evil secrets
+role: God
+alignment: Neutral Evil
+details: 'Portfolio: evil secrets. Suggested cleric domains: Death and Knowledge.
+  Symbol: a partially shattered one-eyed skull.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

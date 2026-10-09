@@ -11,7 +11,30 @@ const COMMON_FIELDS: EntityFieldDefinition[] = [
     label: "Description",
     type: "textarea",
   },
+  {
+    name: "tags",
+    label: "Tags",
+    type: "tagArray",
+  },
 ];
+
+const ALIGNMENT_FIELD = {
+  name: "alignment",
+  label: "Alignment",
+  type: "autocomplete" as const,
+  options: [
+    { value: "Lawful Good", label: "Lawful Good" },
+    { value: "Neutral Good", label: "Neutral Good" },
+    { value: "Chaotic Good", label: "Chaotic Good" },
+    { value: "Lawful Neutral", label: "Lawful Neutral" },
+    { value: "True Neutral", label: "True Neutral" },
+    { value: "Chaotic Neutral", label: "Chaotic Neutral" },
+    { value: "Lawful Evil", label: "Lawful Evil" },
+    { value: "Neutral Evil", label: "Neutral Evil" },
+    { value: "Chaotic Evil", label: "Chaotic Evil" },
+    { value: "Unaligned", label: "Unaligned" },
+  ],
+};
 
 export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
   {
@@ -138,6 +161,12 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
     npc: [
       ...COMMON_FIELDS,
       {
+        name: "race",
+        label: "Race",
+        type: "text",
+      },
+      ALIGNMENT_FIELD,
+      {
         name: "role",
         label: "Role",
         type: "text",
@@ -241,6 +270,12 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
 
     player_character: [
       ...COMMON_FIELDS,
+      {
+        name: "race",
+        label: "Race",
+        type: "text",
+      },
+      ALIGNMENT_FIELD,
       {
         name: "role",
         label: "Role",
@@ -511,6 +546,25 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
     ],
 
+    dm_scratchpad_entry: [
+      ...COMMON_FIELDS,
+      { name: "content", label: "Notes", type: "textarea" },
+      {
+        name: "status",
+        label: "Status",
+        type: "autocomplete",
+        options: [
+          { value: "inbox", label: "Inbox" },
+          { value: "developing", label: "Developing" },
+          { value: "promoted", label: "Promoted" },
+          { value: "archived", label: "Archived" },
+        ],
+      },
+      { name: "promoted_entity_id", label: "Promoted Entity", type: "reference", referenceType: "entity" },
+      { name: "promoted_subentity_id", label: "Promoted Item ID", type: "text" },
+      { name: "promoted_as", label: "Promoted As", type: "text" },
+    ],
+
     timeline_event: [
       ...COMMON_FIELDS,
       {
@@ -520,7 +574,29 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
       {
         name: "date",
-        label: "Date",
+        label: "Date label",
+        type: "text",
+      },
+      {
+        name: "date_precision",
+        label: "Date precision",
+        type: "autocomplete",
+        options: [
+          { value: "unknown", label: "Unknown" },
+          { value: "exact", label: "Exact date" },
+          { value: "year", label: "Year" },
+          { value: "approximate", label: "Approximate" },
+          { value: "range", label: "Date range" },
+        ],
+      },
+      {
+        name: "date_start",
+        label: "Date start (year or YYYY-MM-DD; BCE years may be negative)",
+        type: "text",
+      },
+      {
+        name: "date_end",
+        label: "Date end (for ranges)",
         type: "text",
       },
       {
@@ -571,6 +647,48 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         referenceType: "world_event",
       },
       {
+        name: "event_links",
+        label: "Event Connections",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "relationship",
+        fields: [
+          {
+            name: "event_id",
+            label: "Event",
+            type: "reference",
+            referenceTypes: ["timeline_event", "world_event"],
+          },
+          {
+            name: "relationship",
+            label: "Relationship",
+            type: "autocomplete",
+            options: [
+              { value: "caused_by", label: "Caused by" },
+              { value: "leads_to", label: "Leads to" },
+              { value: "related_to", label: "Related to" },
+            ],
+          },
+        ],
+      },
+      {
+        name: "campaign_sources",
+        label: "Campaign Sources",
+        type: "objectArray",
+        accordion: true,
+        accordionTitleField: "campaign_id",
+        fields: [
+          { name: "campaign_id", label: "Campaign", type: "reference", referenceType: "campaign" },
+          { name: "session", label: "Session", type: "number" },
+          { name: "plot_point_ids", label: "Plot Point IDs", type: "array", hidden: true },
+          { name: "plot_point_names", label: "Plot Points", type: "array" },
+          { name: "consequence_ids", label: "Consequence IDs", type: "array", hidden: true },
+          { name: "consequence_descriptions", label: "Consequences", type: "array" },
+          { name: "player_action_ids", label: "Player Action IDs", type: "array", hidden: true },
+          { name: "player_action_descriptions", label: "Player Actions", type: "array" },
+        ],
+      },
+      {
         name: "consequences",
         label: "Consequences",
         type: "array",
@@ -584,6 +702,17 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
 
     lore: [
       ...COMMON_FIELDS,
+      {
+        name: "common_knowledge",
+        label: "Common Knowledge",
+        type: "textarea",
+      },
+      {
+        name: "common_knowledge_locations",
+        label: "Common in Locations (empty means broadly known)",
+        type: "referenceArray",
+        referenceTypes: ["continent", "kingdom", "region", "city", "location"],
+      },
       {
         name: "campaigns",
         label: "Campaigns",

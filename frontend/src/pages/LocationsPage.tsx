@@ -17,6 +17,7 @@ import useEntityDrawer from "../hooks/useEntityDrawer";
 import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import { useWorldData } from "../context/WorldDataContext";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 type LocationCategory = "Continent" | "Kingdom" | "Region" | "City" | "Location";
 
@@ -26,6 +27,7 @@ type LocationEntry = {
   category: LocationCategory;
   description?: string;
   context?: string;
+  tags?: string[];
 };
 
 type LocationSectionProps = {
@@ -72,12 +74,13 @@ function LocationsPage() {
     ),
   );
   const nameOf = (id?: string) => (id ? nameById.get(id) ?? id : undefined);
-  const allEntries: LocationEntry[] = [
+  const allEntries: LocationEntry[] = sortEntitiesByName([
     ...continents.map((continent) => ({
       id: continent.id,
       name: continent.name,
       category: "Continent" as const,
       description: continent.description,
+      tags: continent.tags,
       context: `${kingdoms.filter((kingdom) => kingdom.continent === continent.id).length} kingdoms · ${regions.filter((region) => region.continent === continent.id).length} regions`,
     })),
     ...kingdoms.map((kingdom) => ({
@@ -85,6 +88,7 @@ function LocationsPage() {
       name: kingdom.name,
       category: "Kingdom" as const,
       description: kingdom.description,
+      tags: kingdom.tags,
       context: [
         kingdom.continent ? `Continent: ${nameOf(kingdom.continent)}` : undefined,
         kingdom.capital ? `Capital: ${nameOf(kingdom.capital)}` : undefined,
@@ -96,6 +100,7 @@ function LocationsPage() {
       name: region.name,
       category: "Region" as const,
       description: region.description,
+      tags: region.tags,
       context: [
         region.continent ? `Continent: ${nameOf(region.continent)}` : undefined,
         region.kingdom ? `Kingdom: ${nameOf(region.kingdom)}` : undefined,
@@ -107,6 +112,7 @@ function LocationsPage() {
       name: city.name,
       category: "City" as const,
       description: city.description,
+      tags: city.tags,
       context: [
         city.region ? `Region: ${nameOf(city.region)}` : undefined,
         city.kingdom ? `Kingdom: ${nameOf(city.kingdom)}` : undefined,
@@ -117,6 +123,7 @@ function LocationsPage() {
       name: place.name,
       category: "Location" as const,
       description: place.description,
+      tags: place.tags,
       context: [
         place.location_type ? formatStatusLabel(place.location_type) : undefined,
         place.region ? `Region: ${nameOf(place.region)}` : undefined,
@@ -124,7 +131,7 @@ function LocationsPage() {
         place.continent ? `Continent: ${nameOf(place.continent)}` : undefined,
       ].filter(Boolean).join(" · "),
     })),
-  ];
+  ]);
   const categories: LocationCategory[] = ["Continent", "Kingdom", "Region", "City", "Location"];
   const sectionTitles: Record<LocationCategory, string> = {
     Continent: "Continents",
@@ -142,9 +149,9 @@ function LocationsPage() {
   const filteredEntries = allEntries.filter((entry) => {
     const matchesCategory = !filters.category || entry.category === filters.category;
     const matchesSearch = !search || `${entry.name} ${entry.description ?? ""} ${entry.context ?? ""}`.toLowerCase().includes(search);
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesSearch && matchesEntityTag(entry, filters.tag);
   });
-  const hasActiveFilter = Boolean(search || filters.category);
+  const hasActiveFilter = Boolean(search || filters.category || filters.tag);
   const visibleCategories = categories.filter(
     (category) => !hasActiveFilter || filteredEntries.some((entry) => entry.category === category),
   );
@@ -181,6 +188,7 @@ function LocationsPage() {
         <DashboardFilters
           search={{ label: "Search locations", placeholder: "Name, region, kingdom…" }}
           filters={locationFilters}
+          taggedEntities={allEntries}
           onChange={setFilters}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

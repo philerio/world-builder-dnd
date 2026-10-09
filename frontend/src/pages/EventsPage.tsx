@@ -17,13 +17,17 @@ import {
   DialogTitle,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
 import type { Campaign, TimelineEvent, WorldEvent } from "../types";
 
@@ -32,6 +36,7 @@ import { useWorldData } from "../context/WorldDataContext";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import DashboardFilters, { type DashboardFilter } from "../components/filters/DashboardFilters";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 type EventCardProps = {
   name: string;
@@ -42,14 +47,17 @@ type EventCardProps = {
   linkedCampaigns?: Campaign[];
   onOpenCampaign?: (campaignId: string) => void;
   onLinkExistingCampaign?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  reorderingTimeline?: boolean;
 };
 
 function EventsPage() {
   const navigate = useNavigate();
-  const { createEntity, updateEntity, worldData, worldDataLoading, worldDataError } = useWorldData();
-  const worldEvents = worldData?.world_events ?? [];
-  const timelineEvents = worldData?.timeline_events ?? [];
-  const campaigns = worldData?.campaigns ?? [];
+  const { createEntity, updateEntity, refreshWorldData, worldData, worldDataLoading, worldDataError } = useWorldData();
+  const worldEvents = sortEntitiesByName(worldData?.world_events ?? []);
+  const timelineEvents = sortEntitiesByName(worldData?.timeline_events ?? []);
+  const campaigns = sortEntitiesByName(worldData?.campaigns ?? []);
   const npcIds = new Set((worldData?.npcs ?? []).map((character) => character.id));
   const playerCharacterIds = new Set((worldData?.player_characters ?? []).map((character) => character.id));
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -64,6 +72,8 @@ function EventsPage() {
   const [linkTargetCampaignId, setLinkTargetCampaignId] = useState("");
   const [linkingCampaign, setLinkingCampaign] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [reorderingTimeline, setReorderingTimeline] = useState(false);
+  const [timelineOrderError, setTimelineOrderError] = useState<string | null>(null);
 
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
@@ -79,6 +89,12 @@ function EventsPage() {
   }
 
   const allEvents = [...worldEvents, ...timelineEvents];
+  const places = sortEntitiesByName([
+    ...(worldData?.cities ?? []).map((place) => ({ id: place.id, name: place.name })),
+    ...(worldData?.locations ?? []).map((place) => ({ id: place.id, name: place.name })),
+  ]);
+  const characters = sortEntitiesByName([...(worldData?.npcs ?? []), ...(worldData?.player_characters ?? [])]);
+  const worldStories = sortEntitiesByName(worldData?.world_stories ?? []);
   const uniqueValues = (values: (string | undefined)[]) => [...new Set(values.filter((value): value is string => Boolean(value)))].sort();
   const eventFilters: DashboardFilter[] = [
     {
@@ -102,9 +118,36 @@ function EventsPage() {
         .map((type) => ({ value: type, label: formatStatusLabel(type) })),
     },
     {
+      key: "era",
+      label: "Era",
+      options: uniqueValues(timelineEvents.map((event) => event.era))
+        .map((era) => ({ value: era, label: era })),
+    },
+    {
+      key: "datePrecision",
+      label: "Date precision",
+      options: uniqueValues(timelineEvents.map((event) => event.date_precision))
+        .map((precision) => ({ value: precision, label: formatStatusLabel(precision) })),
+    },
+    {
       key: "campaign",
       label: "Campaign",
       options: campaigns.map((campaign) => ({ value: campaign.id, label: campaign.name })),
+    },
+    {
+      key: "location",
+      label: "Location",
+      options: places.map((place) => ({ value: place.id, label: place.name })),
+    },
+    {
+      key: "character",
+      label: "Character",
+      options: characters.map((character) => ({ value: character.id, label: character.name })),
+    },
+    {
+      key: "worldStory",
+      label: "World Story",
+      options: worldStories.map((story) => ({ value: story.id, label: story.name })),
     },
   ];
   const search = filters.search?.trim().toLowerCase() ?? "";
@@ -112,16 +155,67 @@ function EventsPage() {
     const recordType = "potential_campaign" in event ? "world_event" : "timeline_event";
     const status = "status" in event ? event.status : undefined;
     const type = "type" in event ? event.type : undefined;
-    const searchableText = [event.name, event.description, status, type, "era" in event ? event.era : undefined, "date" in event ? event.date : undefined]
+    const searchableText = [event.name, event.description, status, type, "era" in event ? event.era : undefined, "date" in event ? event.date : undefined, "date_start" in event ? event.date_start : undefined, "date_end" in event ? event.date_end : undefined]
       .filter(Boolean).join(" ").toLowerCase();
     return (!search || searchableText.includes(search))
       && (!filters.recordType || recordType === filters.recordType)
       && (!filters.status || status === filters.status)
       && (!filters.type || type === filters.type)
-      && (!filters.campaign || event.campaigns.includes(filters.campaign));
+      && (!filters.era || ("era" in event && event.era === filters.era))
+      && (!filters.datePrecision || ("date_precision" in event && event.date_precision === filters.datePrecision))
+      && (!filters.campaign || event.campaigns.includes(filters.campaign))
+      && (!filters.location || event.locations.includes(filters.location))
+      && (!filters.character || event.characters.includes(filters.character))
+      && (!filters.worldStory || event.world_stories.includes(filters.worldStory))
+      && matchesEntityTag(event, filters.tag);
   };
   const filteredWorldEvents = worldEvents.filter(filterEvent);
   const filteredTimelineEvents = timelineEvents.filter(filterEvent);
+
+  async function moveTimelineEvent(eventId: string, direction: -1 | 1) {
+    const event = timelineEvents.find((item) => item.id === eventId);
+    if (!event || timelineDateKey(event) !== null || reorderingTimeline) return;
+    const eraEvents = orderTimelineEvents(timelineEvents.filter(
+      (item) => timelineEra(item) === timelineEra(event) && timelineDateKey(item) === null,
+    ));
+    const currentIndex = eraEvents.findIndex((item) => item.id === eventId);
+    const adjacent = eraEvents[currentIndex + direction];
+    if (!adjacent) return;
+
+    const reorderedEvents = [...eraEvents];
+    [reorderedEvents[currentIndex], reorderedEvents[currentIndex + direction]] = [
+      reorderedEvents[currentIndex + direction],
+      reorderedEvents[currentIndex],
+    ];
+    const needsInitialOrder = eraEvents.some(
+      (item) => typeof item.chronology_order !== "number",
+    );
+    const updates = needsInitialOrder
+      ? reorderedEvents.map((item, index) => ({
+          ...item,
+          chronology_order: index * 100,
+        }))
+      : (() => {
+          const orderValues = getTimelineOrderValues(eraEvents);
+          return [
+            { ...event, chronology_order: orderValues.get(adjacent.id) },
+            { ...adjacent, chronology_order: orderValues.get(event.id) },
+          ];
+        })();
+
+    setReorderingTimeline(true);
+    setTimelineOrderError(null);
+    try {
+      for (const update of updates) {
+        await updateEntity(update.id, update);
+      }
+    } catch (error) {
+      setTimelineOrderError(error instanceof Error ? error.message : "Could not reorder timeline events.");
+      await refreshWorldData();
+    } finally {
+      setReorderingTimeline(false);
+    }
+  }
 
   return (
     <>
@@ -156,6 +250,7 @@ function EventsPage() {
           <DashboardFilters
             search={{ label: "Search events", placeholder: "Name, description, date, or era…" }}
             filters={eventFilters}
+            taggedEntities={allEvents}
             onChange={setFilters}
           />
           <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 1 }}>
@@ -187,7 +282,13 @@ function EventsPage() {
           emptyMessage={timelineEvents.length === 0 ? "No events have been added yet." : "No timeline events match these filters."}
           campaigns={campaigns}
           onOpen={openEntity}
+          groupByEra
+          allTimelineEvents={timelineEvents}
+          onMoveTimelineEvent={(id, direction) => void moveTimelineEvent(id, direction)}
+          reorderingTimeline={reorderingTimeline}
+          timelineHelp="Events are grouped by era. Dated events sort by date; use the arrows to order undated events within their era."
         />
+        {timelineOrderError && <Alert severity="error" sx={{ mx: { xs: 3, md: 5 } }}>{timelineOrderError}</Alert>}
       </Stack>
 
       <EntityDetailDrawer
@@ -467,6 +568,80 @@ function EventsPage() {
   }
 }
 
+function timelineEra(event: TimelineEvent) {
+  return event.era?.trim() || "Era not set";
+}
+
+function timelineDateKey(event: TimelineEvent) {
+  if (event.date_start && event.date_precision === "unknown") return null;
+  const value = event.date_start || event.date || "";
+  const match = /^(-?\d{1,6})(?:-(\d{2})-(\d{2}))?$/.exec(value.trim());
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2] ?? 1), Number(match[3] ?? 1)] as const;
+}
+
+function compareDateKeys(left: readonly number[], right: readonly number[]) {
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const difference = (left[index] ?? 0) - (right[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return 0;
+}
+
+function timelineDateLabel(event: TimelineEvent) {
+  if (event.date_start && event.date_end) return `${event.date_start} – ${event.date_end}`;
+  return event.date_start || event.date;
+}
+
+function getTimelineOrderValues(events: TimelineEvent[]) {
+  const alphabeticalEvents = [...events].sort((left, right) =>
+    left.name.localeCompare(right.name, undefined, { sensitivity: "base" }),
+  );
+  const defaultOrder = new Map(
+    alphabeticalEvents.map((event, index) => [event.id, index * 100]),
+  );
+
+  return new Map(
+    events.map((event) => [
+      event.id,
+      typeof event.chronology_order === "number"
+        ? event.chronology_order
+        : defaultOrder.get(event.id) ?? 0,
+    ]),
+  );
+}
+
+function orderTimelineEvents(events: TimelineEvent[]) {
+  const orderValues = getTimelineOrderValues(events);
+  const datedEvents = events.filter((event) => timelineDateKey(event) !== null).sort((left, right) => {
+    const dateOrder = compareDateKeys(timelineDateKey(left)!, timelineDateKey(right)!);
+    if (dateOrder !== 0) return dateOrder;
+    const orderDifference = (orderValues.get(left.id) ?? 0) - (orderValues.get(right.id) ?? 0);
+    return orderDifference || left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  });
+  const undatedEvents = events.filter((event) => timelineDateKey(event) === null).sort((left, right) => {
+    const orderDifference = (orderValues.get(left.id) ?? 0) - (orderValues.get(right.id) ?? 0);
+    return orderDifference || left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  });
+  return [...datedEvents, ...undatedEvents];
+}
+
+function groupTimelineEvents(events: TimelineEvent[]) {
+  const groups = new Map<string, TimelineEvent[]>();
+  for (const event of events) {
+    const era = timelineEra(event);
+    groups.set(era, [...(groups.get(era) ?? []), event]);
+  }
+
+  return [...groups.entries()]
+    .map(([era, eraEvents]) => ({ era, events: orderTimelineEvents(eraEvents) }))
+    .sort((left, right) => {
+      if (left.era === "Era not set") return 1;
+      if (right.era === "Era not set") return -1;
+      return left.era.localeCompare(right.era, undefined, { sensitivity: "base" });
+    });
+}
+
 function EventSection({
   title,
   events,
@@ -476,6 +651,11 @@ function EventSection({
   onCreateCampaign,
   onOpenCampaign,
   onLinkExistingCampaign,
+  groupByEra = false,
+  allTimelineEvents = [],
+  onMoveTimelineEvent,
+  reorderingTimeline = false,
+  timelineHelp,
 }: {
   title: string;
   events: WorldEvent[] | TimelineEvent[];
@@ -485,71 +665,102 @@ function EventSection({
   onCreateCampaign?: (event: WorldEvent) => void;
   onOpenCampaign?: (campaignId: string) => void;
   onLinkExistingCampaign?: (event: WorldEvent) => void;
+  groupByEra?: boolean;
+  allTimelineEvents?: TimelineEvent[];
+  onMoveTimelineEvent?: (eventId: string, direction: -1 | 1) => void;
+  reorderingTimeline?: boolean;
+  timelineHelp?: string;
 }) {
+  const renderEventCard = (
+    event: WorldEvent | TimelineEvent,
+    movement?: { canMoveUp: boolean; canMoveDown: boolean },
+  ) => {
+    const chips: string[] = [];
+
+    if ("era" in event && event.era) chips.push(event.era);
+    if ("date" in event && event.date) chips.push(event.date);
+    else if ("date_start" in event && timelineDateLabel(event)) chips.push(timelineDateLabel(event)!);
+    if ("type" in event && event.type) chips.push(event.type);
+    if ("status" in event && event.status) chips.push(formatStatusLabel(event.status));
+
+    const isWorldEvent = "potential_campaign" in event;
+    const linkedCampaigns = isWorldEvent
+      ? campaigns.filter((campaign) => event.campaigns?.includes(campaign.id))
+      : [];
+
+    return (
+      <Grid key={event.id} size={{ xs: 12, md: 6, lg: 4 }}>
+        <EventCard
+          name={event.name}
+          description={event.description}
+          chips={chips}
+          onOpen={() => onOpen(event.id)}
+          linkedCampaigns={linkedCampaigns}
+          onOpenCampaign={onOpenCampaign}
+          onCreateCampaign={
+            isWorldEvent && onCreateCampaign
+              ? () => onCreateCampaign(event)
+              : undefined
+          }
+          onLinkExistingCampaign={
+            isWorldEvent && onLinkExistingCampaign
+              ? () => onLinkExistingCampaign(event)
+              : undefined
+          }
+          onMoveUp={movement?.canMoveUp && onMoveTimelineEvent
+            ? () => onMoveTimelineEvent(event.id, -1)
+            : undefined}
+          onMoveDown={movement?.canMoveDown && onMoveTimelineEvent
+            ? () => onMoveTimelineEvent(event.id, 1)
+            : undefined}
+          reorderingTimeline={reorderingTimeline}
+        />
+      </Grid>
+    );
+  };
+
+  const timelineGroups = groupByEra
+    ? groupTimelineEvents(events as TimelineEvent[])
+    : [];
+
   return (
     <Stack spacing={2}>
       <Typography variant="h2">{title}</Typography>
+      {timelineHelp && <Typography variant="body2" color="text.secondary">{timelineHelp}</Typography>}
 
       {events.length === 0 ? (
         <Typography color="text.secondary">{emptyMessage}</Typography>
-      ) : (
-        <Grid container spacing={2}>
-          {events.map((event) => {
-            const chips: string[] = [];
-
-            if ("era" in event && event.era) {
-              chips.push(event.era);
-            }
-
-            if ("date" in event && event.date) {
-              chips.push(event.date);
-            }
-
-            if ("type" in event && event.type) {
-              chips.push(event.type);
-            }
-
-            if ("status" in event && event.status) {
-              chips.push(formatStatusLabel(event.status));
-            }
-
-            const isWorldEvent = "potential_campaign" in event;
-            const linkedCampaigns = isWorldEvent
-              ? campaigns.filter((campaign) =>
-                  event.campaigns?.includes(campaign.id),
-                )
-              : [];
-
+      ) : groupByEra ? (
+        <Stack spacing={3}>
+          {timelineGroups.map(({ era, events: eraEvents }) => {
+            const fullEraEvents = orderTimelineEvents(
+              allTimelineEvents.filter((event) => timelineEra(event) === era),
+            );
             return (
-              <Grid
-                key={event.id}
-                size={{
-                  xs: 12,
-                  md: 6,
-                  lg: 4,
-                }}
-              >
-                <EventCard
-                  name={event.name}
-                  description={event.description}
-                  chips={chips}
-                  onOpen={() => onOpen(event.id)}
-                  linkedCampaigns={linkedCampaigns}
-                  onOpenCampaign={onOpenCampaign}
-                  onCreateCampaign={
-                    isWorldEvent && onCreateCampaign
-                      ? () => onCreateCampaign(event)
-                      : undefined
-                  }
-                  onLinkExistingCampaign={
-                    isWorldEvent && onLinkExistingCampaign
-                      ? () => onLinkExistingCampaign(event)
-                      : undefined
-                  }
-                />
-              </Grid>
+              <Stack key={era} spacing={1.5}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Typography variant="h3">{era}</Typography>
+                  <Chip size="small" label={eraEvents.length} />
+                </Stack>
+                <Grid container spacing={2}>
+          {eraEvents.map((event) => {
+                    const manuallyOrdered = fullEraEvents.filter((item) => timelineDateKey(item) === null);
+                    const index = timelineDateKey(event) === null
+                      ? manuallyOrdered.findIndex((item) => item.id === event.id)
+                      : -1;
+                    return renderEventCard(event, {
+                      canMoveUp: index > 0,
+                      canMoveDown: index >= 0 && index < manuallyOrdered.length - 1,
+                    });
+                  })}
+                </Grid>
+              </Stack>
             );
           })}
+        </Stack>
+      ) : (
+        <Grid container spacing={2}>
+          {events.map((event) => renderEventCard(event))}
         </Grid>
       )}
     </Stack>
@@ -565,6 +776,9 @@ function EventCard({
   linkedCampaigns = [],
   onOpenCampaign,
   onLinkExistingCampaign,
+  onMoveUp,
+  onMoveDown,
+  reorderingTimeline,
 }: EventCardProps) {
   return (
     <Card>
@@ -603,7 +817,9 @@ function EventCard({
       </CardActionArea>
       {(onCreateCampaign ||
         onLinkExistingCampaign ||
-        linkedCampaigns.length > 0) && (
+        linkedCampaigns.length > 0 ||
+        onMoveUp ||
+        onMoveDown) && (
         <CardActions
           sx={{
             px: 2,
@@ -613,6 +829,34 @@ function EventCard({
             gap: 0.5,
           }}
         >
+          {(onMoveUp || onMoveDown) && (
+            <Box sx={{ ml: "auto", display: "flex", alignItems: "center" }}>
+              <Tooltip title="Move earlier in this era">
+                <span>
+                  <IconButton
+                    size="small"
+                    aria-label={`Move ${name} earlier in its era`}
+                    disabled={!onMoveUp || reorderingTimeline}
+                    onClick={onMoveUp}
+                  >
+                    <ArrowUpwardIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Move later in this era">
+                <span>
+                  <IconButton
+                    size="small"
+                    aria-label={`Move ${name} later in its era`}
+                    disabled={!onMoveDown || reorderingTimeline}
+                    onClick={onMoveDown}
+                  >
+                    <ArrowDownwardIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          )}
           {linkedCampaigns.map((campaign) => (
             <Chip
               key={campaign.id}

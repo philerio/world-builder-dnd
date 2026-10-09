@@ -3,6 +3,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemIcon
 import AddLocationAltIcon from "@mui/icons-material/AddLocationAlt";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
+import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 
 type MarkerContextMenuProps = {
   open: boolean;
@@ -13,7 +16,9 @@ type MarkerContextMenuProps = {
   markerId: string | null;
   onCreate: () => void;
   onEdit: () => void;
-  onDelete: () => Promise<void>;
+  onDuplicate: (markerId: string) => void;
+  onChangeOrder: (markerId: string, direction: "front" | "back") => void;
+  onDelete: (markerId: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -23,10 +28,13 @@ function MarkerContextMenu({
   markerId,
   onCreate,
   onEdit,
+  onDuplicate,
+  onChangeOrder,
   onDelete,
   onClose,
 }: MarkerContextMenuProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteMarkerId, setDeleteMarkerId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   return (
@@ -44,6 +52,48 @@ function MarkerContextMenu({
           <>
             <MenuItem
               onClick={() => {
+                onDuplicate(markerId);
+                onClose();
+              }}
+            >
+              <ListItemIcon>
+                <ContentCopyIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Duplicate map item</ListItemText>
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                onChangeOrder(markerId, "front");
+                onClose();
+              }}
+            >
+              <ListItemIcon>
+                <VerticalAlignTopIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Bring to front"
+                secondary="Within this layer"
+              />
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                onChangeOrder(markerId, "back");
+                onClose();
+              }}
+            >
+              <ListItemIcon>
+                <VerticalAlignBottomIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Send to back"
+                secondary="Within this layer"
+              />
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
                 onEdit();
                 onClose();
               }}
@@ -56,6 +106,7 @@ function MarkerContextMenu({
 
             <MenuItem
               onClick={() => {
+                setDeleteMarkerId(markerId);
                 setDeleteConfirmOpen(true);
                 onClose();
               }}
@@ -87,11 +138,13 @@ function MarkerContextMenu({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirmOpen(false)} disabled={deleting}>Cancel</Button>
-          <Button color="error" disabled={deleting} onClick={async () => {
+          <Button color="error" disabled={deleting || !deleteMarkerId} onClick={async () => {
+            if (!deleteMarkerId) return;
             setDeleting(true);
             try {
-              await onDelete();
+              await onDelete(deleteMarkerId);
               setDeleteConfirmOpen(false);
+              setDeleteMarkerId(null);
             } finally {
               setDeleting(false);
             }

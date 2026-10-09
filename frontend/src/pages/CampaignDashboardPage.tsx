@@ -9,6 +9,7 @@ import {
   Box,
   Button,
   Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -17,6 +18,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  GlobalStyles,
   IconButton,
   LinearProgress,
   MenuItem,
@@ -41,17 +43,21 @@ import LinkIcon from "@mui/icons-material/Link";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EventIcon from "@mui/icons-material/Event";
 import HistoryIcon from "@mui/icons-material/History";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import type {
   Campaign,
   CampaignStory,
   EntityResponse,
   StoryBeat,
+  StoryBeatCheck,
   StoryBeatStatus,
   StoryConsequence,
   StoryContent,
   StoryContentNode,
   EntitySummary,
+  SessionPrep,
   SessionRecap,
+  TimelineEvent,
   WorldClock,
   WorldStory,
   WorldStoryThreadLink,
@@ -99,6 +105,21 @@ function getClockProgress(clock: WorldClock): Exclude<ClockProgressFilter, "all"
   return clock.current === 0 ? "not_started" : "started";
 }
 
+function isTimelineDateDraftValid(draft: TimelineEventDraft) {
+  const sortableDate = /^-?\d{1,6}(?:-\d{2}-\d{2})?$/;
+  const yearOnly = /^-?\d{1,6}$/;
+  const fullDate = /^-?\d{1,6}-\d{2}-\d{2}$/;
+  if (draft.date_precision === "exact") return fullDate.test(draft.date_start.trim());
+  if (draft.date_precision === "year") return yearOnly.test(draft.date_start.trim());
+  if (draft.date_precision === "range") {
+    return sortableDate.test(draft.date_start.trim()) && sortableDate.test(draft.date_end.trim());
+  }
+  if (draft.date_precision === "approximate") {
+    return !draft.date_start.trim() || sortableDate.test(draft.date_start.trim());
+  }
+  return true;
+}
+
 type BeatDraft = {
   name: string;
   description: string;
@@ -106,6 +127,7 @@ type BeatDraft = {
   events_content: StoryContent;
   triggers_content: StoryContent;
   possible_approaches_content: StoryContent;
+  checks: StoryBeatCheck[];
   status: StoryBeatStatus;
   act: string;
   order: string;
@@ -118,6 +140,206 @@ type BeatDraft = {
   world_stories: string[];
   world_story_threads: WorldStoryThreadLink[];
 };
+
+const CHECK_ABILITIES = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
+const CHECK_SKILLS = [
+  "Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History",
+  "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception",
+  "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival",
+];
+const CHECK_ROLL_TYPES: { value: StoryBeatCheck["roll_type"]; label: string }[] = [
+  { value: "skill_check", label: "Skill check" },
+  { value: "ability_check", label: "Ability check" },
+  { value: "saving_throw", label: "Saving throw" },
+  { value: "passive", label: "Passive score" },
+  { value: "contested", label: "Contested check" },
+];
+
+function PlotPointChecksEditor({
+  checks,
+  onChange,
+  disabled,
+}: {
+  checks: StoryBeatCheck[];
+  onChange: (checks: StoryBeatCheck[]) => void;
+  disabled?: boolean;
+}) {
+  const updateCheck = (checkId: string, update: Partial<StoryBeatCheck>) => {
+    onChange(checks.map((check) => check.id === checkId ? { ...check, ...update } : check));
+  };
+
+  return (
+    <Stack spacing={1} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+        <Box>
+          <Typography variant="subtitle2">Checks & possible notices</Typography>
+          <Typography variant="caption" color="text.secondary">DM reference for what a character can notice or attempt, the target number, and the result.</Typography>
+        </Box>
+        <Button
+          size="small"
+          startIcon={<AddIcon />}
+          onClick={() => onChange([...checks, {
+            id: crypto.randomUUID(),
+            name: "",
+            category: "notice",
+            roll_type: "skill_check",
+            ability: "wisdom",
+          }])}
+          disabled={disabled}
+        >Add check</Button>
+      </Stack>
+      {checks.map((check, index) => (
+        <Box key={check.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
+          <Stack spacing={1}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" } }}>
+              <TextField
+                fullWidth
+                size="small"
+                label="What might happen?"
+                placeholder={index === 0 ? "Notice the assassin watching the street" : "Name this check"}
+                value={check.name}
+                onChange={(event) => updateCheck(check.id, { name: event.target.value })}
+                disabled={disabled}
+              />
+              <FormControl size="small" sx={{ minWidth: 145 }}>
+                <Select
+                  value={check.category}
+                  aria-label={`Check category ${index + 1}`}
+                  onChange={(event) => updateCheck(check.id, { category: event.target.value as StoryBeatCheck["category"] })}
+                  disabled={disabled}
+                >
+                  <MenuItem value="notice">Notice</MenuItem>
+                  <MenuItem value="approach">Approach</MenuItem>
+                  <MenuItem value="obstacle">Obstacle</MenuItem>
+                </Select>
+              </FormControl>
+              <Tooltip title="Remove this check">
+                <span><IconButton aria-label={`Remove check ${index + 1}`} onClick={() => onChange(checks.filter((item) => item.id !== check.id))} disabled={disabled} size="small"><DeleteOutlineIcon /></IconButton></span>
+              </Tooltip>
+            </Stack>
+            <TextField
+              size="small"
+              label="Situation / when it applies"
+              value={check.description ?? ""}
+              onChange={(event) => updateCheck(check.id, { description: event.target.value })}
+              disabled={disabled}
+              multiline
+              minRows={1}
+            />
+            <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
+              <FormControl size="small" fullWidth>
+                <Select
+                  value={check.roll_type}
+                  aria-label={`Roll type ${index + 1}`}
+                  onChange={(event) => updateCheck(check.id, { roll_type: event.target.value as StoryBeatCheck["roll_type"] })}
+                  disabled={disabled}
+                >
+                  {CHECK_ROLL_TYPES.map((rollType) => <MenuItem key={rollType.value} value={rollType.value}>{rollType.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <FormControl size="small" fullWidth>
+                <Select
+                  value={check.ability ?? ""}
+                  displayEmpty
+                  aria-label={`Ability for check ${index + 1}`}
+                  onChange={(event) => updateCheck(check.id, { ability: (event.target.value || undefined) as StoryBeatCheck["ability"] })}
+                  disabled={disabled}
+                  renderValue={(value) => typeof value === "string" && value ? `${value[0].toUpperCase()}${value.slice(1)}` : "Ability (optional)"}
+                >
+                  <MenuItem value=""><em>Ability (optional)</em></MenuItem>
+                  {CHECK_ABILITIES.map((ability) => <MenuItem key={ability} value={ability}>{ability[0].toUpperCase()}{ability.slice(1)}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <FormControl size="small" fullWidth>
+                <Select
+                  value={check.skill ?? ""}
+                  displayEmpty
+                  aria-label={`Skill for check ${index + 1}`}
+                  onChange={(event) => updateCheck(check.id, { skill: event.target.value || undefined })}
+                  disabled={disabled}
+                  renderValue={(value) => typeof value === "string" && value ? value : "Skill (optional)"}
+                >
+                  <MenuItem value=""><em>Skill (optional)</em></MenuItem>
+                  {CHECK_SKILLS.map((skill) => <MenuItem key={skill} value={skill}>{skill}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <TextField
+                size="small"
+                label="DC / target number"
+                type="number"
+                value={check.dc ?? ""}
+                onChange={(event) => updateCheck(check.id, { dc: event.target.value ? Number(event.target.value) : undefined })}
+                disabled={disabled}
+                slotProps={{ htmlInput: { min: 1, max: 40, step: 1 } }}
+                sx={{ minWidth: { md: 170 } }}
+              />
+            </Stack>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
+              <TextField
+                fullWidth
+                size="small"
+                label="On success"
+                value={check.success ?? ""}
+                onChange={(event) => updateCheck(check.id, { success: event.target.value })}
+                disabled={disabled}
+                multiline
+                minRows={1}
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="On failure"
+                value={check.failure ?? ""}
+                onChange={(event) => updateCheck(check.id, { failure: event.target.value })}
+                disabled={disabled}
+                multiline
+                minRows={1}
+              />
+            </Stack>
+          </Stack>
+        </Box>
+      ))}
+      {!checks.length && <Typography variant="body2" color="text.secondary">No structured checks added. Existing triggers and approaches remain available above.</Typography>}
+    </Stack>
+  );
+}
+
+function PlotPointChecksView({ checks }: { checks: StoryBeatCheck[] }) {
+  if (!checks.length) return null;
+  const rollLabels: Record<StoryBeatCheck["roll_type"], string> = {
+    skill_check: "Skill check",
+    ability_check: "Ability check",
+    saving_throw: "Saving throw",
+    passive: "Passive",
+    contested: "Contested check",
+  };
+  return (
+    <Stack spacing={0.75}>
+      {checks.map((check) => {
+        const ability = check.ability ? `${check.ability[0].toUpperCase()}${check.ability.slice(1)}` : "";
+        const checkName = [ability, check.skill ? `(${check.skill})` : ""].filter(Boolean).join(" ");
+        return (
+          <Box key={check.id} sx={{ p: 1, border: 1, borderColor: "divider", borderRadius: 1 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={0.75} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>{check.name || "Untitled check"}</Typography>
+              <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                <Chip size="small" label={formatStatusLabel(check.category)} />
+                <Typography variant="caption" color="text.secondary">
+                  {[rollLabels[check.roll_type], checkName, check.dc !== undefined ? `DC ${check.dc}` : "No target set"].filter(Boolean).join(" · ")}
+                </Typography>
+              </Stack>
+            </Stack>
+            {check.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{check.description}</Typography>}
+            {(check.success || check.failure) && <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 0.75 }}>
+              {check.success && <Typography variant="caption"><Box component="span" sx={{ fontWeight: 700 }}>Success:</Box> {check.success}</Typography>}
+              {check.failure && <Typography variant="caption"><Box component="span" sx={{ fontWeight: 700 }}>Failure:</Box> {check.failure}</Typography>}
+            </Stack>}
+          </Box>
+        );
+      })}
+    </Stack>
+  );
+}
 
 type ConsequenceDraft = {
   description: string;
@@ -163,6 +385,30 @@ type SessionRecapDraft = {
   summary: string;
   notes: string;
 };
+
+type TimelineEventDraft = {
+  source_label: string;
+  recap?: SessionRecap;
+  source_session?: number;
+  name: string;
+  date_start: string;
+  date_end: string;
+  date_precision: NonNullable<TimelineEvent["date_precision"]>;
+  description: string;
+  locations: string[];
+  characters: string[];
+  world_stories: string[];
+  world_story_threads: WorldStoryThreadLink[];
+  consequences: string[];
+  consequence_ids: string[];
+  plot_point_ids: string[];
+  plot_point_names: string[];
+  player_action_ids: string[];
+  player_action_descriptions: string[];
+  dm_notes: string;
+};
+
+type CampaignWorkspace = "dashboard" | "prep" | "session";
 
 type WorldEventDraft = {
   name: string;
@@ -649,6 +895,7 @@ function CampaignDashboardPage() {
   const navigate = useNavigate();
   const { loadEntity, updateEntity, createEntity, loadCampaignReferences, entities, getEntity } = useWorldData();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [workspace, setWorkspace] = useState<CampaignWorkspace>("dashboard");
   const [worldStories, setWorldStories] = useState<WorldStory[]>([]);
   const [campaignLinkedRecords, setCampaignLinkedRecords] = useState<EntitySummary[]>([]);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -688,9 +935,16 @@ function CampaignDashboardPage() {
   const [sessionHistoryFilter, setSessionHistoryFilter] = useState("all");
   const [sessionRecapDialogOpen, setSessionRecapDialogOpen] = useState(false);
   const [sessionRecapDraft, setSessionRecapDraft] = useState<SessionRecapDraft | null>(null);
+  const [timelineEventDraft, setTimelineEventDraft] = useState<TimelineEventDraft | null>(null);
+  const [creatingTimelineEvent, setCreatingTimelineEvent] = useState(false);
   const [editingSessionRecapNumber, setEditingSessionRecapNumber] = useState<number | null>(null);
   const [closeoutDrafts, setCloseoutDrafts] = useState<Record<string, CloseoutActionDraft>>({});
   const [closeoutSessionFilter, setCloseoutSessionFilter] = useState("all");
+  const [prepSessionInput, setPrepSessionInput] = useState("");
+  const [prepAgenda, setPrepAgenda] = useState("");
+  const [prepNotes, setPrepNotes] = useState("");
+  const [prepPlotPointIds, setPrepPlotPointIds] = useState<string[]>([]);
+  const [prepReferenceIds, setPrepReferenceIds] = useState<string[]>([]);
   const {
     entityId,
     isOpen,
@@ -875,6 +1129,20 @@ function CampaignDashboardPage() {
       })
       .map(([, group]) => group);
   })();
+  const nextPrepSession = sessionHistorySessionValues.length
+    ? Math.max(...sessionHistorySessionValues.map(Number)) + 1
+    : 1;
+  const prepSessionNumber = Math.max(1, Number.parseInt(prepSessionInput, 10) || nextPrepSession);
+  const selectedPrepBeats = beats.filter((beat) => prepPlotPointIds.includes(beat.id));
+  const selectedPrepConsequences = consequences.filter(({ beat, consequence }) =>
+    (prepPlotPointIds.includes(beat.id) || consequence.leads_to?.some((beatId) => prepPlotPointIds.includes(beatId)))
+    && (consequence.status === "pending" || consequence.status === "active"));
+  const prepStoryIds = [...new Set(selectedPrepBeats.flatMap((beat) => beat.world_stories ?? []))];
+  const prepStoryThreads = [...new Map(selectedPrepBeats.flatMap((beat) => beat.world_story_threads ?? [])
+    .map((link) => [encodeThreadLink(link), link])).values()];
+  const prepStoryThreadsByStory = new Set(prepStoryThreads.map((link) => link.world_story_id));
+  const prepStories = worldStories.filter((worldStory) => prepStoryIds.includes(worldStory.id)
+    || prepStoryThreadsByStory.has(worldStory.id));
 
   const saveStory = async (nextStory: CampaignStory): Promise<boolean> => {
     if (!campaign || !campaignId) return false;
@@ -895,6 +1163,64 @@ function CampaignDashboardPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const loadPrepDraft = (sessionNumber: number) => {
+    const savedPrep = (campaignStory.session_preps ?? []).find((item) => item.session === sessionNumber);
+    const defaultBeatIds = savedPrep?.plot_point_ids ?? (currentBeat ? [currentBeat.id] : []);
+    const defaultReferenceIds = [...new Set([
+      ...(campaign?.player_characters ?? []),
+      ...(campaign?.npcs ?? []),
+      ...(campaign?.locations ?? []),
+      ...beats.filter((beat) => defaultBeatIds.includes(beat.id)).flatMap((beat) => [
+        ...(beat.locations ?? []),
+        ...(beat.npcs ?? []),
+        ...(beat.player_characters ?? []),
+        ...(beat.world_events ?? []),
+      ]),
+    ])];
+    setPrepAgenda(savedPrep?.agenda ?? "");
+    setPrepNotes(savedPrep?.dm_notes ?? "");
+    setPrepPlotPointIds(savedPrep?.plot_point_ids ?? defaultBeatIds);
+    setPrepReferenceIds(savedPrep?.reference_ids ?? defaultReferenceIds);
+  };
+
+  const saveSessionPrep = async () => {
+    if (legacyStory) return;
+    const prep: SessionPrep = {
+      session: prepSessionNumber,
+      agenda: optionalText(prepAgenda),
+      dm_notes: optionalText(prepNotes),
+      plot_point_ids: prepPlotPointIds,
+      reference_ids: prepReferenceIds,
+    };
+    await saveStory({
+      ...campaignStory,
+      session_preps: [
+        ...(campaignStory.session_preps ?? []).filter((item) => item.session !== prepSessionNumber),
+        prep,
+      ].sort((left, right) => left.session - right.session),
+    });
+  };
+
+  const openPrepWorkspace = () => {
+    setPrepSessionInput(String(nextPrepSession));
+    loadPrepDraft(nextPrepSession);
+    setWorkspace("prep");
+  };
+
+  const openLiveSessionWorkspace = () => {
+    const unreviewedSessionNumbers = unreviewedActions
+      .flatMap((action) => action.session === undefined ? [] : [action.session]);
+    const sessionNumber = unreviewedSessionNumbers.length
+      ? Math.max(...unreviewedSessionNumbers)
+      : sessionHistorySessionValues.length
+        ? Math.max(...sessionHistorySessionValues.map(Number))
+        : nextPrepSession;
+    setActionSessionInput(String(sessionNumber));
+    setPrepSessionInput(String(sessionNumber));
+    loadPrepDraft(sessionNumber);
+    setWorkspace("session");
   };
 
   const updateCampaignStatus = async (status: string) => {
@@ -981,6 +1307,8 @@ function CampaignDashboardPage() {
       played_on: optionalText(sessionRecapDraft.played_on),
       summary: optionalText(sessionRecapDraft.summary),
       notes: optionalText(sessionRecapDraft.notes),
+      timeline_event_id: (campaignStory.session_recaps ?? []).find((item) => item.session === sessionNumber)?.timeline_event_id
+        ?? (campaignStory.session_recaps ?? []).find((item) => item.session === editingSessionRecapNumber)?.timeline_event_id,
     };
     const sessionRecaps = [
       ...(campaignStory.session_recaps ?? []).filter((item) => item.session !== sessionNumber && item.session !== editingSessionRecapNumber),
@@ -991,6 +1319,195 @@ function CampaignDashboardPage() {
       setSessionRecapDraft(null);
       setEditingSessionRecapNumber(null);
       setSessionHistoryFilter(String(sessionNumber));
+    }
+  };
+
+  const openTimelineEventDraft = (
+    sourceLabel: string,
+    name: string,
+    description: string,
+    relatedBeats: StoryBeat[],
+    sourceActions: CampaignStory["player_actions"],
+    sourceConsequences: typeof consequences,
+    recap?: SessionRecap,
+    notes = "",
+  ) => {
+    const uniqueBeats = [...new Map(relatedBeats.map((beat) => [beat.id, beat])).values()];
+    const uniqueConsequences = [...new Map(sourceConsequences.map((item) => [item.consequence.id, item])).values()];
+    const worldStories = [...new Set([
+      ...sourceActions.flatMap((action) => action.world_stories ?? []),
+      ...uniqueBeats.flatMap((beat) => beat.world_stories ?? []),
+      ...uniqueConsequences.flatMap(({ consequence }) => consequence.world_stories ?? []),
+    ])];
+    const worldStoryThreads = [...new Map([
+      ...sourceActions.flatMap((action) => action.world_story_threads ?? []),
+      ...uniqueBeats.flatMap((beat) => beat.world_story_threads ?? []),
+      ...uniqueConsequences.flatMap(({ consequence }) => consequence.world_story_threads ?? []),
+    ].map((link) => [encodeThreadLink(link), link])).values()];
+    const sourcePlotPoints = uniqueBeats.map((beat) => ({ id: beat.id, name: beat.name }));
+    const consequenceRecords = uniqueConsequences.map(({ consequence }) => consequence);
+    setTimelineEventDraft({
+      source_label: sourceLabel,
+      recap,
+      source_session: recap?.session ?? sourceActions.find((action) => action.session !== undefined)?.session,
+      name,
+      date_start: recap?.played_on ?? "",
+      date_end: "",
+      date_precision: recap?.played_on ? "exact" : "unknown",
+      description,
+      locations: [...new Set(uniqueBeats.flatMap((beat) => beat.locations ?? []))],
+      characters: [...new Set([
+        ...uniqueBeats.flatMap((beat) => [...(beat.npcs ?? []), ...(beat.player_characters ?? [])]),
+        ...(!uniqueBeats.length ? campaign?.player_characters ?? [] : []),
+      ])],
+      world_stories: worldStories,
+      world_story_threads: worldStoryThreads,
+      consequences: consequenceRecords.map((consequence) => consequence.description),
+      consequence_ids: consequenceRecords.map((consequence) => consequence.id),
+      plot_point_ids: sourcePlotPoints.map((plotPoint) => plotPoint.id),
+      plot_point_names: sourcePlotPoints.map((plotPoint) => plotPoint.name),
+      player_action_ids: sourceActions.map((action) => action.id),
+      player_action_descriptions: sourceActions.map((action) => action.description),
+      dm_notes: notes,
+    });
+  };
+
+  const startTimelineEventFromRecap = (recap: SessionRecap) => {
+    const sessionActions = actions.filter((action) => action.session === recap.session);
+    const relatedBeats = sessionActions
+      .map((action) => beats.find((beat) => beat.id === action.story_beat))
+      .filter((beat): beat is StoryBeat => Boolean(beat));
+    const relatedConsequences = sessionActions
+      .flatMap((action) => action.consequence_ids ?? [])
+      .map((id) => consequences.find((item) => item.consequence.id === id))
+      .filter((item): item is (typeof consequences)[number] => Boolean(item));
+    const suggestedDescription = recap.summary?.trim() || sessionActions.map((action) => `- ${action.description}`).join("\n");
+    openTimelineEventDraft(
+      `Session ${recap.session} recap`,
+      `${campaign?.name ?? "Campaign"} — Session ${recap.session}`,
+      suggestedDescription,
+      relatedBeats,
+      sessionActions,
+      relatedConsequences,
+      recap,
+      recap.notes ?? "",
+    );
+  };
+
+  const startTimelineEventFromAction = (action: CampaignStory["player_actions"][number]) => {
+    const beat = beats.find((item) => item.id === action.story_beat);
+    const relatedConsequences = (action.consequence_ids ?? [])
+      .map((id) => consequences.find((item) => item.consequence.id === id))
+      .filter((item): item is (typeof consequences)[number] => Boolean(item));
+    openTimelineEventDraft(
+      "Player action",
+      action.description.replace(/\s+/g, " ").trim().slice(0, 120),
+      action.description,
+      beat ? [beat] : [],
+      [action],
+      relatedConsequences,
+      undefined,
+      action.notes ?? "",
+    );
+  };
+
+  const startTimelineEventFromConsequence = (beat: StoryBeat, consequence: StoryConsequence) => {
+    const sourceActions = actions.filter((action) => action.consequence_ids?.includes(consequence.id));
+    const sourceConsequence = consequences.find((item) => item.consequence.id === consequence.id);
+    openTimelineEventDraft(
+      "Plot Point consequence",
+      consequence.description.replace(/\s+/g, " ").trim().slice(0, 120),
+      consequence.description,
+      [beat],
+      sourceActions,
+      sourceConsequence ? [sourceConsequence] : [],
+      undefined,
+      "",
+    );
+  };
+
+  const startTimelineEventFromCompletedBeat = (beat: StoryBeat) => {
+    const sourceActions = actions.filter((action) => action.story_beat === beat.id);
+    const resolvedIds = new Set((beat.consequences ?? [])
+      .filter((consequence) => consequence.status === "resolved")
+      .map((consequence) => consequence.id));
+    const sourceConsequences = consequences.filter(({ consequence }) => resolvedIds.has(consequence.id));
+    const description = beat.description?.trim()
+      || storyContentText(beat.events_content ?? storyContentFromText(""));
+    openTimelineEventDraft(
+      "Completed Plot Point",
+      beat.name,
+      description,
+      [beat],
+      sourceActions,
+      sourceConsequences,
+    );
+  };
+
+  const createTimelineEventFromPlay = async () => {
+    if (!campaignId || !timelineEventDraft || !timelineEventDraft.name.trim()) return;
+    if (timelineEventDraft.date_precision === "range" && (!timelineEventDraft.date_start.trim() || !timelineEventDraft.date_end.trim())) {
+      setError("A date range needs both a start and an end date or year.");
+      return;
+    }
+    setCreatingTimelineEvent(true);
+    setError(null);
+    try {
+      const created = await createEntity("timeline_event", {
+        name: timelineEventDraft.name.trim(),
+        description: optionalText(timelineEventDraft.description),
+        date: timelineEventDraft.date_precision === "unknown"
+          ? undefined
+          : optionalText(timelineEventDraft.date_end
+            ? `${timelineEventDraft.date_start.trim()} – ${timelineEventDraft.date_end.trim()}`
+            : timelineEventDraft.date_start),
+        date_start: timelineEventDraft.date_precision === "unknown" ? undefined : optionalText(timelineEventDraft.date_start),
+        date_end: timelineEventDraft.date_precision === "range" ? optionalText(timelineEventDraft.date_end) : undefined,
+        date_precision: timelineEventDraft.date_precision,
+        locations: timelineEventDraft.locations,
+        kingdoms: [],
+        characters: timelineEventDraft.characters,
+        campaigns: [campaignId],
+        world_stories: withThreadStories(timelineEventDraft.world_stories, timelineEventDraft.world_story_threads),
+        world_story_threads: timelineEventDraft.world_story_threads,
+        campaign_sources: [{
+          campaign_id: campaignId,
+          session: timelineEventDraft.source_session,
+          plot_point_ids: timelineEventDraft.plot_point_ids,
+          plot_point_names: timelineEventDraft.plot_point_names,
+          consequence_ids: timelineEventDraft.consequence_ids,
+          consequence_descriptions: timelineEventDraft.consequences,
+          player_action_ids: timelineEventDraft.player_action_ids,
+          player_action_descriptions: timelineEventDraft.player_action_descriptions,
+        }],
+        consequences: timelineEventDraft.consequences,
+        dm_notes: optionalText(timelineEventDraft.dm_notes),
+      });
+      const linkedRecap = timelineEventDraft.recap
+        ?? (timelineEventDraft.source_session === undefined
+          ? undefined
+          : (campaignStory.session_recaps ?? []).find((recap) => recap.session === timelineEventDraft.source_session));
+      const nextStory = linkedRecap
+        ? {
+            ...campaignStory,
+            session_recaps: (campaignStory.session_recaps ?? []).map((recap) => recap.session === linkedRecap.session
+                ? { ...recap, timeline_event_id: created.id }
+                : recap),
+          }
+        : null;
+      setTimelineEventDraft(null);
+      try {
+        setCampaignLinkedRecords(await loadCampaignReferences(campaignId));
+      } catch {
+        setError("Timeline event was created, but the campaign reference list could not be refreshed.");
+      }
+      if (nextStory && !await saveStory(nextStory)) {
+        setError(`Timeline event “${timelineEventDraft.name.trim()}” was created, but its session recap link did not save.`);
+      }
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Could not create this timeline event.");
+    } finally {
+      setCreatingTimelineEvent(false);
     }
   };
 
@@ -1378,6 +1895,7 @@ function CampaignDashboardPage() {
       events_content: beat.events_content ?? storyContentFromText(beat.events ?? ""),
       triggers_content: beat.triggers_content ?? storyContentFromText(listToText(beat.triggers)),
       possible_approaches_content: beat.possible_approaches_content ?? storyContentFromText(listToText(beat.possible_approaches)),
+      checks: beat.checks ?? [],
       status: beat.status,
       act: beat.act ?? "",
       order: beat.order === undefined ? "" : String(beat.order),
@@ -1413,6 +1931,7 @@ function CampaignDashboardPage() {
         secrets: textToList(beatDraft.secrets),
         possible_approaches: textToList(storyContentText(beatDraft.possible_approaches_content)),
         possible_approaches_content: hasEntityLinks(beatDraft.possible_approaches_content) ? beatDraft.possible_approaches_content : undefined,
+        checks: beatDraft.checks,
         leads_to: textToList(beatDraft.leads_to),
         locations: textToList(beatDraft.locations),
         npcs: textToList(beatDraft.npcs),
@@ -1601,6 +2120,257 @@ function CampaignDashboardPage() {
   const campaignStatusOptions = [...new Set([...CAMPAIGN_STATUSES, campaign.status ?? "planned"])];
   const recapSessionNumber = Number.parseInt(sessionRecapDraft?.session ?? "", 10);
   const recapActionCount = actions.filter((action) => action.session === recapSessionNumber).length;
+  const workspaceNavigation = (
+    <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+      <Button size="small" variant={workspace === "dashboard" ? "contained" : "outlined"} onClick={() => setWorkspace("dashboard")}>Dashboard</Button>
+      <Button size="small" variant={workspace === "prep" ? "contained" : "outlined"} onClick={openPrepWorkspace}>Session Prep</Button>
+      <Button size="small" variant={workspace === "session" ? "contained" : "outlined"} onClick={openLiveSessionWorkspace}>During Session</Button>
+    </Stack>
+  );
+
+  if (workspace !== "dashboard") {
+    const activeSessionNumber = Math.max(1, Number.parseInt(actionSessionInput, 10) || nextPrepSession);
+    const liveActions = actions.filter((action) => action.session === activeSessionNumber).slice(0, 8);
+    const liveReferences = currentBeat ? [...new Set([
+      ...(currentBeat.locations ?? []),
+      ...(currentBeat.npcs ?? []),
+      ...(currentBeat.player_characters ?? []),
+      ...(currentBeat.world_events ?? []),
+    ])] : linkedEntityIds;
+    return (
+      <Box sx={{ pb: 4, "@media print": { bgcolor: "white", color: "black", p: 0, "& .MuiButton-root": { display: "none" } } }}>
+        {workspace === "prep" && <GlobalStyles styles="@media print { .MuiDrawer-root, .MuiAppBar-root { display: none !important; } body { background: white !important; } .MuiCard-root { break-inside: avoid; box-shadow: none !important; } }" />}
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} sx={{ alignItems: { lg: "center" }, justifyContent: "space-between", mb: 2 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            <IconButton aria-label="Back to campaigns" onClick={() => navigate("/campaigns")}><ArrowBackIcon /></IconButton>
+            <Box>
+              <Typography variant="overline" color="text.secondary">CAMPAIGN WORKSPACE</Typography>
+              <Typography variant="h2">{campaign.name}</Typography>
+            </Box>
+          </Stack>
+          {workspaceNavigation}
+        </Stack>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {legacyStory && <Alert severity="warning" sx={{ mb: 2 }}>This campaign has legacy story content. Session planning and action logging are read-only to protect it.</Alert>}
+
+        {workspace === "prep" ? (
+          <Stack spacing={2}>
+            <Card variant="outlined">
+              <CardContent>
+                <Stack spacing={2}>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
+                    <Box>
+                      <Typography variant="overline" color="text.secondary">PREPARE</Typography>
+                      <Typography variant="h2">Session {prepSessionNumber} run sheet</Typography>
+                    </Box>
+                    <Stack direction="row" spacing={1}>
+                      <TextField label="Session number" type="number" size="small" value={prepSessionInput || String(nextPrepSession)} onChange={(event) => {
+                        const value = event.target.value;
+                        setPrepSessionInput(value);
+                        const parsed = Number.parseInt(value, 10);
+                        loadPrepDraft(Number.isFinite(parsed) && parsed >= 1 ? parsed : nextPrepSession);
+                      }} slotProps={{ htmlInput: { min: 1 } }} disabled={saving} />
+                      <Button variant="contained" startIcon={<SaveIcon />} onClick={() => void saveSessionPrep()} disabled={saving || legacyStory}>{saving ? "Saving…" : "Save prep"}</Button>
+                      <Button startIcon={<HistoryIcon />} onClick={() => window.print()}>Print</Button>
+                    </Stack>
+                  </Stack>
+                  <TextField label="Session agenda" value={prepAgenda} onChange={(event) => setPrepAgenda(event.target.value)} multiline minRows={2} placeholder="What do you want to make sure happens or gets covered?" disabled={saving || legacyStory} />
+                  <EntityIdMultiSelect label="Plot Points to prepare" ids={prepPlotPointIds} options={plotPointOptions} onChange={setPrepPlotPointIds} disabled={saving || legacyStory} />
+                  <EntityIdMultiSelect label="Quick references" ids={prepReferenceIds} options={entities} onChange={setPrepReferenceIds} disabled={saving || legacyStory} />
+                  <TextField label="Private prep notes" value={prepNotes} onChange={(event) => setPrepNotes(event.target.value)} multiline minRows={3} placeholder="Reminders, questions, or details to keep handy." disabled={saving || legacyStory} />
+                </Stack>
+              </CardContent>
+            </Card>
+
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 1.4fr) minmax(0, 1fr)" }, gap: 2, alignItems: "start" }}>
+              <Stack spacing={2}>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Plot Points</Typography>
+                  {selectedPrepBeats.length ? <Stack spacing={1.5}>{selectedPrepBeats.map((beat) => (
+                    <Box key={beat.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                        <Typography variant="h3" sx={{ fontSize: "1.1rem" }}>{beat.name}</Typography>
+                        <Chip size="small" label={formatStatusLabel(beat.status)} />
+                      </Stack>
+                      {beat.description && <Typography sx={{ mt: 1, whiteSpace: "pre-wrap" }}>{beat.description}</Typography>}
+                      {beat.triggers?.length ? <Box sx={{ mt: 1 }}><Typography variant="subtitle2">Possible triggers</Typography><Typography variant="body2" color="text.secondary">{beat.triggers.join(" · ")}</Typography></Box> : null}
+                      {beat.possible_approaches?.length ? <Box sx={{ mt: 1 }}><Typography variant="subtitle2">Possible approaches</Typography><Typography variant="body2" color="text.secondary">{beat.possible_approaches.join(" · ")}</Typography></Box> : null}
+                      <Button size="small" onClick={() => setWorkspace("dashboard")}>Open in planner</Button>
+                    </Box>
+                  ))}</Stack> : <Typography color="text.secondary">Choose Plot Points above to build this run sheet.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Pending consequences</Typography>
+                  {selectedPrepConsequences.length ? <Stack spacing={1}>{selectedPrepConsequences.map(({ beat, consequence }) => <Box key={`${beat.id}-${consequence.id}`} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                    <Typography>{consequence.description}</Typography>
+                    <Typography variant="caption" color="text.secondary">From {beat.name} · {formatStatusLabel(consequence.status)}</Typography>
+                    {consequence.timing && <Typography variant="body2" color="text.secondary">Timing: {consequence.timing}</Typography>}
+                  </Box>)}</Stack> : <Typography color="text.secondary">No pending or active consequences from the selected Plot Points.</Typography>}
+                </CardContent></Card>
+              </Stack>
+
+              <Stack spacing={2}>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>World clocks</Typography>
+                  {clocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{clocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between" }}><Typography sx={{ fontWeight: 600 }}>{clock.name}</Typography><Typography variant="caption">{clock.current}/{clock.maximum} · {formatStatusLabel(clock.status)}</Typography></Stack>
+                    {clock.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{clock.description}</Typography>}
+                    {clock.completion && <Typography variant="caption" color="text.secondary">At completion: {clock.completion}</Typography>}
+                  </Box>)}</Stack> : <Typography color="text.secondary">No active world clocks.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>World Stories</Typography>
+                  {prepStories.length ? <Stack spacing={1}>{prepStories.map((worldStory) => <Box key={worldStory.id}>
+                    <Button size="small" onClick={() => openEntity(worldStory.id)} sx={{ px: 0, textAlign: "left" }}>{worldStory.name}</Button>
+                    {worldStory.overview && <Typography variant="body2" color="text.secondary">{worldStory.overview}</Typography>}
+                  </Box>)}</Stack> : <Typography color="text.secondary">No World Stories are linked to these Plot Points.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Quick references</Typography>
+                  <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap" }}>
+                    {prepReferenceIds.map((id) => {
+                      const reference = entities.find((entity) => entity.id === id);
+                      return <Chip key={id} clickable label={reference?.name ?? id} title={reference?.entity_type.replaceAll("_", " ")} onClick={() => openEntity(id)} />;
+                    })}
+                    {!prepReferenceIds.length && <Typography color="text.secondary">Add people, places, maps, and events above.</Typography>}
+                  </Stack>
+                </CardContent></Card>
+              </Stack>
+            </Box>
+          </Stack>
+        ) : (
+          <Stack spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
+              <Box><Typography variant="overline" color="text.secondary">AT THE TABLE</Typography><Typography variant="h2">Session {activeSessionNumber}</Typography></Box>
+              <Stack direction="row" spacing={1}>
+                <TextField label="Session" type="number" size="small" value={actionSessionInput} onChange={(event) => setActionSessionInput(event.target.value)} slotProps={{ htmlInput: { min: 1 } }} />
+                <Button startIcon={<HistoryIcon />} onClick={() => setSessionHistoryOpen(true)}>Session history</Button>
+                <Button variant="contained" onClick={openSessionCloseout} disabled={!actions.length || legacyStory}>Close out</Button>
+              </Stack>
+            </Stack>
+            {(campaignStory.session_preps ?? []).find((prep) => prep.session === activeSessionNumber)?.agenda && (
+              <Alert severity="info">
+                <Typography variant="subtitle2">Session agenda</Typography>
+                <Typography sx={{ whiteSpace: "pre-wrap" }}>{(campaignStory.session_preps ?? []).find((prep) => prep.session === activeSessionNumber)?.agenda}</Typography>
+              </Alert>
+            )}
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 1.4fr) minmax(0, 1fr)" }, gap: 2, alignItems: "start" }}>
+              <Stack spacing={2}>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Current Plot Point</Typography>
+                  {currentBeat ? <>
+                    <Typography variant="h3" sx={{ fontSize: "1.25rem" }}>{currentBeat.name}</Typography>
+                    {currentBeat.description && <Typography color="text.secondary" sx={{ mt: 0.75, whiteSpace: "pre-wrap" }}>{currentBeat.description}</Typography>}
+                    <Stack direction="row" spacing={0.75} sx={{ mt: 1, flexWrap: "wrap" }}>
+                      {liveReferences.map((id) => {
+                        const reference = entities.find((entity) => entity.id === id);
+                        return <Chip key={id} size="small" clickable label={reference?.name ?? id} onClick={() => openEntity(id)} />;
+                      })}
+                    </Stack>
+                    <Button size="small" onClick={() => setWorkspace("dashboard")}>Open full planner</Button>
+                  </> : <Typography color="text.secondary">No current Plot Point selected.</Typography>}
+                </CardContent></Card>
+                {currentBeat && <Card variant="outlined"><CardContent>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+                    <Typography variant="h3">Plot Point reference</Typography>
+                    <Chip size="small" label={currentBeat.name} />
+                  </Stack>
+                  <Stack spacing={1.5}>
+                    {(currentBeat.description_content?.nodes.length || currentBeat.description) ? <Box>
+                      <Typography variant="subtitle2">Description</Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}><PlotPointDescription beat={currentBeat} onOpenEntity={openEntity} /></Typography>
+                    </Box> : null}
+                    {(currentBeat.events_content?.nodes.length || currentBeat.events) ? <Box>
+                      <Typography variant="subtitle2">What may happen</Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}><StoryContentView content={currentBeat.events_content ?? storyContentFromText(currentBeat.events ?? "")} onOpenEntity={openEntity} /></Typography>
+                    </Box> : null}
+                    {(currentBeat.triggers_content?.nodes.length || currentBeat.triggers?.length) ? <Box>
+                      <Typography variant="subtitle2">Possible triggers</Typography>
+                      <Stack component="ul" spacing={0.5} sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>
+                        {(currentBeat.triggers_content ? splitStoryContentLines(currentBeat.triggers_content) : (currentBeat.triggers ?? []).map((item) => storyContentFromText(item))).map((content, index) => <li key={`${currentBeat.id}-live-trigger-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}
+                      </Stack>
+                    </Box> : null}
+                    {(currentBeat.possible_approaches_content?.nodes.length || currentBeat.possible_approaches?.length) ? <Box>
+                      <Typography variant="subtitle2">Possible approaches</Typography>
+                      <Stack component="ul" spacing={0.5} sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>
+                        {(currentBeat.possible_approaches_content ? splitStoryContentLines(currentBeat.possible_approaches_content) : (currentBeat.possible_approaches ?? []).map((item) => storyContentFromText(item))).map((content, index) => <li key={`${currentBeat.id}-live-approach-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}
+                      </Stack>
+                    </Box> : null}
+                    {currentBeat.checks?.length ? <Box>
+                      <Typography variant="subtitle2">Checks & possible notices</Typography>
+                      <Box sx={{ mt: 0.5 }}><PlotPointChecksView checks={currentBeat.checks} /></Box>
+                    </Box> : null}
+                    {currentBeat.secrets?.length ? <Box>
+                      <Typography variant="subtitle2" color="warning.main">DM-only information</Typography>
+                      <Stack component="ul" spacing={0.5} sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{currentBeat.secrets.map((secret) => <li key={`${currentBeat.id}-${secret}`}><Typography variant="body2">{secret}</Typography></li>)}</Stack>
+                    </Box> : null}
+                    {currentBeat.consequences?.length ? <Box>
+                      <Typography variant="subtitle2">Consequences</Typography>
+                      <Stack spacing={0.75} sx={{ mt: 0.5 }}>{currentBeat.consequences.map((consequence) => <Box key={consequence.id} sx={{ p: 1, border: 1, borderColor: "divider", borderRadius: 1 }}>
+                        <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <Typography variant="body2">{consequence.description}</Typography>
+                          <Chip size="small" label={formatStatusLabel(consequence.status)} />
+                        </Stack>
+                        {consequence.trigger && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>Trigger: {consequence.trigger}</Typography>}
+                        {consequence.timing && <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Timing: {consequence.timing}</Typography>}
+                        {consequence.player_action && <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Related action: {consequence.player_action}</Typography>}
+                        <WorldStoryReferenceChips worldStoryIds={consequence.world_stories ?? []} threadLinks={consequence.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                      </Box>)}</Stack>
+                    </Box> : null}
+                    {!currentBeat.description && !currentBeat.description_content?.nodes.length && !currentBeat.events && !currentBeat.events_content?.nodes.length && !currentBeat.triggers?.length && !currentBeat.triggers_content?.nodes.length && !currentBeat.possible_approaches?.length && !currentBeat.possible_approaches_content?.nodes.length && !currentBeat.checks?.length && !currentBeat.secrets?.length && !currentBeat.consequences?.length && <Typography variant="body2" color="text.secondary">No additional preparation details have been added to this Plot Point yet.</Typography>}
+                  </Stack>
+                </CardContent></Card>}
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Log player action</Typography>
+                  <Stack spacing={1.25}>
+                    <TextField label="What did the party do?" value={actionDescription} onChange={(event) => setActionDescription(event.target.value)} multiline minRows={2} disabled={saving || legacyStory} />
+                    <WorldStoryLinksEditor worldStoryIds={actionWorldStories} threadLinks={actionWorldStoryThreads} worldStoryOptions={worldStoryOptions} threadOptions={worldStoryThreadOptions} onChange={(worldStories, threads) => { setActionWorldStories(worldStories); setActionWorldStoryThreads(threads); }} disabled={saving || legacyStory} />
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={addAction} disabled={!actionDescription.trim() || saving || legacyStory}>{saving ? "Saving…" : "Log action"}</Button>
+                  </Stack>
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Recent actions · Session {activeSessionNumber}</Typography>
+                  {liveActions.length ? <Stack spacing={1}>{liveActions.map((action) => <Box key={action.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                    <Typography>{action.description}</Typography>
+                    {beats.find((beat) => beat.id === action.story_beat) && <Typography variant="caption" color="text.secondary">During {beats.find((beat) => beat.id === action.story_beat)?.name}</Typography>}
+                    <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                  </Box>)}</Stack> : <Typography color="text.secondary">No actions logged for this session yet.</Typography>}
+                </CardContent></Card>
+              </Stack>
+              <Stack spacing={2}>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>World clocks</Typography>
+                  {clocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{clocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "center" }}><Typography sx={{ fontWeight: 600 }}>{clock.name}</Typography><Typography variant="caption">{clock.current}/{clock.maximum}</Typography></Stack>
+                    <LinearProgress variant="determinate" value={Math.min(100, clock.current / Math.max(1, clock.maximum) * 100)} sx={{ my: 1 }} />
+                    <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end" }}>
+                      <IconButton size="small" title="Undo one step" onClick={() => updateClock(clock.id, (item) => ({ ...item, current: Math.max(0, item.current - 1) }))} disabled={saving || legacyStory || clock.current <= 0}><UndoIcon /></IconButton>
+                      <IconButton size="small" title={clock.status === "paused" ? "Resume clock" : "Pause clock"} onClick={() => updateClock(clock.id, (item) => ({ ...item, status: item.status === "paused" ? "active" : "paused" }))} disabled={saving || legacyStory}>{clock.status === "paused" ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+                      <IconButton size="small" title="Advance one step" onClick={() => updateClock(clock.id, (item) => ({ ...item, current: Math.min(item.maximum, item.current + 1), status: item.current + 1 >= item.maximum ? "completed" : item.status }))} disabled={saving || legacyStory || clock.status === "paused" || clock.current >= clock.maximum}><PlayArrowIcon /></IconButton>
+                    </Stack>
+                  </Box>)}</Stack> : <Typography color="text.secondary">No active world clocks.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Consequences to watch</Typography>
+                  {selectedPrepConsequences.length ? <Stack spacing={1}>{selectedPrepConsequences.map(({ beat, consequence }) => <Box key={`${beat.id}-${consequence.id}`} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                    <Typography>{consequence.description}</Typography>
+                    <Typography variant="caption" color="text.secondary">{beat.name} · {formatStatusLabel(consequence.status)}</Typography>
+                    <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                      {consequence.status === "pending" && <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "active")} disabled={saving || legacyStory}>Activate</Button>}
+                      <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "resolved")} disabled={saving || legacyStory}>Resolve</Button>
+                      <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "prevented")} disabled={saving || legacyStory}>Prevent</Button>
+                    </Stack>
+                  </Box>)}</Stack> : <Typography color="text.secondary">No pending consequences on selected Plot Points.</Typography>}
+                  {!prepPlotPointIds.length && <Typography variant="caption" color="text.secondary">Select Plot Points in Session Prep to pin their consequences here.</Typography>}
+                </CardContent></Card>
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+        <EntityDetailDrawer entityId={entityId} open={isOpen} onClose={closeEntity} onOpenEntity={openEntity} onBack={goBack} canGoBack={canGoBack} />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -1629,6 +2399,7 @@ function CampaignDashboardPage() {
         <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 900 }}>
           {campaign.overview || campaign.description || "Campaign session workspace."}
         </Typography>
+        <Box sx={{ mt: 2 }}>{workspaceNavigation}</Box>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -1801,6 +2572,18 @@ function CampaignDashboardPage() {
                         <WorldStoryReferenceChips worldStoryIds={beat.world_stories ?? []} threadLinks={beat.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
                       </Box>
                       <Stack direction="row" sx={{ gap: 0.5, alignItems: "center", justifyContent: { xs: "flex-end", sm: "flex-start" }, flexShrink: 0 }}>
+                        {beat.status === "completed" && (
+                          <IconButton
+                            aria-label={`Create timeline event from completed plot point: ${beat.name}`}
+                            title="Record completed Plot Point in timeline"
+                            size="small"
+                            onClick={() => startTimelineEventFromCompletedBeat(beat)}
+                            disabled={saving || creatingTimelineEvent || legacyStory}
+                            sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%" }}
+                          >
+                            <TimelineIcon fontSize="small" />
+                          </IconButton>
+                        )}
                         {campaignStory.current_beat === beat.id ? (
                           <Chip size="small" color="primary" label="Current" sx={{ minWidth: 100, justifyContent: "center" }} />
                         ) : (
@@ -1867,6 +2650,11 @@ function CampaignDashboardPage() {
                           disabled={saving}
                           onChange={(content) => setBeatDraft({ ...beatDraft, possible_approaches_content: content })}
                         />
+                        <PlotPointChecksEditor
+                          checks={beatDraft.checks}
+                          onChange={(checks) => setBeatDraft({ ...beatDraft, checks })}
+                          disabled={saving}
+                        />
                         <TextField label="DM-only information (one per line)" value={beatDraft.secrets} onChange={(event) => setBeatDraft({ ...beatDraft, secrets: event.target.value })} multiline minRows={2} disabled={saving} />
                         <EntityIdMultiSelect label="Leads to plot points" ids={textToList(beatDraft.leads_to)} options={plotPointOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, leads_to: listToText(ids) })} disabled={saving} />
                         <EntityIdMultiSelect label="Locations" ids={textToList(beatDraft.locations)} options={locationOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, locations: listToText(ids) })} disabled={saving} />
@@ -1887,7 +2675,7 @@ function CampaignDashboardPage() {
                         </Stack>
                       </Stack>
                     )}
-                    {editingBeatId !== beat.id && (beat.events || beat.events_content?.nodes.length || beat.triggers?.length || beat.triggers_content?.nodes.length || beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length || beat.secrets?.length) && (
+                    {editingBeatId !== beat.id && (beat.events || beat.events_content?.nodes.length || beat.triggers?.length || beat.triggers_content?.nodes.length || beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length || beat.checks?.length || beat.secrets?.length) && (
                       <Accordion disableGutters elevation={0} sx={{ mt: 1, "&:before": { display: "none" } }}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0, minHeight: 36, "& .MuiAccordionSummary-content": { my: 0.5 } }}>
                           <Typography variant="caption" color="text.secondary">Preparation details</Typography>
@@ -1897,6 +2685,7 @@ function CampaignDashboardPage() {
                             {(beat.events || beat.events_content?.nodes.length) && <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>What may happen</Typography><Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}><StoryContentView content={beat.events_content ?? storyContentFromText(beat.events ?? "")} onOpenEntity={openEntity} /></Typography></Box>}
                             {(beat.triggers?.length || beat.triggers_content?.nodes.length) ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Possible triggers</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{(beat.triggers_content ? splitStoryContentLines(beat.triggers_content) : (beat.triggers ?? []).map((trigger) => storyContentFromText(trigger))).map((content, index) => <li key={`${beat.id}-trigger-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}</Box></Box> : null}
                             {(beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length) ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Possible approaches</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{(beat.possible_approaches_content ? splitStoryContentLines(beat.possible_approaches_content) : (beat.possible_approaches ?? []).map((approach) => storyContentFromText(approach))).map((content, index) => <li key={`${beat.id}-approach-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}</Box></Box> : null}
+                            {beat.checks?.length ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Checks & possible notices</Typography><Box sx={{ mt: 0.5 }}><PlotPointChecksView checks={beat.checks} /></Box></Box> : null}
                             {beat.secrets?.length ? <Box><Typography variant="caption" color="warning.main" sx={{ fontWeight: 700 }}>DM-only information</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{beat.secrets.map((secret) => <li key={secret}><Typography variant="body2">{secret}</Typography></li>)}</Box></Box> : null}
                           </Stack>
                         </AccordionDetails>
@@ -2010,6 +2799,16 @@ function CampaignDashboardPage() {
                               <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
                             </Box>
                           </IconButton>
+                          <IconButton
+                            aria-label={`Create timeline event from player action: ${action.description}`}
+                            title="Create timeline event"
+                            size="small"
+                            onClick={() => startTimelineEventFromAction(action)}
+                            disabled={saving || creatingTimelineEvent || legacyStory}
+                            sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
+                          >
+                            <TimelineIcon fontSize="small" />
+                          </IconButton>
                         </Stack>
                       </Stack>}
                     </Box>;
@@ -2107,8 +2906,18 @@ function CampaignDashboardPage() {
                           <Box sx={{ position: "relative", display: "inline-flex", width: 20, height: 20 }}>
                             <EventIcon fontSize="small" />
                             <AddIcon sx={{ position: "absolute", right: -5, bottom: -3, width: 13, height: 13, borderRadius: "50%", bgcolor: "background.paper", color: "primary.main" }} />
-                          </Box>
-                        </IconButton>
+                            </Box>
+                          </IconButton>
+                          <IconButton
+                            aria-label={`Create timeline event from consequence: ${consequence.description}`}
+                            title="Create timeline event"
+                            size="small"
+                            onClick={() => startTimelineEventFromConsequence(beat, consequence)}
+                            disabled={saving || creatingTimelineEvent || legacyStory}
+                            sx={{ width: 36, height: 36, minWidth: 36, borderRadius: "50%", mr: 0.25 }}
+                          >
+                            <TimelineIcon fontSize="small" />
+                          </IconButton>
                       </Stack>
                     </>}
                   </Stack>
@@ -2335,6 +3144,15 @@ function CampaignDashboardPage() {
                       {group.recap.summary && <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.summary}</Typography>}
                       {group.recap.notes && <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.notes}</Typography>}
                       {!group.recap.summary && !group.recap.notes && <Typography variant="body2" color="text.secondary">No recap text yet.</Typography>}
+                      {group.recap.timeline_event_id ? (
+                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => openEntity(group.recap!.timeline_event_id!)}>
+                          Open linked timeline event
+                        </Button>
+                      ) : (
+                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => startTimelineEventFromRecap(group.recap!)}>
+                          Create timeline event
+                        </Button>
+                      )}
                     </Stack>
                   </Box>
                 )}
@@ -2451,6 +3269,126 @@ function CampaignDashboardPage() {
             disabled={saving || !sessionRecapDraft?.session.trim() || Number.parseInt(sessionRecapDraft?.session ?? "", 10) < 1}
           >
             {saving ? "Saving…" : "Save recap"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={Boolean(timelineEventDraft)} onClose={() => !creatingTimelineEvent && setTimelineEventDraft(null)} fullWidth maxWidth="md">
+        <DialogTitle>Create timeline event from {timelineEventDraft?.source_label}</DialogTitle>
+        <DialogContent>
+          {timelineEventDraft && (
+            <Stack spacing={1.5} sx={{ pt: 1 }}>
+              <Alert severity="info">
+                Review this campaign source as a world timeline entry. It will link to {campaign.name} and retain references to {timelineEventDraft.plot_point_ids.length} Plot Points, {timelineEventDraft.player_action_ids.length} player actions, and {timelineEventDraft.consequence_ids.length} consequences. Nothing is created until you select Create timeline event.
+              </Alert>
+              <TextField
+                label="Event name"
+                value={timelineEventDraft.name}
+                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, name: event.target.value })}
+                disabled={creatingTimelineEvent}
+                required
+              />
+              <TextField
+                select
+                label="Date precision"
+                value={timelineEventDraft.date_precision}
+                onChange={(event) => {
+                  const date_precision = event.target.value as TimelineEventDraft["date_precision"];
+                  const year = /^(-?\d{1,6})/.exec(timelineEventDraft.date_start)?.[1];
+                  setTimelineEventDraft({
+                    ...timelineEventDraft,
+                    date_precision,
+                    date_start: date_precision === "unknown"
+                      ? ""
+                      : date_precision === "year" && year
+                        ? year
+                        : timelineEventDraft.date_start,
+                    date_end: date_precision === "range" ? timelineEventDraft.date_end : "",
+                  });
+                }}
+                disabled={creatingTimelineEvent}
+              >
+                <MenuItem value="unknown">Unknown / not recorded</MenuItem>
+                <MenuItem value="exact">Exact date</MenuItem>
+                <MenuItem value="year">Year only</MenuItem>
+                <MenuItem value="approximate">Approximate</MenuItem>
+                <MenuItem value="range">Date range</MenuItem>
+              </TextField>
+              <TextField
+                label={timelineEventDraft.date_precision === "range" ? "Start date or year" : "Date or year (optional)"}
+                placeholder="2026-10-08, 1472, or -1200"
+                helperText="Use YYYY-MM-DD or a year. Negative years represent BCE. For events without dates, the timeline preserves manual era order."
+                value={timelineEventDraft.date_start}
+                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, date_start: event.target.value })}
+                disabled={creatingTimelineEvent || timelineEventDraft.date_precision === "unknown"}
+              />
+              {timelineEventDraft.date_precision === "range" && (
+                <TextField
+                  label="End date or year"
+                  placeholder="2027-03-14 or 1475"
+                  value={timelineEventDraft.date_end}
+                  onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, date_end: event.target.value })}
+                  disabled={creatingTimelineEvent}
+                />
+              )}
+              <TextField
+                label="Event summary"
+                value={timelineEventDraft.description}
+                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, description: event.target.value })}
+                multiline
+                minRows={4}
+                disabled={creatingTimelineEvent}
+              />
+              <EntityIdMultiSelect
+                label="Locations involved"
+                ids={timelineEventDraft.locations}
+                options={locationOptions}
+                onChange={(locations) => setTimelineEventDraft({ ...timelineEventDraft, locations })}
+                disabled={creatingTimelineEvent}
+              />
+              <EntityIdMultiSelect
+                label="Characters involved"
+                ids={timelineEventDraft.characters}
+                options={entities.filter((entity) => entity.entity_type === "npc" || entity.entity_type === "player_character")}
+                onChange={(characters) => setTimelineEventDraft({ ...timelineEventDraft, characters })}
+                disabled={creatingTimelineEvent}
+              />
+              <WorldStoryLinksEditor
+                worldStoryIds={timelineEventDraft.world_stories}
+                threadLinks={timelineEventDraft.world_story_threads}
+                worldStoryOptions={worldStoryOptions}
+                threadOptions={worldStoryThreadOptions}
+                onChange={(world_stories, world_story_threads) => setTimelineEventDraft({ ...timelineEventDraft, world_stories, world_story_threads })}
+                disabled={creatingTimelineEvent}
+              />
+              <TextField
+                label="Consequences (one per line)"
+                value={listToText(timelineEventDraft.consequences)}
+                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, consequences: textToList(event.target.value) })}
+                multiline
+                minRows={2}
+                disabled={creatingTimelineEvent}
+              />
+              <TextField
+                label="DM-only notes"
+                value={timelineEventDraft.dm_notes}
+                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, dm_notes: event.target.value })}
+                multiline
+                minRows={2}
+                disabled={creatingTimelineEvent}
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTimelineEventDraft(null)} disabled={creatingTimelineEvent}>Cancel</Button>
+          <Button
+            variant="contained"
+            startIcon={creatingTimelineEvent ? <CircularProgress size={16} color="inherit" /> : <EventIcon />}
+            onClick={() => void createTimelineEventFromPlay()}
+            disabled={creatingTimelineEvent || !timelineEventDraft?.name.trim() || !isTimelineDateDraftValid(timelineEventDraft)}
+          >
+            {creatingTimelineEvent ? "Creating…" : "Create timeline event"}
           </Button>
         </DialogActions>
       </Dialog>

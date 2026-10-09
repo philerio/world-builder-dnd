@@ -162,6 +162,9 @@ def test_character_city_reference_is_validated() -> None:
         "severity": "error",
         "source_type": "npc",
         "source_id": "test-npc",
+        "reference_id": "reqrun",
+        "reference_type": "city",
+        "reference_path": ["city"],
     }]
 
 def test_character_region_reference_is_validated() -> None:
@@ -257,6 +260,51 @@ def test_city_region_reference_is_validated() -> None:
     assert result.errors == [
         "Unknown region ID: unknown-region",
     ]
+
+
+def test_geographic_entity_references_are_validated() -> None:
+    """Kingdom, region, and location hierarchy links must resolve."""
+    from worldbuilder.models.kingdom import Kingdom
+    from worldbuilder.models.location import Location
+    from worldbuilder.models.region import Region
+    from worldbuilder.registry import WorldRegistry
+    from worldbuilder.validation.validator import validate_registry
+
+    registry = WorldRegistry()
+    registry.add_kingdom(Kingdom(
+        id="test-kingdom",
+        name="Test Kingdom",
+        continent="unknown-continent",
+        ruler="unknown-ruler",
+        capital="unknown-capital",
+    ))
+    registry.add_region(Region(
+        id="test-region",
+        name="Test Region",
+        kingdom="unknown-kingdom",
+        continent="unknown-region-continent",
+    ))
+    registry.add_location(Location(
+        id="test-location",
+        name="Test Location",
+        continent="unknown-location-continent",
+        kingdom="unknown-location-kingdom",
+        region="unknown-location-region",
+    ))
+
+    result = validate_registry(registry)
+
+    assert result.errors == [
+        "Unknown continent ID: unknown-continent",
+        "Unknown NPC ID: unknown-ruler",
+        "Unknown city ID: unknown-capital",
+        "Unknown kingdom ID: unknown-kingdom",
+        "Unknown continent ID: unknown-region-continent",
+        "Unknown continent ID: unknown-location-continent",
+        "Unknown kingdom ID: unknown-location-kingdom",
+        "Unknown region ID: unknown-location-region",
+    ]
+    assert all(issue["source_type"] in {"kingdom", "region", "location"} for issue in result.issues)
     
 def test_campaign_location_reference_is_validated() -> None:
     """A campaign location reference must point to an existing city."""

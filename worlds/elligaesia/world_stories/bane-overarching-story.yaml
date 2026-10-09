@@ -1,17 +1,20 @@
 id: bane-overarching-story
 name: Bane's Influence
-description: A setting-wide story about Bane's imprisonment, unleashed influence, and pursuit of revenge against the gods.
+description: A setting-wide story about Bane's imprisonment, unleashed influence,
+  and pursuit of revenge against the gods.
+tags: []
 created: '2026-10-05T17:32:46.577274'
 updated: '2026-10-05T17:32:46.577279'
-overview: >
-  The events of The Unforgiven unleashed Bane's influence across Elligaesia, even
-  though Bane remains imprisoned within a mortal body. Ancient Dwarmar artifacts
-  are activating across the land, and each contains remnants of Bane's power.
-  Different peoples have independently learned to activate and use some of these
-  power sources. Bane is working to gather remnants from a certain number of
-  artifacts; once he has enough, he can open a portal to the realm of the gods
-  and seek revenge on the gods who banished him. The required number and exact
-  collection method have not been established.
+overview: 'The events of The Unforgiven unleashed Bane''s influence across Elligaesia,
+  even though Bane remains imprisoned within a mortal body. Ancient Dwarmar artifacts
+  are activating across the land, and each contains remnants of Bane''s power. Different
+  peoples have independently learned to activate and use some of these power sources.
+  Bane is working to gather remnants from a certain number of artifacts; once he has
+  enough, he can open a portal to the realm of the gods and seek revenge on the gods
+  who banished him. The required number and exact collection method have not been
+  established.
+
+  '
 status: active
 characters:
 - bane
@@ -24,6 +27,7 @@ world_events:
 - serenno-civil-war-event
 - zeffo-undead-sightings
 - elligaesia-trade-dispute
+world_clocks: []
 threads:
 - id: banes-imprisonment
   name: Bane's Imprisonment
@@ -34,10 +38,11 @@ threads:
   world_events: []
 - id: influence-unleashed
   name: Bane's Influence Unleashed
-  description: >
-    The Unforgiven unleashed Bane's influence across the world. The resulting
-    crises appear to the people of Elligaesia as separate events; no one knows
-    that Bane is behind them.
+  description: 'The Unforgiven unleashed Bane''s influence across the world. The resulting
+    crises appear to the people of Elligaesia as separate events; no one knows that
+    Bane is behind them.
+
+    '
   status: active
   campaigns:
   - the-unforgiven
@@ -49,21 +54,21 @@ threads:
   - elligaesia-trade-dispute
 - id: dwarmar-artifacts-activate
   name: Ancient Dwarmar Artifacts Activate
-  description: >
-    Ancient Dwarmar artifacts are activating across the land. Each contains
-    remnants of Bane's power. Elves and gnomes have independently learned to
-    activate and use some of these power sources without knowing their deeper
-    connection.
+  description: Ancient Dwarmar artifacts are activating across the land. Each contains
+    remnants of Bane's power. Elves and gnomes have independently learned to activate
+    and use some of these power sources without knowing their deeper connection. A
+    lot of them are taking place at old temples where Bane was worshiped
   status: active
   campaigns:
   - welcome-home-sanitarium
   world_events: []
 - id: banes-revenge
   name: Bane Seeks Revenge
-  description: >
-    Bane seeks remnants from a certain number of artifacts. Once he gathers
-    enough power, he can open a portal to the realm of the gods and take revenge
-    on those who banished him. The target number is not yet known.
+  description: 'Bane seeks remnants from a certain number of artifacts. Once he gathers
+    enough power, he can open a portal to the realm of the gods and take revenge on
+    those who banished him. The target number is not yet known.
+
+    '
   status: active
   campaigns:
   - welcome-home-sanitarium
@@ -72,9 +77,11 @@ contributions:
 - campaign_id: the-unforgiven
   source_type: campaign_outcome
   source_id: null
-  summary: The Unforgiven unleashed Bane's influence across Elligaesia, leading to wider crises and the activation of ancient Dwarmar artifacts.
+  summary: The Unforgiven unleashed Bane's influence across Elligaesia, leading to
+    wider crises and the activation of ancient Dwarmar artifacts.
   connection_status: confirmed
-  dm_notes: Bane remains imprisoned in a mortal body. His influence and the artifacts' connection to him are not known to the people of Elligaesia.
+  dm_notes: Bane remains imprisoned in a mortal body. His influence and the artifacts'
+    connection to him are not known to the people of Elligaesia.
   thread_ids:
   - influence-unleashed
   - dwarmar-artifacts-activate

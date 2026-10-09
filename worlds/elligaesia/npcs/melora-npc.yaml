@@ -1,0 +1,14 @@
+id: melora-npc
+name: Melora
+description: Goddess of wilderness and the sea
+role: God
+alignment: True Neutral
+details: 'Portfolio: wilderness and the sea. Suggested cleric domains: Nature and Tempest.
+  Symbol: a wavelike swirl.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

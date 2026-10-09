@@ -1,0 +1,19 @@
+id: corellon-npc
+name: Corellon
+description: God of magic and the arts
+created: '2026-10-08T22:27:33.685292'
+updated: '2026-10-08T22:27:33.685298'
+role: God
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+details: 'Portfolio: magic and the arts. Suggested cleric domain: Light.
+  Symbol: an eight-pointed star.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

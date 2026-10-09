@@ -56,6 +56,13 @@ type WorldClockDraft = {
   completion: string;
   status: WorldClock["status"];
 };
+type WorldStoryThreadDraft = {
+  name: string;
+  description: string;
+  status: string;
+  campaigns: string[];
+  world_events: string[];
+};
 
 function getClockProgress(clock: WorldClock): Exclude<ClockProgressFilter, "all"> {
   if (clock.status === "completed" || clock.current >= clock.maximum) return "finished";
@@ -80,8 +87,14 @@ export default function WorldStoryDashboardPage() {
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
-  const [threadName, setThreadName] = useState("");
-  const [threadDescription, setThreadDescription] = useState("");
+  const [threadDraft, setThreadDraft] = useState<WorldStoryThreadDraft>({
+    name: "",
+    description: "",
+    status: "active",
+    campaigns: [],
+    world_events: [],
+  });
+  const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
   const [selectedEventThreadId, setSelectedEventThreadId] = useState("");
   const [eventName, setEventName] = useState("");
@@ -203,14 +216,16 @@ export default function WorldStoryDashboardPage() {
     ? story.world_clocks.filter((clock) => clockProgressFilter === "all" || getClockProgress(clock) === clockProgressFilter)
     : [];
 
-  const persist = async (nextStory: WorldStory) => {
+  const persist = async (nextStory: WorldStory): Promise<boolean> => {
     setSaving(true);
     setError(null);
     try {
       const result = await updateEntity(storyId, nextStory as unknown as Record<string, unknown>);
       setStory(result.entity as unknown as WorldStory);
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save the World Story.");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -235,20 +250,35 @@ export default function WorldStoryDashboardPage() {
     });
   };
 
-  const addThread = () => {
-    if (!story || !threadName.trim()) return;
+  const openThreadDialog = (thread?: WorldStoryThread) => {
+    setEditingThreadId(thread?.id ?? null);
+    setThreadDraft({
+      name: thread?.name ?? "",
+      description: thread?.description ?? "",
+      status: thread?.status ?? "active",
+      campaigns: thread?.campaigns ?? [],
+      world_events: thread?.world_events ?? [],
+    });
+    setThreadDialogOpen(true);
+  };
+
+  const saveThread = async () => {
+    if (!story || !threadDraft.name.trim()) return;
     const thread: WorldStoryThread = {
-      id: crypto.randomUUID(),
-      name: threadName.trim(),
-      description: threadDescription.trim() || undefined,
-      status: "active",
-      campaigns: [],
-      world_events: [],
+      id: editingThreadId ?? crypto.randomUUID(),
+      name: threadDraft.name.trim(),
+      description: threadDraft.description.trim() || undefined,
+      status: threadDraft.status,
+      campaigns: threadDraft.campaigns,
+      world_events: threadDraft.world_events,
     };
-    void persist({ ...story, threads: [...story.threads, thread] });
-    setThreadDialogOpen(false);
-    setThreadName("");
-    setThreadDescription("");
+    const threads = editingThreadId
+      ? story.threads.map((item) => item.id === editingThreadId ? thread : item)
+      : [...story.threads, thread];
+    if (await persist({ ...story, threads })) {
+      setThreadDialogOpen(false);
+      setEditingThreadId(null);
+    }
   };
 
   const openClockDialog = (clock?: WorldClock) => {
@@ -467,7 +497,7 @@ export default function WorldStoryDashboardPage() {
             <Stack spacing={2.5}>
               <Card>
                 <CardContent>
-                  <SectionHeader title="Story Threads" subtitle="Independent strands can advance, pause, or change as campaigns unfold." action={<Button startIcon={<AddIcon />} onClick={() => setThreadDialogOpen(true)}>Add thread</Button>} />
+                  <SectionHeader title="Story Threads" subtitle="Independent strands can advance, pause, or change as campaigns unfold." action={<Button startIcon={<AddIcon />} onClick={() => openThreadDialog()}>Add thread</Button>} />
                   {story.threads.length === 0 ? (
                     <Typography color="text.secondary">No threads yet. Add a thread for a major part of this story.</Typography>
                   ) : (
@@ -487,11 +517,20 @@ export default function WorldStoryDashboardPage() {
                                 ))}
                               </Stack>
                             </Box>
-                            <FormControl size="small" sx={{ minWidth: 138 }}>
-                              <Select value={thread.status} aria-label={`Status for ${thread.name}`} onChange={(event) => updateThreadStatus(thread.id, event.target.value)} disabled={saving}>
-                                {THREAD_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                              </Select>
-                            </FormControl>
+                            <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                              <FormControl size="small" sx={{ minWidth: 138 }}>
+                                <Select value={thread.status} aria-label={`Status for ${thread.name}`} onChange={(event) => updateThreadStatus(thread.id, event.target.value)} disabled={saving}>
+                                  {THREAD_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+                                </Select>
+                              </FormControl>
+                              <Tooltip title={`Edit ${thread.name}`}>
+                                <span>
+                                  <IconButton size="small" aria-label={`Edit ${thread.name}`} onClick={() => openThreadDialog(thread)} disabled={saving}>
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </Stack>
                           </Stack>
                         </Box>
                       ))}
@@ -630,17 +669,49 @@ export default function WorldStoryDashboardPage() {
         </Grid>
       </Stack>
 
-      <Dialog open={threadDialogOpen} onClose={() => setThreadDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Add story thread</DialogTitle>
+      <Dialog open={threadDialogOpen} onClose={() => !saving && setThreadDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{editingThreadId ? "Edit story thread" : "Add story thread"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField autoFocus label="Thread name" value={threadName} onChange={(event) => setThreadName(event.target.value)} required />
-            <TextField label="What is unfolding?" value={threadDescription} onChange={(event) => setThreadDescription(event.target.value)} multiline minRows={3} />
+            <TextField autoFocus label="Thread name" value={threadDraft.name} onChange={(event) => setThreadDraft((current) => ({ ...current, name: event.target.value }))} required disabled={saving} />
+            <TextField label="What is unfolding?" value={threadDraft.description} onChange={(event) => setThreadDraft((current) => ({ ...current, description: event.target.value }))} multiline minRows={3} disabled={saving} />
+            <FormControl size="small" fullWidth>
+              <Select
+                aria-label="Story thread status"
+                value={threadDraft.status}
+                onChange={(event) => setThreadDraft((current) => ({ ...current, status: event.target.value }))}
+                disabled={saving}
+              >
+                {THREAD_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <Autocomplete
+              multiple
+              options={campaigns}
+              value={campaigns.filter((campaign) => threadDraft.campaigns.includes(campaign.id))}
+              onChange={(_, selected) => setThreadDraft((current) => ({ ...current, campaigns: selected.map((campaign) => campaign.id) }))}
+              getOptionLabel={(campaign) => campaign.name}
+              isOptionEqualToValue={(option, selected) => option.id === selected.id}
+              renderInput={(params) => <TextField {...params} label="Linked campaigns" />}
+              disabled={saving}
+            />
+            <Autocomplete
+              multiple
+              options={events}
+              value={events.filter((event) => threadDraft.world_events.includes(event.id))}
+              onChange={(_, selected) => setThreadDraft((current) => ({ ...current, world_events: selected.map((event) => event.id) }))}
+              getOptionLabel={(event) => event.name}
+              isOptionEqualToValue={(option, selected) => option.id === selected.id}
+              renderInput={(params) => <TextField {...params} label="Linked world events" />}
+              disabled={saving}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setThreadDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={addThread} disabled={!threadName.trim() || saving}>Add thread</Button>
+          <Button onClick={() => setThreadDialogOpen(false)} disabled={saving}>Cancel</Button>
+          <Button variant="contained" onClick={saveThread} disabled={!threadDraft.name.trim() || saving}>
+            {editingThreadId ? "Save thread" : "Add thread"}
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -1,0 +1,102 @@
+id: zeffo-undead-campaign
+name: Zeffo Undead
+description: Rumors have spread of undead appearing in the woods of Zeffo.
+tags: []
+created: '2026-10-08T23:58:57.776875'
+updated: '2026-10-08T23:58:57.776880'
+overview: Rumors have spread of undead appearing in the woods of Zeffo.
+status: planned
+locations: []
+npcs: []
+player_characters: []
+outcome: null
+consequences: null
+story:
+  beats:
+  - id: opening-zeffo-undead-sightings
+    name: Zeffo Undead
+    description: Rumors have spread of undead appearing in the woods of Zeffo.
+    description_content:
+      nodes:
+      - type: text
+        text: 'Rumors have spread of undead appearing in the '
+      - type: entity_link
+        text: woods of Zeffo
+        entity_id: the-woods-of-zeffo-location
+      - type: text
+        text: '.
+
+          '
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 0
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    checks: []
+    leads_to: []
+    locations:
+    - the-woods-of-zeffo-location
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events:
+    - zeffo-undead-sightings
+    world_stories:
+    - bane-overarching-story
+    world_story_threads:
+    - world_story_id: bane-overarching-story
+      thread_id: influence-unleashed
+  - id: 649145af-ebe9-40c1-9257-cc72da817a24
+    name: The Adventurers arrive in Zeffo
+    description: The city of Zeffo appears to be a normal city. People are moving
+      about as if nothing is going on.
+    description_content:
+      nodes:
+      - type: text
+        text: 'The city of '
+      - type: entity_link
+        text: Zeffo
+        entity_id: zeffo-city
+      - type: text
+        text: ' appears to be a normal city. People are moving about as if nothing
+          is going on.'
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 1
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    checks:
+    - id: 0d1784a4-1271-459c-9bf0-e480022f3597
+      name: Upon entering the city they notice none of the citizens are talking to
+        each. They all seem in a hurry to get to their desitination
+      category: notice
+      description: null
+      roll_type: skill_check
+      ability: wisdom
+      skill: null
+      dc: 12
+      success: null
+      failure: null
+    leads_to: []
+    locations: []
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  current_beat: opening-zeffo-undead-sightings
+  player_actions: []
+  session_recaps: []
+  session_preps: []
+  world_clocks: []

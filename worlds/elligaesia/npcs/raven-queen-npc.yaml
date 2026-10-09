@@ -1,0 +1,14 @@
+id: raven-queen-npc
+name: The Raven Queen
+description: Goddess of death
+role: God
+alignment: Lawful Neutral
+details: 'Portfolio: death. Suggested cleric domains: Life and Death.
+  Symbol: a raven head in profile, facing left.'
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []

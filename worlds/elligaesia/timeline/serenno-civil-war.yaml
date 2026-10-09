@@ -1,34 +1,34 @@
 id: serenno-civil-war
 name: Serenno Civil War
+description: 'Serenno descends into civil war following the assassination of its ruling
+  family.
 
-description: >
-  Serenno descends into civil war following the assassination of
-  its ruling family.
-
+  '
+tags: []
+created: '2026-10-08T23:39:45.370021'
+updated: '2026-10-08T23:39:45.370026'
 era: Modern Era
 date: null
-
+chronology_order: 400
 locations:
-  - serenno-city
-
+- serenno-city
 kingdoms: []
 characters: []
 campaigns:
-  - the-unforgiven
+- the-unforgiven
 world_stories:
-  - bane-overarching-story
+- bane-overarching-story
 world_story_threads:
-  - world_story_id: bane-overarching-story
-    thread_id: influence-unleashed
-
+- world_story_id: bane-overarching-story
+  thread_id: influence-unleashed
+source_world_event_id: null
 consequences:
-  - Serenno is divided by civil war.
-  - The political stability of Serenno is disrupted.
-  - Trade and cooperation within Elligaesia are further strained.
+- Serenno is divided by civil war.
+- The political stability of Serenno is disrupted.
+- Trade and cooperation within Elligaesia are further strained.
+dm_notes: 'The assassination of Serenno''s ruling family is the established immediate
+  cause of the civil war. The larger chain of events is a result of Bane''s influence,
+  unleashed after The Unforgiven. The public does not know this; the specific agents
+  or intermediate causes behind the assassination remain undetermined.
 
-dm_notes: >
-  The assassination of Serenno's ruling family is the established
-  immediate cause of the civil war. The larger chain of events is a result of
-  Bane's influence, unleashed after The Unforgiven. The public does not know
-  this; the specific agents or intermediate causes behind the assassination
-  remain undetermined.
+  '

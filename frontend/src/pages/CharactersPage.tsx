@@ -19,6 +19,7 @@ import DashboardFilters, {
   type DashboardFilter,
 } from "../components/filters/DashboardFilters";
 import type { Character, WorldData } from "../types";
+import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
 type CharactersPageProps = {
   data: WorldData;
@@ -28,7 +29,9 @@ function CharactersPage({ data }: CharactersPageProps) {
   const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } =
     useEntityDrawer();
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const allCharacters = [...data.player_characters, ...data.npcs];
+  const playerCharacters = sortEntitiesByName(data.player_characters);
+  const npcs = sortEntitiesByName(data.npcs);
+  const allCharacters = sortEntitiesByName([...playerCharacters, ...npcs]);
   const entityNameById = new Map(
     [
       ...data.continents,
@@ -113,14 +116,15 @@ function CharactersPage({ data }: CharactersPageProps) {
         matchesRole &&
         matchesKingdom &&
         matchesRegion &&
-        matchesCity
+        matchesCity &&
+        matchesEntityTag(character, filters.tag)
       );
     });
   };
 
-  const filteredPlayerCharacters = filterCharacters(data.player_characters);
+  const filteredPlayerCharacters = filterCharacters(playerCharacters);
 
-  const filteredNPCs = filterCharacters(data.npcs);
+  const filteredNPCs = filterCharacters(npcs);
 
   const totalCharacters = allCharacters.length;
   const visibleCharacters =
@@ -160,6 +164,7 @@ function CharactersPage({ data }: CharactersPageProps) {
             placeholder: "Search by name...",
           }}
           filters={characterFilters}
+          taggedEntities={allCharacters}
           onChange={setFilters}
         />
 
@@ -277,6 +282,10 @@ function CharacterSection({
                       flexWrap: "wrap",
                     }}
                   >
+                    {character.alignment && (
+                      <Chip size="small" variant="outlined" label={character.alignment} />
+                    )}
+
                     {character.city && (
                       <Chip size="small" label={getEntityName(character.city)} />
                     )}
