@@ -66,6 +66,8 @@ import { useWorldData } from "../context/WorldDataContext";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import formatStatusLabel from "../utils/formatStatusLabel";
+import CombatEncounterEditor, { EncounterLaunchButton } from "../components/CombatEncounterEditor";
+import type { CombatEncounter } from "../types";
 
 const EMPTY_STORY: CampaignStory = {
   beats: [],
@@ -121,6 +123,7 @@ function isTimelineDateDraftValid(draft: TimelineEventDraft) {
 }
 
 type BeatDraft = {
+  encounter?: CombatEncounter;
   name: string;
   description: string;
   description_content: StoryContent;
@@ -893,7 +896,7 @@ function CollapsibleDashboardSection({
 function CampaignDashboardPage() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
-  const { loadEntity, updateEntity, createEntity, loadCampaignReferences, entities, getEntity } = useWorldData();
+  const { loadEntity, updateEntity, createEntity, loadCampaignReferences, entities, getEntity, worldData } = useWorldData();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [workspace, setWorkspace] = useState<CampaignWorkspace>("dashboard");
   const [worldStories, setWorldStories] = useState<WorldStory[]>([]);
@@ -1889,6 +1892,7 @@ function CampaignDashboardPage() {
   const startBeatEdit = (beat: StoryBeat) => {
     setEditingBeatId(beat.id);
     setBeatDraft({
+      encounter: beat.encounter ? structuredClone(beat.encounter) : undefined,
       name: beat.name,
       description: beat.description ?? "",
       description_content: beat.description_content ?? storyContentFromText(beat.description ?? ""),
@@ -1916,6 +1920,7 @@ function CampaignDashboardPage() {
       ...current,
       beats: current.beats.map((beat) => beat.id === beatId ? {
         ...beat,
+        encounter: beatDraft.encounter,
         name: beatDraft.name.trim(),
         description: optionalText(storyContentText(beatDraft.description_content)),
         description_content: hasEntityLinks(beatDraft.description_content)
@@ -2602,6 +2607,10 @@ function CampaignDashboardPage() {
                         </IconButton>
                       </Stack>
                     </Stack>
+                    {beat.encounter && editingBeatId !== beat.id && <Box sx={{ mt: 1 }}>
+                      <Typography variant="subtitle2">Combat: {beat.encounter.name} · {beat.encounter.participants.reduce((total, participant) => total + participant.quantity, 0)} prepared combatants</Typography>
+                      <EncounterLaunchButton campaignId={campaignId!} beatId={beat.id} worldId={worldData?.world?.id ?? ""} />
+                    </Box>}
                     {editingBeatId === beat.id && beatDraft && (
                       <Stack spacing={1.25} sx={{ mt: 1.5 }}>
                         <TextField label="Plot point name" value={beatDraft.name} onChange={(event) => setBeatDraft({ ...beatDraft, name: event.target.value })} disabled={saving} />
@@ -2655,6 +2664,7 @@ function CampaignDashboardPage() {
                           onChange={(checks) => setBeatDraft({ ...beatDraft, checks })}
                           disabled={saving}
                         />
+                        <CombatEncounterEditor value={beatDraft.encounter} onChange={(encounter) => setBeatDraft({ ...beatDraft, encounter })} entities={entities} maps={worldData?.maps ?? []} locations={locationOptions} disabled={saving} />
                         <TextField label="DM-only information (one per line)" value={beatDraft.secrets} onChange={(event) => setBeatDraft({ ...beatDraft, secrets: event.target.value })} multiline minRows={2} disabled={saving} />
                         <EntityIdMultiSelect label="Leads to plot points" ids={textToList(beatDraft.leads_to)} options={plotPointOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, leads_to: listToText(ids) })} disabled={saving} />
                         <EntityIdMultiSelect label="Locations" ids={textToList(beatDraft.locations)} options={locationOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, locations: listToText(ids) })} disabled={saving} />

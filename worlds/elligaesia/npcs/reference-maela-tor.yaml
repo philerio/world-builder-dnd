@@ -1,0 +1,23 @@
+id: reference-maela-tor
+name: Maela Tor
+description: Disciplined, direct, and generous with credit. A supply ledger lists equipment
+  that no one remembers receiving or issuing.
+details: 'Maela Tor works as a quartermaster. Disciplined, direct, and generous with credit.
+  Current complication: A supply ledger lists equipment that no one remembers receiving or issuing.
+  Personal goal: Keep crews supplied without wasting resources or shifting risk onto the least
+  powerful.'
+job: Quartermaster
+race: Goliath
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep crews supplied without wasting resources or shifting risk onto the least powerful.
+secrets:
+- Maela has been keeping an extra cache for emergencies against a superior's orders.
+knowledge:
+- 'Maela Tor can speak to the current situation: A supply ledger lists equipment that no one
+  remembers receiving or issuing.'

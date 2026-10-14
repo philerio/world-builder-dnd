@@ -1,0 +1,22 @@
+id: reference-bera-stone
+name: Bera Stone
+description: Patient and skeptical of easy answers. An old retaining wall is warm to the touch
+  even on cold nights.
+details: 'Bera Stone works as a mason. Patient and skeptical of easy answers. Current complication:
+  An old retaining wall is warm to the touch even on cold nights. Personal goal: Preserve the
+  town''s old stonework before quick repairs destroy it.'
+job: Mason
+race: Dwarf
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Preserve the town's old stonework before quick repairs destroy it.
+secrets:
+- She found a name carved inside a foundation and chose not to report it.
+knowledge:
+- 'Bera Stone can speak to the current situation: An old retaining wall is warm to the touch
+  even on cold nights.'

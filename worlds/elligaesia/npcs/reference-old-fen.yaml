@@ -1,0 +1,22 @@
+id: reference-old-fen
+name: Old Fen
+description: Patient and hard to read. A passenger's fare has appeared on the boat each morning,
+  though Fen has not seen them board.
+details: 'Old Fen works as a ferryman. Patient and hard to read. Current complication: A passenger''s
+  fare has appeared on the boat each morning, though Fen has not seen them board. Personal goal:
+  Keep the crossing running through every season.'
+job: Ferryman
+race: Human
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep the crossing running through every season.
+secrets:
+- Fen once ferried someone across who was officially recorded as never having arrived.
+knowledge:
+- 'Old Fen can speak to the current situation: A passenger''s fare has appeared on the boat
+  each morning, though Fen has not seen them board.'

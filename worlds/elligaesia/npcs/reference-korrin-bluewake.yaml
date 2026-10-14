@@ -1,0 +1,22 @@
+id: reference-korrin-bluewake
+name: Korrin Bluewake
+description: Bold, superstitious, and generous in a crisis. A ship returned to harbor with its
+  crew safe but unable to agree on how long they were gone.
+details: 'Korrin Bluewake works as a sailor. Bold, superstitious, and generous in a crisis.
+  Current complication: A ship returned to harbor with its crew safe but unable to agree on
+  how long they were gone. Personal goal: Save enough to command a small vessel of his own.'
+job: Sailor
+race: Half-Orc
+alignment: Chaotic Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Save enough to command a small vessel of his own.
+secrets:
+- Korrin abandoned a ship once, and the official account leaves that out.
+knowledge:
+- 'Korrin Bluewake can speak to the current situation: A ship returned to harbor with its crew
+  safe but unable to agree on how long they were gone.'

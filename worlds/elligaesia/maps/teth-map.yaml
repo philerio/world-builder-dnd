@@ -1,6 +1,7 @@
 id: teth-map
 name: Teth
 description: An editable town map layout.
+tags: []
 created: '2026-10-07T17:43:55.269522'
 updated: '2026-10-07T17:43:55.269527'
 map_type: Town schematic
@@ -13,6 +14,8 @@ dm_notes: null
 markers:
 - id: fe23ecf8-2fe7-4638-91e9-b9c780cfc262
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 19.169279787096663
@@ -41,6 +44,8 @@ markers:
   fill_opacity: 0.48
 - id: 9465b422-6915-4f58-855c-a45298ee224d
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 7.666536432897051
@@ -69,6 +74,8 @@ markers:
   fill_opacity: 0.48
 - id: ba7ed8fd-9b08-4283-8855-1148b93f9481
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 13.584358924269063
@@ -97,6 +104,8 @@ markers:
   fill_opacity: 0.48
 - id: 90686544-fc15-4e78-a1f3-2c84f278b6ab
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: path
   points:
   - - 3.333333333333333
@@ -121,6 +130,8 @@ markers:
   fill_opacity: 0.85
 - id: 19cd7358-0da3-461c-aa36-322a2bdf1f6c
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: path
   points:
   - - 20.833333333333332
@@ -145,6 +156,8 @@ markers:
   fill_opacity: 0.85
 - id: 3190a775-c6e6-46d9-8d49-726ae58a22f6
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 30.547542756734405
@@ -173,6 +186,8 @@ markers:
   fill_opacity: 0.35
 - id: ca910af1-3bfd-410b-8a74-8c507f37ff2c
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 21.54215745539569
@@ -201,6 +216,8 @@ markers:
   fill_opacity: 0.35
 - id: c14ef2c1-e2ef-4720-b461-8bb17789055b
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: path
   points:
   - - 15.726951909190705
@@ -225,6 +242,8 @@ markers:
   fill_opacity: 0.85
 - id: 56d92914-cb12-46bf-993c-4c1c9e40620b
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 4.2664327273608125
@@ -253,6 +272,8 @@ markers:
   fill_opacity: 0.35
 - id: 1890b59d-37a4-4a03-924a-723ae95d6ebb
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 36.31900085798077
@@ -273,6 +294,8 @@ markers:
   fill_opacity: 0.2
 - id: e0ff72a2-d86b-4abd-8897-2bd1ae292c0f
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 4.056354123314889
@@ -301,6 +324,8 @@ markers:
   fill_opacity: 0.35
 - id: 6022b098-1663-43ac-a9ba-647fff8e4c3f
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 2.083333333333333
@@ -329,6 +354,8 @@ markers:
   fill_opacity: 0.35
 - id: 87341a6d-2503-4f7d-be48-3ad03ef6d322
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 30.608335760596653
@@ -357,6 +384,8 @@ markers:
   fill_opacity: 0.35
 - id: 60357fc2-1cd9-494c-945b-c3d3875ae56e
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 34.94333018038223
@@ -385,6 +414,8 @@ markers:
   fill_opacity: 0.35
 - id: e7580d37-b997-408a-8b2d-beccd16c5433
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 14.583333333333332
@@ -413,6 +444,8 @@ markers:
   fill_opacity: 0.35
 - id: 0a69c5f6-0ff6-4170-b10a-1b25dd67fdd3
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 4.3084567095645685
@@ -441,6 +474,8 @@ markers:
   fill_opacity: 0.35
 - id: ef6c5690-d9cc-4d19-aab9-f093bddab6b0
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 12.677358553916788
@@ -477,6 +512,8 @@ markers:
   fill_opacity: 0.35
 - id: 1ed096c9-ef8d-4d58-9f9d-cfb96104dec1
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 49.36025204304227
@@ -513,6 +550,8 @@ markers:
   fill_opacity: 0.35
 - id: 0f6aad09-3953-4c17-ad29-60d035e241b1
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: area
   points:
   - - 51.61069158201472
@@ -549,6 +588,8 @@ markers:
   fill_opacity: 0.35
 - id: 557a5193-74a7-4406-a1f1-e9e2c4a34285
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 36.20833333333333
@@ -569,6 +610,8 @@ markers:
   fill_opacity: 0.2
 - id: 24322453-2a7f-4e5d-8484-f55f9f91bcc9
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 39.125
@@ -589,6 +632,8 @@ markers:
   fill_opacity: 0.2
 - id: c253e600-6ea2-4de5-a408-86caa6a34872
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 41.90626424431855
@@ -609,6 +654,8 @@ markers:
   fill_opacity: 0.2
 - id: aaca41c5-1f16-4b58-bf55-4aa93fcf13c1
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 44.6249755811682
@@ -629,6 +676,8 @@ markers:
   fill_opacity: 0.2
 - id: d83fd67c-b523-430d-8139-661dc6af7841
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 47.3749755811682
@@ -649,6 +698,8 @@ markers:
   fill_opacity: 0.2
 - id: 749e81c1-6480-4f8a-87e9-5e11ae03ed92
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 50.916642247834865
@@ -669,6 +720,8 @@ markers:
   fill_opacity: 0.2
 - id: 61c5f666-f7f9-426b-9021-770e234b11d1
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 55.791621898808366
@@ -689,6 +742,8 @@ markers:
   fill_opacity: 0.2
 - id: bca92826-b992-4e6a-a86c-54e022fb6a0a
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 33.29168294588787
@@ -709,6 +764,8 @@ markers:
   fill_opacity: 0.2
 - id: f05847e4-6182-4f18-8724-bcb539f3e439
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 41.74933255193072
@@ -729,6 +786,8 @@ markers:
   fill_opacity: 0.2
 - id: 34e7325d-6715-41ee-a370-ee1a907d6369
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 38.83266588526405
@@ -749,6 +808,8 @@ markers:
   fill_opacity: 0.2
 - id: 0d8bdbcc-4b02-46c9-86f7-a9f8755348ee
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 36.0514016409455
@@ -769,6 +830,8 @@ markers:
   fill_opacity: 0.2
 - id: 5e0223e9-ee27-486a-8e33-17db95d7f77e
   entity_id: null
+  layer_id: null
+  z_index: 0
   type: point
   points: []
   x: 33.33269030409585
@@ -787,6 +850,29 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+- id: d1b69fb6-ef13-4c38-9b1a-6cce94a7955d
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: point
+  points: []
+  x: 42.08279971009915
+  y: 38.509416536255486
+  label: New medieval barracks
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-assets/medieval_barracks_01a10c34359c.png
+  icon_size: 208
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+layers: []
 linked_map: null
 entity_id: teth
 tooltip: null

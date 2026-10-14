@@ -1,0 +1,22 @@
+id: reference-della-honeycomb
+name: Della Honeycomb
+description: Upbeat and stubbornly generous. The bakery oven burns hot without fuel whenever
+  a certain old recipe is prepared.
+details: 'Della Honeycomb works as a baker. Upbeat and stubbornly generous. Current complication:
+  The bakery oven burns hot without fuel whenever a certain old recipe is prepared. Personal
+  goal: Keep her shop open and make sure no child in the neighborhood goes hungry.'
+job: Baker
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep her shop open and make sure no child in the neighborhood goes hungry.
+secrets:
+- She gives away more bread than the accounts can explain and is hiding the shortfall.
+knowledge:
+- 'Della Honeycomb can speak to the current situation: The bakery oven burns hot without fuel
+  whenever a certain old recipe is prepared.'

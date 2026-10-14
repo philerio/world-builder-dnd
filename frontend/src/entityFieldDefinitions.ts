@@ -161,6 +161,11 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
     npc: [
       ...COMMON_FIELDS,
       {
+        name: "job",
+        label: "Job",
+        type: "text",
+      },
+      {
         name: "race",
         label: "Race",
         type: "text",
@@ -879,6 +884,22 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
             label: "DM Only",
             type: "boolean",
           },
+        ],
+      },
+    ],
+
+    price_list: [
+      ...COMMON_FIELDS,
+      {
+        name: "items",
+        label: "Items and Prices",
+        type: "objectArray",
+        fields: [
+          { name: "id", label: "Item ID", type: "text" },
+          { name: "name", label: "Item", type: "text" },
+          { name: "category", label: "Category", type: "text" },
+          { name: "price_copper", label: "Price (copper pieces)", type: "number" },
+          { name: "notes", label: "Notes", type: "textarea" },
         ],
       },
     ],

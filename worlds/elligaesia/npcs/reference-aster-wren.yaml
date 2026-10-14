@@ -1,0 +1,22 @@
+id: reference-aster-wren
+name: Aster Wren
+description: Patient, curious, and fond of marginalia. Several books have returned to the shop
+  with new notes in a reader's handwriting from centuries ago.
+details: 'Aster Wren works as a bookseller. Patient, curious, and fond of marginalia. Current
+  complication: Several books have returned to the shop with new notes in a reader''s handwriting
+  from centuries ago. Personal goal: Find readers for books that others have dismissed as useless.'
+job: Bookseller
+race: Elf
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Find readers for books that others have dismissed as useless.
+secrets:
+- Aster has been hiding a banned book in the public reading room.
+knowledge:
+- 'Aster Wren can speak to the current situation: Several books have returned to the shop with
+  new notes in a reader''s handwriting from centuries ago.'

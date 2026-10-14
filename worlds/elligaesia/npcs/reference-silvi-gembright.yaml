@@ -1,0 +1,22 @@
+id: reference-silvi-gembright
+name: Silvi Gembright
+description: Precise and protective of her customers. A common stone brought in for repair has
+  a different reflection in every mirror.
+details: 'Silvi Gembright works as a jeweler. Precise and protective of her customers. Current
+  complication: A common stone brought in for repair has a different reflection in every mirror.
+  Personal goal: Make beautiful work that can be handed down without losing its story.'
+job: Jeweler
+race: Gnome
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make beautiful work that can be handed down without losing its story.
+secrets:
+- Silvi has held onto a valuable heirloom because she suspects it was stolen.
+knowledge:
+- 'Silvi Gembright can speak to the current situation: A common stone brought in for repair
+  has a different reflection in every mirror.'

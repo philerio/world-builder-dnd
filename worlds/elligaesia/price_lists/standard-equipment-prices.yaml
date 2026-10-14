@@ -1,0 +1,597 @@
+# 2014 equipment prices plus optional 2024 magic-item rarity values.
+id: standard-equipment-prices
+name: Store Price Reference
+description: Editable 2014 mundane equipment prices plus an optional 2024 magic-item rarity guide. Adjust all prices and availability for the campaign.
+tags:
+- equipment
+- prices
+- 5e
+items:
+- id: club
+  name: Club
+  category: Weapons
+  price_copper: 10
+- id: dagger
+  name: Dagger
+  category: Weapons
+  price_copper: 200
+- id: greatclub
+  name: Greatclub
+  category: Weapons
+  price_copper: 20
+- id: handaxe
+  name: Handaxe
+  category: Weapons
+  price_copper: 500
+- id: javelin
+  name: Javelin
+  category: Weapons
+  price_copper: 50
+- id: light-hammer
+  name: Light hammer
+  category: Weapons
+  price_copper: 200
+- id: mace
+  name: Mace
+  category: Weapons
+  price_copper: 500
+- id: quarterstaff
+  name: Quarterstaff
+  category: Weapons
+  price_copper: 20
+- id: sickle
+  name: Sickle
+  category: Weapons
+  price_copper: 100
+- id: spear
+  name: Spear
+  category: Weapons
+  price_copper: 100
+- id: light-crossbow
+  name: Crossbow, light
+  category: Weapons
+  price_copper: 2500
+- id: dart
+  name: Dart
+  category: Weapons
+  price_copper: 5
+- id: shortbow
+  name: Shortbow
+  category: Weapons
+  price_copper: 2500
+- id: sling
+  name: Sling
+  category: Weapons
+  price_copper: 10
+- id: battleaxe
+  name: Battleaxe
+  category: Weapons
+  price_copper: 1000
+- id: flail
+  name: Flail
+  category: Weapons
+  price_copper: 1000
+- id: glaive
+  name: Glaive
+  category: Weapons
+  price_copper: 2000
+- id: greataxe
+  name: Greataxe
+  category: Weapons
+  price_copper: 3000
+- id: greatsword
+  name: Greatsword
+  category: Weapons
+  price_copper: 5000
+- id: halberd
+  name: Halberd
+  category: Weapons
+  price_copper: 2000
+- id: lance
+  name: Lance
+  category: Weapons
+  price_copper: 1000
+- id: longsword
+  name: Longsword
+  category: Weapons
+  price_copper: 1500
+- id: maul
+  name: Maul
+  category: Weapons
+  price_copper: 1000
+- id: morningstar
+  name: Morningstar
+  category: Weapons
+  price_copper: 1500
+- id: pike
+  name: Pike
+  category: Weapons
+  price_copper: 500
+- id: rapier
+  name: Rapier
+  category: Weapons
+  price_copper: 2500
+- id: scimitar
+  name: Scimitar
+  category: Weapons
+  price_copper: 2500
+- id: shortsword
+  name: Shortsword
+  category: Weapons
+  price_copper: 1000
+- id: trident
+  name: Trident
+  category: Weapons
+  price_copper: 500
+- id: war-pick
+  name: War pick
+  category: Weapons
+  price_copper: 500
+- id: warhammer
+  name: Warhammer
+  category: Weapons
+  price_copper: 1500
+- id: whip
+  name: Whip
+  category: Weapons
+  price_copper: 200
+- id: hand-crossbow
+  name: Crossbow, hand
+  category: Weapons
+  price_copper: 7500
+- id: heavy-crossbow
+  name: Crossbow, heavy
+  category: Weapons
+  price_copper: 5000
+- id: longbow
+  name: Longbow
+  category: Weapons
+  price_copper: 5000
+- id: net
+  name: Net
+  category: Weapons
+  price_copper: 100
+- id: padded-armor
+  name: Padded armor
+  category: Armor
+  price_copper: 500
+- id: leather-armor
+  name: Leather armor
+  category: Armor
+  price_copper: 1000
+- id: studded-leather
+  name: Studded leather
+  category: Armor
+  price_copper: 4500
+- id: hide-armor
+  name: Hide armor
+  category: Armor
+  price_copper: 1000
+- id: chain-shirt
+  name: Chain shirt
+  category: Armor
+  price_copper: 5000
+- id: scale-mail
+  name: Scale mail
+  category: Armor
+  price_copper: 5000
+- id: breastplate
+  name: Breastplate
+  category: Armor
+  price_copper: 40000
+- id: half-plate
+  name: Half plate
+  category: Armor
+  price_copper: 75000
+- id: ring-mail
+  name: Ring mail
+  category: Armor
+  price_copper: 3000
+- id: chain-mail
+  name: Chain mail
+  category: Armor
+  price_copper: 7500
+- id: splint-armor
+  name: Splint armor
+  category: Armor
+  price_copper: 20000
+- id: plate-armor
+  name: Plate armor
+  category: Armor
+  price_copper: 150000
+- id: shield
+  name: Shield
+  category: Armor
+  price_copper: 1000
+- id: backpack
+  name: Backpack
+  category: Adventuring Gear
+  price_copper: 200
+- id: bedroll
+  name: Bedroll
+  category: Adventuring Gear
+  price_copper: 100
+- id: hemp-rope
+  name: Rope, hempen (50 ft.)
+  category: Adventuring Gear
+  price_copper: 100
+- id: silk-rope
+  name: Rope, silk (50 ft.)
+  category: Adventuring Gear
+  price_copper: 1000
+- id: rations
+  name: Rations (1 day)
+  category: Adventuring Gear
+  price_copper: 50
+- id: waterskin
+  name: Waterskin
+  category: Adventuring Gear
+  price_copper: 20
+- id: tinderbox
+  name: Tinderbox
+  category: Adventuring Gear
+  price_copper: 50
+- id: torch
+  name: Torch
+  category: Adventuring Gear
+  price_copper: 1
+- id: lantern
+  name: Hooded lantern
+  category: Adventuring Gear
+  price_copper: 500
+- id: oil
+  name: Oil (flask)
+  category: Adventuring Gear
+  price_copper: 10
+- id: healers-kit
+  name: Healer's kit
+  category: Adventuring Gear
+  price_copper: 500
+- id: crowbar
+  name: Crowbar
+  category: Adventuring Gear
+  price_copper: 200
+- id: grappling-hook
+  name: Grappling hook
+  category: Adventuring Gear
+  price_copper: 200
+- id: manacles
+  name: Manacles
+  category: Adventuring Gear
+  price_copper: 200
+- id: ball-bearings
+  name: Ball bearings (bag of 1,000)
+  category: Adventuring Gear
+  price_copper: 100
+- id: caltrops
+  name: Caltrops (bag of 20)
+  category: Adventuring Gear
+  price_copper: 100
+- id: chalk
+  name: Chalk (1 piece)
+  category: Adventuring Gear
+  price_copper: 1
+- id: component-pouch
+  name: Component pouch
+  category: Adventuring Gear
+  price_copper: 2500
+- id: holy-symbol
+  name: Holy symbol
+  category: Adventuring Gear
+  price_copper: 500
+- id: spellbook
+  name: Spellbook
+  category: Adventuring Gear
+  price_copper: 5000
+- id: thieves-tools
+  name: Thieves' tools
+  category: Tools
+  price_copper: 2500
+- id: alchemist-supplies
+  name: Alchemist's supplies
+  category: Tools
+  price_copper: 5000
+- id: carpenter-tools
+  name: Carpenter's tools
+  category: Tools
+  price_copper: 800
+- id: smith-tools
+  name: Smith's tools
+  category: Tools
+  price_copper: 2000
+- id: herbalism-kit
+  name: Herbalism kit
+  category: Tools
+  price_copper: 500
+- id: donkey
+  name: Donkey or mule
+  category: Mounts & Transport
+  price_copper: 800
+- id: riding-horse
+  name: Riding horse
+  category: Mounts & Transport
+  price_copper: 7500
+- id: warhorse
+  name: Warhorse
+  category: Mounts & Transport
+  price_copper: 40000
+- id: cart
+  name: Cart
+  category: Mounts & Transport
+  price_copper: 1500
+- id: wagon
+  name: Wagon
+  category: Mounts & Transport
+  price_copper: 3500
+- id: arrows-20
+  name: Arrows (20)
+  category: Ammunition
+  price_copper: 100
+- id: blowgun-needles-50
+  name: Blowgun needles (50)
+  category: Ammunition
+  price_copper: 100
+- id: crossbow-bolts-20
+  name: Crossbow bolts (20)
+  category: Ammunition
+  price_copper: 100
+- id: sling-bullets-20
+  name: Sling bullets (20)
+  category: Ammunition
+  price_copper: 4
+- id: explorers-pack
+  name: Explorer's pack
+  category: Adventuring Gear
+  price_copper: 1000
+- id: dungeoneers-pack
+  name: Dungeoneer's pack
+  category: Adventuring Gear
+  price_copper: 1200
+- id: burglars-pack
+  name: Burglar's pack
+  category: Adventuring Gear
+  price_copper: 1600
+- id: priests-pack
+  name: Priest's pack
+  category: Adventuring Gear
+  price_copper: 1900
+- id: scholars-pack
+  name: Scholar's pack
+  category: Adventuring Gear
+  price_copper: 4000
+- id: arrows-case
+  name: Case, crossbow bolt
+  category: Adventuring Gear
+  price_copper: 100
+- id: chain-10-feet
+  name: Chain (10 feet)
+  category: Adventuring Gear
+  price_copper: 500
+- id: chest
+  name: Chest
+  category: Adventuring Gear
+  price_copper: 500
+- id: climbers-kit
+  name: Climber's kit
+  category: Adventuring Gear
+  price_copper: 2500
+- id: clothes-common
+  name: Clothes, common
+  category: Adventuring Gear
+  price_copper: 50
+- id: clothes-travelers
+  name: Clothes, traveler's
+  category: Adventuring Gear
+  price_copper: 200
+- id: fishing-tackle
+  name: Fishing tackle
+  category: Adventuring Gear
+  price_copper: 100
+- id: mess-kit
+  name: Mess kit
+  category: Adventuring Gear
+  price_copper: 20
+- id: piton
+  name: Piton
+  category: Adventuring Gear
+  price_copper: 5
+- id: sack
+  name: Sack
+  category: Adventuring Gear
+  price_copper: 1
+- id: tent-two-person
+  name: Tent, two-person
+  category: Adventuring Gear
+  price_copper: 200
+- id: disguise-kit
+  name: Disguise kit
+  category: Tools
+  price_copper: 2500
+- id: forgery-kit
+  name: Forgery kit
+  category: Tools
+  price_copper: 1500
+- id: poisoners-kit
+  name: Poisoner's kit
+  category: Tools
+  price_copper: 5000
+- id: magic-common
+  name: Common magic item
+  category: Magic Item Guide
+  price_copper: 10000
+  notes: Optional 2024 reference price. Halve for consumables other than spell scrolls.
+- id: magic-uncommon
+  name: Uncommon magic item
+  category: Magic Item Guide
+  price_copper: 40000
+  notes: Optional 2024 reference price. Halve for consumables other than spell scrolls.
+- id: magic-rare
+  name: Rare magic item
+  category: Magic Item Guide
+  price_copper: 400000
+  notes: Optional 2024 reference price. Add the mundane item's cost for magic armor or weapons.
+- id: magic-very-rare
+  name: Very Rare magic item
+  category: Magic Item Guide
+  price_copper: 4000000
+  notes: Optional 2024 reference price. Add the mundane item's cost for magic armor or weapons.
+- id: magic-legendary
+  name: Legendary magic item
+  category: Magic Item Guide
+  price_copper: 20000000
+  notes: Optional 2024 reference price. Add the mundane item's cost for magic armor or weapons.
+- id: magic-artifact
+  name: Artifact
+  category: Magic Item Guide
+  price_copper: 0
+  notes: Priceless and unique; not normally available for purchase.
+- id: item-potion-healing
+  name: Potion of Healing
+  category: Magic Item · Potions
+  price_copper: 5000
+  notes: Common consumable; half the 100 gp Common reference value.
+- id: item-potion-climbing
+  name: Potion of Climbing
+  category: Magic Item · Potions
+  price_copper: 5000
+  notes: Common consumable; half the 100 gp Common reference value.
+- id: item-potion-greater-healing
+  name: Potion of Greater Healing
+  category: Magic Item · Potions
+  price_copper: 20000
+  notes: Uncommon consumable; half the 400 gp Uncommon reference value.
+- id: item-potion-growth
+  name: Potion of Growth
+  category: Magic Item · Potions
+  price_copper: 20000
+  notes: Uncommon consumable; half the 400 gp Uncommon reference value.
+- id: item-potion-animal-friendship
+  name: Potion of Animal Friendship
+  category: Magic Item · Potions
+  price_copper: 20000
+  notes: Uncommon consumable; half the 400 gp Uncommon reference value.
+- id: item-potion-invisibility
+  name: Potion of Invisibility
+  category: Magic Item · Potions
+  price_copper: 200000
+  notes: Rare consumable; half the 4,000 gp Rare reference value.
+- id: item-potion-superior-healing
+  name: Potion of Superior Healing
+  category: Magic Item · Potions
+  price_copper: 200000
+  notes: Rare consumable; half the 4,000 gp Rare reference value.
+- id: item-potion-flying
+  name: Potion of Flying
+  category: Magic Item · Potions
+  price_copper: 2000000
+  notes: Very Rare consumable; half the 40,000 gp Very Rare reference value.
+- id: item-potion-supreme-healing
+  name: Potion of Supreme Healing
+  category: Magic Item · Potions
+  price_copper: 2000000
+  notes: Very Rare consumable; half the 40,000 gp Very Rare reference value.
+- id: item-bag-of-holding
+  name: Bag of Holding
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-cloak-of-protection
+  name: Cloak of Protection
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-cloak-of-elvenkind
+  name: Cloak of Elvenkind
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-boots-of-elvenkind
+  name: Boots of Elvenkind
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-goggles-of-night
+  name: Goggles of Night
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-rope-of-climbing
+  name: Rope of Climbing
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-broom-of-flying
+  name: Broom of Flying
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-sending-stones
+  name: Sending Stones (pair)
+  category: Magic Item · Wondrous
+  price_copper: 40000
+  notes: Uncommon; suggested value is for the pair.
+- id: item-immovable-rod
+  name: Immovable Rod
+  category: Magic Item · Rods & Wands
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-wand-magic-missiles
+  name: Wand of Magic Missiles
+  category: Magic Item · Rods & Wands
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-wand-magic-detection
+  name: Wand of Magic Detection
+  category: Magic Item · Rods & Wands
+  price_copper: 40000
+  notes: Uncommon; suggested value from the optional rarity guide.
+- id: item-javelin-lightning
+  name: Javelin of Lightning
+  category: Magic Item · Weapons
+  price_copper: 40500
+  notes: Uncommon 400 gp reference value plus a 5 gp javelin.
+- id: item-longsword-plus-one
+  name: +1 Longsword
+  category: Magic Item · Weapons
+  price_copper: 41500
+  notes: Uncommon 400 gp reference value plus a 15 gp longsword.
+- id: item-flame-tongue-longsword
+  name: Flame Tongue Longsword
+  category: Magic Item · Weapons
+  price_copper: 401500
+  notes: Rare 4,000 gp reference value plus a 15 gp longsword.
+- id: item-sun-blade
+  name: Sun Blade
+  category: Magic Item · Weapons
+  price_copper: 401500
+  notes: Rare 4,000 gp reference value plus a 15 gp longsword.
+- id: item-vorpal-longsword
+  name: Vorpal Longsword
+  category: Magic Item · Weapons
+  price_copper: 20001500
+  notes: Legendary 200,000 gp reference value plus a 15 gp longsword.
+- id: item-ring-spell-storing
+  name: Ring of Spell Storing
+  category: Magic Item · Rings
+  price_copper: 400000
+  notes: Rare; suggested value from the optional rarity guide.
+- id: item-plate-armor-plus-one
+  name: +1 Plate Armor
+  category: Magic Item · Armor
+  price_copper: 550000
+  notes: Rare 4,000 gp reference value plus 1,500 gp plate armor.
+- id: item-staff-healing
+  name: Staff of Healing
+  category: Magic Item · Staffs
+  price_copper: 400000
+  notes: Rare; suggested value from the optional rarity guide.
+- id: item-staff-power
+  name: Staff of Power
+  category: Magic Item · Staffs
+  price_copper: 4000000
+  notes: Very Rare; suggested value from the optional rarity guide.
+- id: item-cloak-invisibility
+  name: Cloak of Invisibility
+  category: Magic Item · Wondrous
+  price_copper: 20000000
+  notes: Legendary; suggested value from the optional rarity guide.

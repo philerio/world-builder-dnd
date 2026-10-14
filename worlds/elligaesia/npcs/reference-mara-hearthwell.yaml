@@ -1,0 +1,22 @@
+id: reference-mara-hearthwell
+name: Mara Hearthwell
+description: Warm and quietly perceptive. A regular guest has left a locked travel chest behind
+  and has not returned for it.
+details: 'Mara Hearthwell works as a innkeeper. Warm and quietly perceptive. Current complication:
+  A regular guest has left a locked travel chest behind and has not returned for it. Personal
+  goal: Keep her inn a safe neutral ground for travelers.'
+job: Innkeeper
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep her inn a safe neutral ground for travelers.
+secrets:
+- That she once sheltered a fugitive under a false name.
+knowledge:
+- 'Mara Hearthwell can speak to the current situation: A regular guest has left a locked travel
+  chest behind and has not returned for it.'

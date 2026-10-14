@@ -1,0 +1,22 @@
+id: reference-tamra-wells
+name: Tamra Wells
+description: Practical, trusted, and discreet. Several families report the same unusual birthmark
+  appearing in unrelated newborns.
+details: 'Tamra Wells works as a midwife. Practical, trusted, and discreet. Current complication:
+  Several families report the same unusual birthmark appearing in unrelated newborns. Personal
+  goal: Keep families supported before, during, and after a birth.'
+job: Midwife
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep families supported before, during, and after a birth.
+secrets:
+- She has withheld a parent's identity to protect a child from a dangerous relative.
+knowledge:
+- 'Tamra Wells can speak to the current situation: Several families report the same unusual
+  birthmark appearing in unrelated newborns.'

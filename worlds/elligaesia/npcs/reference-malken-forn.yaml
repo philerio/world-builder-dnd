@@ -1,0 +1,23 @@
+id: reference-malken-forn
+name: Malken Forn
+description: Cautious, scholarly, and hard to impress. A supposedly ordinary heirloom has been
+  appraised by three experts as three different artifacts.
+details: 'Malken Forn works as a relic appraiser. Cautious, scholarly, and hard to impress.
+  Current complication: A supposedly ordinary heirloom has been appraised by three experts as
+  three different artifacts. Personal goal: Separate verifiable history from salesmanship and
+  rumor.'
+job: Relic Appraiser
+race: Dragonborn
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Separate verifiable history from salesmanship and rumor.
+secrets:
+- He has identified a dangerous relic but concealed its location until he knows who wants it.
+knowledge:
+- 'Malken Forn can speak to the current situation: A supposedly ordinary heirloom has been appraised
+  by three experts as three different artifacts.'

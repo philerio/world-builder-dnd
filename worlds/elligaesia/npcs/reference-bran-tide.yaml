@@ -1,0 +1,22 @@
+id: reference-bran-tide
+name: Bran Tide
+description: Sociable and alert to trouble. A crate marked as lamp oil is unusually heavy and
+  makes a faint chime when moved.
+details: 'Bran Tide works as a dockworker. Sociable and alert to trouble. Current complication:
+  A crate marked as lamp oil is unusually heavy and makes a faint chime when moved. Personal
+  goal: Make the waterfront a place where workers can earn a living safely.'
+job: Dockworker
+race: Human
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make the waterfront a place where workers can earn a living safely.
+secrets:
+- Bran has been skimming small amounts of cargo to fund an injured coworker's care.
+knowledge:
+- 'Bran Tide can speak to the current situation: A crate marked as lamp oil is unusually heavy
+  and makes a faint chime when moved.'

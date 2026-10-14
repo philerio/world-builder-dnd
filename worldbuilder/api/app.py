@@ -1,4 +1,5 @@
 import json
+import yaml
 from pathlib import Path
 from uuid import uuid4
 
@@ -23,6 +24,7 @@ from worldbuilder.services.data_health_service import (
 from worldbuilder.services.id_generator import generate_entity_id
 from worldbuilder.services.world_service import WorldService
 from worldbuilder.validation.validator import validate_registry
+from worldbuilder.api.combat import create_combat_router, preserve_combat_history, serialized_world_write
 
 app = FastAPI(
     title="D&D World Builder API",
@@ -36,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 WORLD_PATH = Path("worlds/elligaesia/world.yaml")
+app.include_router(create_combat_router(lambda: WORLD_PATH))
 MAP_ASSETS_PATH = WORLD_PATH.parent / "map_assets"
 MAX_MAP_ASSET_BYTES = 5 * 1024 * 1024
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
@@ -357,6 +360,10 @@ def get_world() -> dict:
             entry.model_dump(mode="json")
             for entry in registry.dm_scratchpad_entries.values()
         ],
+        "price_lists": [
+            price_list.model_dump(mode="json")
+            for price_list in registry.price_lists.values()
+        ],
     }
 
 
@@ -404,6 +411,7 @@ def list_entities() -> list[dict[str, str]]:
         registry.locations,
         registry.world_stories,
         registry.dm_scratchpad_entries,
+        registry.price_lists,
     ]
 
     for collection in collections:
@@ -508,6 +516,7 @@ def get_entity_yaml(entity_id: str) -> dict[str, str]:
 
 
 @app.put("/entities/{entity_id}/yaml")
+@serialized_world_write
 def update_entity_yaml(entity_id: str, payload: dict) -> dict[str, str]:
     """Validate and save edited YAML source for an existing entity."""
     content = payload.get("content")
@@ -517,6 +526,13 @@ def update_entity_yaml(entity_id: str, payload: dict) -> dict[str, str]:
     registry = load_world_registry(WORLD_PATH)
     if registry.get_entity(entity_id) is None:
         raise HTTPException(status_code=404, detail=f"Entity not found: {entity_id}")
+
+    try:
+        parsed = yaml.safe_load(content)
+    except yaml.YAMLError as exc:
+        raise HTTPException(status_code=422, detail="Invalid YAML content.") from exc
+    if isinstance(parsed, dict):
+        preserve_combat_history(registry.get_entity(entity_id), parsed)
 
     entity_type = registry.get_entity_type(entity_id)
     model = World if entity_type == "world" else get_entity_model(entity_type or "")
@@ -535,6 +551,7 @@ def update_entity_yaml(entity_id: str, payload: dict) -> dict[str, str]:
 
 
 @app.put("/entities/{entity_id}")
+@serialized_world_write
 def update_entity(
     entity_id: str,
     payload: dict,
@@ -550,6 +567,7 @@ def update_entity(
         )
 
     model = get_entity_model(registry.get_entity_type(entity_id) or "")
+    preserve_combat_history(existing_entity, payload)
     
     if model is None:
         raise HTTPException(

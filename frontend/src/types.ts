@@ -103,6 +103,7 @@ export type Character = {
   tags?: string[];
   race?: string;
   alignment?: string;
+  job?: string;
   role?: string;
   city?: string;
   region?: string;
@@ -226,6 +227,22 @@ export type Artifact = {
   dm_notes?: string;
 };
 
+export type PriceListItem = {
+  id: string;
+  name: string;
+  category: string;
+  price_copper: number;
+  notes?: string;
+};
+
+export type PriceList = {
+  id: string;
+  name: string;
+  description?: string;
+  tags?: string[];
+  items: PriceListItem[];
+};
+
 export type MapMarker = {
   id: string;
   entity_id: string | null;
@@ -310,6 +327,7 @@ export type WorldData = {
   maps: Map[];
   world_stories: WorldStory[];
   dm_scratchpad_entries?: DMScratchpadEntry[];
+  price_lists?: PriceList[];
 };
 
 export type WorldStoryContribution = {
@@ -372,6 +390,7 @@ export const ENTITY_TYPES = [
   { value: "artifact", label: "Artifact" },
   { value: "map", label: "Map" },
   { value: "dm_scratchpad_entry", label: "DM Scratchpad Entry" },
+  { value: "price_list", label: "Price List" },
 ];
 
 export type EntityData = {
@@ -444,7 +463,39 @@ export type StoryBeatCheck = {
   failure?: string;
 };
 
+export type CombatStats = {
+  race?: string;
+  class_name?: string;
+  level?: number;
+  hp?: number;
+  ac?: number;
+  abilities?: Partial<Record<"Strength" | "Dexterity" | "Constitution" | "Intelligence" | "Wisdom" | "Charisma", number>>;
+};
+export type CombatParticipant = {
+  id: string;
+  entity_id?: string;
+  name?: string;
+  allegiance: "party" | "ally" | "enemy";
+  quantity: number;
+  stats?: CombatStats;
+};
+export type CombatEncounter = {
+  id: string;
+  name: string;
+  map_id?: string;
+  location_id?: string;
+  notes?: string;
+  participants: CombatParticipant[];
+};
+export type CombatResult = {
+  id: string;
+  title: string;
+  summary: string;
+  rounds: number;
+  session?: number;
+};
 export type StoryBeat = {
+  encounter?: CombatEncounter;
   id: string;
   name: string;
   description?: string;
@@ -568,6 +619,7 @@ export type SessionPrep = {
 };
 
 export type CampaignStory = {
+  combat_results?: CombatResult[];
   beats: StoryBeat[];
   current_beat?: string;
   player_actions: PlayerAction[];

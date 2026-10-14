@@ -1,0 +1,22 @@
+id: reference-harka-flint
+name: Harka Flint
+description: Professional and protective of the whole crew. A caravan's wagons keep arriving
+  with one extra shadow at sunset.
+details: 'Harka Flint works as a caravan guard. Professional and protective of the whole crew.
+  Current complication: A caravan''s wagons keep arriving with one extra shadow at sunset. Personal
+  goal: Build a reputation that lets the crew choose fair contracts.'
+job: Caravan Guard
+race: Orc
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Build a reputation that lets the crew choose fair contracts.
+secrets:
+- Harka left a previous company after learning they were trafficking people.
+knowledge:
+- 'Harka Flint can speak to the current situation: A caravan''s wagons keep arriving with one
+  extra shadow at sunset.'

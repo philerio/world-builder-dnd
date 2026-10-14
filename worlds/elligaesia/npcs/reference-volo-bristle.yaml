@@ -1,0 +1,22 @@
+id: reference-volo-bristle
+name: Volo Bristle
+description: Talkative, capable, and cheerfully irreverent. A patient has a wound that closes
+  by day and reopens at exactly midnight.
+details: 'Volo Bristle works as a barber-surgeon. Talkative, capable, and cheerfully irreverent.
+  Current complication: A patient has a wound that closes by day and reopens at exactly midnight.
+  Personal goal: Learn enough medicine to help where no trained healer is available.'
+job: Barber-Surgeon
+race: Halfling
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Learn enough medicine to help where no trained healer is available.
+secrets:
+- Volo once used an untested remedy on a patient and still fears the consequences.
+knowledge:
+- 'Volo Bristle can speak to the current situation: A patient has a wound that closes by day
+  and reopens at exactly midnight.'

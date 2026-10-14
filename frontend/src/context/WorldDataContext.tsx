@@ -57,6 +57,7 @@ const ENTITY_COLLECTIONS: Record<string, keyof WorldData> = {
   map: "maps",
   world_story: "world_stories",
   dm_scratchpad_entry: "dm_scratchpad_entries",
+  price_list: "price_lists",
 };
 
 const SORTED_WORLD_COLLECTIONS = [...new Set([...Object.values(ENTITY_COLLECTIONS), "worlds" as const])];

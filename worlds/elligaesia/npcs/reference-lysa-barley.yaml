@@ -1,0 +1,22 @@
+id: reference-lysa-barley
+name: Lysa Barley
+description: Steady and protective of her land. A narrow strip of crops is ripening weeks ahead
+  of the surrounding fields.
+details: 'Lysa Barley works as a farmer. Steady and protective of her land. Current complication:
+  A narrow strip of crops is ripening weeks ahead of the surrounding fields. Personal goal:
+  Keep the family farm viable through a run of difficult seasons.'
+job: Farmer
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep the family farm viable through a run of difficult seasons.
+secrets:
+- She has been selling a small part of the harvest under a different name to pay a debt.
+knowledge:
+- 'Lysa Barley can speak to the current situation: A narrow strip of crops is ripening weeks
+  ahead of the surrounding fields.'

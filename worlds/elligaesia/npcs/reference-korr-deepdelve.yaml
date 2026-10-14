@@ -1,0 +1,22 @@
+id: reference-korr-deepdelve
+name: Korr Deepdelve
+description: Gruff, brave, and careful underground. A disused tunnel is producing fresh air
+  and the sound of distant bells.
+details: 'Korr Deepdelve works as a miner. Gruff, brave, and careful underground. Current complication:
+  A disused tunnel is producing fresh air and the sound of distant bells. Personal goal: Get
+  the crew home safely and negotiate fair conditions for dangerous work.'
+job: Miner
+race: Dwarf
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Get the crew home safely and negotiate fair conditions for dangerous work.
+secrets:
+- He has been diverting a little ore to pay a worker injured off the books.
+knowledge:
+- 'Korr Deepdelve can speak to the current situation: A disused tunnel is producing fresh air
+  and the sound of distant bells.'

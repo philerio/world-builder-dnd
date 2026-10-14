@@ -18,6 +18,7 @@ from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.player_character import PlayerCharacter
 from worldbuilder.models.world_story import WorldStory
 from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
+from worldbuilder.models.price_list import PriceList
 
 
 def load_world_registry(path: Path) -> WorldRegistry:
@@ -86,5 +87,8 @@ def load_world_registry(path: Path) -> WorldRegistry:
 
     for entry in load_yaml_directory(path.parent / "dm_scratchpad", DmScratchpadEntry):
         registry.add_dm_scratchpad_entry(entry)
+
+    for price_list in load_yaml_directory(path.parent / "price_lists", PriceList):
+        registry.add_price_list(price_list)
 
     return registry

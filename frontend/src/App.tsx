@@ -39,6 +39,7 @@ import StarsIcon from "@mui/icons-material/Stars";
 import SearchIcon from "@mui/icons-material/Search";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import NoteAltIcon from "@mui/icons-material/NoteAlt";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 
 import type { WorldData } from "./types";
 import WorldPage from "./pages/WorldPage";
@@ -62,6 +63,7 @@ import { useWorldData } from "./context/WorldDataContext";
 import type { EntitySummary } from "./types";
 import DataHealthPage from "./pages/DataHealthPage";
 import DMScratchpadPage from "./pages/DMScratchpadPage";
+import StorePage from "./pages/StorePage";
 
 const drawerWidth = 240;
 type SidebarProps = {
@@ -94,6 +96,11 @@ const navigation = [
     path: "/characters",
     label: "Characters",
     icon: <PeopleIcon />,
+  },
+  {
+    path: "/store",
+    label: "Store Prices",
+    icon: <StorefrontIcon />,
   },
   {
     path: "/campaigns",
@@ -365,6 +372,10 @@ function Dashboard({ data }: { data: WorldData }) {
       count: data.artifacts.length,
     },
     {
+      name: "Store Price Items",
+      count: data.price_lists?.reduce((total, list) => total + list.items.length, 0) ?? 0,
+    },
+    {
       name: "Maps",
       count: data.maps.length,
     },
@@ -479,7 +490,7 @@ function AppContent() {
     worldDataLoading,
     worldDataError,
   } = useWorldData();
-  const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } = useEntityDrawer();
+  const { entityId, isOpen, canGoBack, openEntity, goBack, closeEntity } = useEntityDrawer(new URLSearchParams(window.location.search).get("entity"));
 
   const handleDataHealthSave = async (savedEntityId?: string) => {
     await Promise.all([refreshEntities(), refreshWorldData()]);
@@ -622,6 +633,7 @@ function AppContent() {
           <Route path="/world" element={<WorldPage data={data} />} />
           <Route path="/locations" element={<LocationsPage />} />
           <Route path="/characters" element={<CharactersPage data={data} />} />
+          <Route path="/store" element={<StorePage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/scratchpad" element={<DMScratchpadPage />} />
           <Route

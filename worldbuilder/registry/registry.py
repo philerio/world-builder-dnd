@@ -14,6 +14,7 @@ from worldbuilder.models.lore import Lore
 from worldbuilder.models.player_character import PlayerCharacter
 from worldbuilder.models.world_story import WorldStory
 from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
+from worldbuilder.models.price_list import PriceList
 
 class WorldRegistry:
     """Registry of all loaded world entities."""
@@ -35,6 +36,7 @@ class WorldRegistry:
         self.locations: dict[str, Location] = {}
         self.world_stories: dict[str, WorldStory] = {}
         self.dm_scratchpad_entries: dict[str, DmScratchpadEntry] = {}
+        self.price_lists: dict[str, PriceList] = {}
         
     def _ensure_unique_id(self, entity_id: str) -> None:
         """Ensure an entity ID is unique across the registry."""
@@ -55,6 +57,7 @@ class WorldRegistry:
             self.maps,
             self.world_stories,
             self.dm_scratchpad_entries,
+            self.price_lists,
         )
 
         if any(entity_id in collection for collection in collections):
@@ -283,6 +286,12 @@ class WorldRegistry:
         self._ensure_unique_id(entry.id)
         self.dm_scratchpad_entries[entry.id] = entry
 
+    def add_price_list(self, price_list: PriceList) -> None:
+        if price_list.id in self.price_lists:
+            raise ValueError(f"Duplicate price list ID: {price_list.id}")
+        self._ensure_unique_id(price_list.id)
+        self.price_lists[price_list.id] = price_list
+
     def add_map(self, map_object: Map) -> None:
         """Add a map to the registry."""
         if map_object.id in self.maps:
@@ -318,6 +327,7 @@ class WorldRegistry:
             self.locations,
             self.world_stories,
             self.dm_scratchpad_entries,
+            self.price_lists,
         )
 
         for collection in collections:
@@ -360,4 +370,6 @@ class WorldRegistry:
             return "world_story"
         if entity_id in self.dm_scratchpad_entries:
             return "dm_scratchpad_entry"
+        if entity_id in self.price_lists:
+            return "price_list"
         return None

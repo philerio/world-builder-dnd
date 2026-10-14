@@ -1,0 +1,22 @@
+id: reference-brother-caldus
+name: Brother Caldus
+description: Warmly direct and community-minded. A shrine's offering bowl is filling with coins
+  from a mint that closed generations ago.
+details: 'Brother Caldus works as a priest. Warmly direct and community-minded. Current complication:
+  A shrine''s offering bowl is filling with coins from a mint that closed generations ago. Personal
+  goal: Help neighbors support one another rather than wait for rescue.'
+job: Priest
+race: Dwarf
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Help neighbors support one another rather than wait for rescue.
+secrets:
+- He doubts a teaching he has preached for years but fears what questioning it could do.
+knowledge:
+- 'Brother Caldus can speak to the current situation: A shrine''s offering bowl is filling with
+  coins from a mint that closed generations ago.'

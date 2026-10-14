@@ -78,6 +78,7 @@ def get_entity_relationships(
         registry.locations,
         registry.world_stories,
         registry.dm_scratchpad_entries,
+        registry.price_lists,
     )
     entities = [entity for collection in collections for entity in collection.values()]
     known_ids = {entity.id for entity in entities}

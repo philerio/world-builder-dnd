@@ -13,6 +13,7 @@ from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.world_story import WorldStory
 from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
+from worldbuilder.models.price_list import PriceList
 
 ENTITY_DIRECTORIES: dict[type, str] = {
     Artifact: "artifacts",
@@ -30,4 +31,5 @@ ENTITY_DIRECTORIES: dict[type, str] = {
     WorldEvent: "events",
     WorldStory: "world_stories",
     DmScratchpadEntry: "dm_scratchpad",
+    PriceList: "price_lists",
 }

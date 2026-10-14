@@ -1,0 +1,22 @@
+id: reference-jalen-oak
+name: Jalen Oak
+description: Reliable and quietly inventive. A new building makes a tapping sound from inside
+  its walls, though the rooms are empty.
+details: 'Jalen Oak works as a carpenter. Reliable and quietly inventive. Current complication:
+  A new building makes a tapping sound from inside its walls, though the rooms are empty. Personal
+  goal: Teach practical building skills to anyone willing to learn.'
+job: Carpenter
+race: Human
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Teach practical building skills to anyone willing to learn.
+secrets:
+- Jalen built a hidden passage for a client and regrets not asking why.
+knowledge:
+- 'Jalen Oak can speak to the current situation: A new building makes a tapping sound from inside
+  its walls, though the rooms are empty.'

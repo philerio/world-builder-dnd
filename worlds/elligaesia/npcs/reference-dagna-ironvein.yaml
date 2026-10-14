@@ -1,0 +1,22 @@
+id: reference-dagna-ironvein
+name: Dagna Ironvein
+description: Blunt, patient, and proud of honest work. A batch of iron has arrived with a strange
+  blue sheen that does not come from the forge.
+details: 'Dagna Ironvein works as a blacksmith. Blunt, patient, and proud of honest work. Current
+  complication: A batch of iron has arrived with a strange blue sheen that does not come from
+  the forge. Personal goal: Train an apprentice well enough to take over the shop one day.'
+job: Blacksmith
+race: Dwarf
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Train an apprentice well enough to take over the shop one day.
+secrets:
+- She has been quietly repairing tools for a neighboring settlement that cannot afford them.
+knowledge:
+- 'Dagna Ironvein can speak to the current situation: A batch of iron has arrived with a strange
+  blue sheen that does not come from the forge.'

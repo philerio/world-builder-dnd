@@ -1,0 +1,22 @@
+id: reference-lady-caelia-dorn
+name: Lady Caelia Dorn
+description: Well-spoken but still learning whom to trust. An inheritance includes a sealed
+  room that does not appear on the estate plans.
+details: 'Lady Caelia Dorn works as a minor noble. Well-spoken but still learning whom to trust.
+  Current complication: An inheritance includes a sealed room that does not appear on the estate
+  plans. Personal goal: Manage her estate responsibly and earn respect on her own merits.'
+job: Minor Noble
+race: Human
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Manage her estate responsibly and earn respect on her own merits.
+secrets:
+- She plans to sell a family heirloom to pay workers before the next harvest.
+knowledge:
+- 'Lady Caelia Dorn can speak to the current situation: An inheritance includes a sealed room
+  that does not appear on the estate plans.'

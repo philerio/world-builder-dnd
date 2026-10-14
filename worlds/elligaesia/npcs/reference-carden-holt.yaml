@@ -1,0 +1,22 @@
+id: reference-carden-holt
+name: Carden Holt
+description: Formal but not unkind. Court notices are disappearing before they reach one particular
+  neighborhood.
+details: 'Carden Holt works as a bailiff. Formal but not unkind. Current complication: Court
+  notices are disappearing before they reach one particular neighborhood. Personal goal: Make
+  sure everyone understands the process before a ruling is enforced.'
+job: Bailiff
+race: Human
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make sure everyone understands the process before a ruling is enforced.
+secrets:
+- He has been delaying an eviction order while searching for a lawful alternative.
+knowledge:
+- 'Carden Holt can speak to the current situation: Court notices are disappearing before they
+  reach one particular neighborhood.'

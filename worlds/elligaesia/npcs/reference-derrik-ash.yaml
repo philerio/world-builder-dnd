@@ -1,0 +1,22 @@
+id: reference-derrik-ash
+name: Derrik Ash
+description: Independent and keen-eyed. The local game has begun avoiding one particular stream,
+  though nothing appears wrong with it.
+details: 'Derrik Ash works as a hunter. Independent and keen-eyed. Current complication: The
+  local game has begun avoiding one particular stream, though nothing appears wrong with it.
+  Personal goal: Protect the hunting grounds from wasteful trapping.'
+job: Hunter
+race: Human
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Protect the hunting grounds from wasteful trapping.
+secrets:
+- Derrik has secretly been feeding an injured predator rather than killing it.
+knowledge:
+- 'Derrik Ash can speak to the current situation: The local game has begun avoiding one particular
+  stream, though nothing appears wrong with it.'

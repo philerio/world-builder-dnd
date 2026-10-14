@@ -1,0 +1,22 @@
+id: reference-dorren-keel
+name: Dorren Keel
+description: Patient, practical, and exact about materials. A half-finished boat has been taking
+  on water only when nobody is aboard.
+details: 'Dorren Keel works as a shipwright. Patient, practical, and exact about materials.
+  Current complication: A half-finished boat has been taking on water only when nobody is aboard.
+  Personal goal: Build a vessel known for surviving rough weather.'
+job: Shipwright
+race: Dwarf
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Build a vessel known for surviving rough weather.
+secrets:
+- He promised a ship to two different clients and has no safe way to tell either one.
+knowledge:
+- 'Dorren Keel can speak to the current situation: A half-finished boat has been taking on water
+  only when nobody is aboard.'

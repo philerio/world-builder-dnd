@@ -1,0 +1,22 @@
+id: reference-professor-ilyra-quill
+name: Professor Ilyra Quill
+description: Brilliant and absent-minded. A map in the archive shows a coastline that seems
+  to change whenever it is copied.
+details: 'Professor Ilyra Quill works as a scholar. Brilliant and absent-minded. Current complication:
+  A map in the archive shows a coastline that seems to change whenever it is copied. Personal
+  goal: Prove that careful scholarship can be useful beyond the academy.'
+job: Scholar
+race: Elf
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Prove that careful scholarship can be useful beyond the academy.
+secrets:
+- She once withheld a discovery because she feared how a patron would use it.
+knowledge:
+- 'Professor Ilyra Quill can speak to the current situation: A map in the archive shows a coastline
+  that seems to change whenever it is copied.'

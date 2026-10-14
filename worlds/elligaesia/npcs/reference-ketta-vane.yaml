@@ -1,0 +1,22 @@
+id: reference-ketta-vane
+name: Ketta Vane
+description: Practical and principled. A ceremonial blade has appeared in her workshop with
+  a maker's mark she thought destroyed.
+details: 'Ketta Vane works as a weaponsmith. Practical and principled. Current complication:
+  A ceremonial blade has appeared in her workshop with a maker''s mark she thought destroyed.
+  Personal goal: Make useful tools without becoming an arms dealer to bullies.'
+job: Weaponsmith
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make useful tools without becoming an arms dealer to bullies.
+secrets:
+- She once sabotaged a weapon rather than let it be used in a feud.
+knowledge:
+- 'Ketta Vane can speak to the current situation: A ceremonial blade has appeared in her workshop
+  with a maker''s mark she thought destroyed.'

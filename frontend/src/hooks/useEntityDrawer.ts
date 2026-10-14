@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-function useEntityDrawer() {
-    const [entityId, setEntityId] = useState<string | null>(null);
+function useEntityDrawer(initialEntityId: string | null = null) {
+    const [entityId, setEntityId] = useState<string | null>(initialEntityId);
     const [history, setHistory] = useState<string[]>([]);
 
     const openEntity = (id: string) => {

@@ -1,0 +1,22 @@
+id: reference-nera-stillwater
+name: Nera Stillwater
+description: Quietly kind and attentive to detail. A body arrived with no identifying marks,
+  yet several residents claim to recognize it.
+details: 'Nera Stillwater works as a undertaker. Quietly kind and attentive to detail. Current
+  complication: A body arrived with no identifying marks, yet several residents claim to recognize
+  it. Personal goal: Ensure every dead person receives dignity regardless of status.'
+job: Undertaker
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Ensure every dead person receives dignity regardless of status.
+secrets:
+- Nera keeps a personal record of unclaimed dead that contradicts official numbers.
+knowledge:
+- 'Nera Stillwater can speak to the current situation: A body arrived with no identifying marks,
+  yet several residents claim to recognize it.'

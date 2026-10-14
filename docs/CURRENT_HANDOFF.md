@@ -1,6 +1,6 @@
 # Current Project Handoff
 
-**Updated:** 2026-10-09  
+**Updated:** 2026-10-13
 **Purpose:** Durable starting point for a new developer or assistant session. This is a summary, not a replacement for the repository instructions, source code, or campaign files.
 
 ## Read these first
@@ -59,9 +59,9 @@ Treat campaign details as authored canon, not generic sample data. Never silentl
 
 ## Recent implementation and validation status
 
-Recent work includes a DM scratchpad supporting multi-paragraph ideas and promotion into other content; a timeline graph; data-health and YAML editing improvements; event timeline filters/layout; plot-point checks and possible observations; entity tags and metadata; and extensive map editor interaction/layout tools. See current source, tests, and `git status` for exact scope.
+Recent work includes a DM scratchpad supporting multi-paragraph ideas and promotion into other content; a timeline graph; data-health and YAML editing improvements; event timeline filters/layout; plot-point checks and possible observations; entity tags and metadata; extensive map editor interaction/layout tools; and a separate combat-app launch connection. The Store Price List has editable 2014 5e mundane equipment prices, an optional 2024 rarity-based magic-item price guide, and named magic-item price suggestions in YAML. NPCs have an optional `job` attribute, and 50 named reference NPCs are stored as world YAML entities tagged `Reference NPC`; they are not pre-linked to locations or campaigns. The Characters dashboard separates NPCs and player characters into tabs, with compact cards and race/alignment filters. The Store page is a DM lookup reference with search, category filters, price editing, and custom items; it is not a checkout, inventory, or currency transaction system. See current source, tests, and `git status` for exact scope.
 
-On 2026-10-09, the full frontend ESLint and TypeScript checks passed after resolving the reported issues. The final commands exited successfully:
+On 2026-10-13, the full frontend ESLint and TypeScript checks passed after resolving the reported issues. After adding the magic-item guide and named price suggestions, targeted ESLint for `StorePage.tsx` and the frontend TypeScript check also passed. The current world registry loaded the 138-item price list, and `validate_registry` reported 0 errors and 0 warnings. The earlier full frontend commands exited successfully:
 
 ```bash
 /home/patrick/.config/nvm/versions/node/v24.21.0/bin/node node_modules/eslint/bin/eslint.js .

@@ -1,0 +1,22 @@
+id: reference-pip-thimblewick
+name: Pip Thimblewick
+description: Expressive and generous with advice. A customer asked for a reversible cloak with
+  an unusual hidden pocket and will not give a name.
+details: 'Pip Thimblewick works as a clothier. Expressive and generous with advice. Current
+  complication: A customer asked for a reversible cloak with an unusual hidden pocket and will
+  not give a name. Personal goal: Make clothing that lets people feel comfortable being themselves.'
+job: Clothier
+race: Gnome
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make clothing that lets people feel comfortable being themselves.
+secrets:
+- Pip keeps a collection of disguises used to help people leave unsafe situations.
+knowledge:
+- 'Pip Thimblewick can speak to the current situation: A customer asked for a reversible cloak
+  with an unusual hidden pocket and will not give a name.'

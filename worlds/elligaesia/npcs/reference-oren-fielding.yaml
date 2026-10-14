@@ -1,0 +1,22 @@
+id: reference-oren-fielding
+name: Oren Fielding
+description: Soft-spoken and observant. A normally calm horse panics whenever it is brought
+  near an empty patch of road.
+details: 'Oren Fielding works as a stablehand. Soft-spoken and observant. Current complication:
+  A normally calm horse panics whenever it is brought near an empty patch of road. Personal
+  goal: Save enough to buy a small stable of his own.'
+job: Stablehand
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Save enough to buy a small stable of his own.
+secrets:
+- He can read and write better than his employer knows, and studies discarded notices.
+knowledge:
+- 'Oren Fielding can speak to the current situation: A normally calm horse panics whenever it
+  is brought near an empty patch of road.'

@@ -1,0 +1,22 @@
+id: reference-tika-brass
+name: Tika Brass
+description: Inventive and firm about consent. A key was left at the shop that opens every lock
+  Tika has tried, including ones she built herself.
+details: 'Tika Brass works as a locksmith. Inventive and firm about consent. Current complication:
+  A key was left at the shop that opens every lock Tika has tried, including ones she built
+  herself. Personal goal: Make secure locks affordable to ordinary households.'
+job: Locksmith
+race: Gnome
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make secure locks affordable to ordinary households.
+secrets:
+- She can open the magistrate's sealed evidence room and has kept that fact secret.
+knowledge:
+- 'Tika Brass can speak to the current situation: A key was left at the shop that opens every
+  lock Tika has tried, including ones she built herself.'

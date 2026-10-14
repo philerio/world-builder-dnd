@@ -1,0 +1,22 @@
+id: reference-iri-fernpath
+name: Iri Fernpath
+description: Calm, prepared, and wary of needless risk. A familiar trail now passes a stone
+  marker that no map or traveler remembers.
+details: 'Iri Fernpath works as a wilderness guide. Calm, prepared, and wary of needless risk.
+  Current complication: A familiar trail now passes a stone marker that no map or traveler remembers.
+  Personal goal: Teach newcomers to travel without damaging the places they pass through.'
+job: Wilderness Guide
+race: Wood Elf
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Teach newcomers to travel without damaging the places they pass through.
+secrets:
+- Iri once led a group the wrong way to divert them from a hidden refuge.
+knowledge:
+- 'Iri Fernpath can speak to the current situation: A familiar trail now passes a stone marker
+  that no map or traveler remembers.'

@@ -1,0 +1,23 @@
+id: reference-pella-copperpot
+name: Pella Copperpot
+description: Cheerful, resourceful, and hard to surprise. A regular buyer has been paying for
+  meals to be left at a different doorway each night.
+details: 'Pella Copperpot works as a street vendor. Cheerful, resourceful, and hard to surprise.
+  Current complication: A regular buyer has been paying for meals to be left at a different
+  doorway each night. Personal goal: Secure a permanent market stall without losing the freedom
+  to move around.'
+job: Street Vendor
+race: Goblin
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Secure a permanent market stall without losing the freedom to move around.
+secrets:
+- Pella knows who has been counterfeiting the market tokens, but is waiting for leverage.
+knowledge:
+- 'Pella Copperpot can speak to the current situation: A regular buyer has been paying for meals
+  to be left at a different doorway each night.'

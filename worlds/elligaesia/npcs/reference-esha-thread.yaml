@@ -1,0 +1,22 @@
+id: reference-esha-thread
+name: Esha Thread
+description: Discerning and quietly empathetic. A customer keeps ordering clothes in the style
+  of someone who disappeared long ago.
+details: 'Esha Thread works as a tailor. Discerning and quietly empathetic. Current complication:
+  A customer keeps ordering clothes in the style of someone who disappeared long ago. Personal
+  goal: Help people feel at ease in clothes that fit their lives.'
+job: Tailor
+race: Elf
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Help people feel at ease in clothes that fit their lives.
+secrets:
+- Esha has been making a set of garments for someone living under an assumed identity.
+knowledge:
+- 'Esha Thread can speak to the current situation: A customer keeps ordering clothes in the
+  style of someone who disappeared long ago.'

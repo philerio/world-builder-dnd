@@ -1,0 +1,22 @@
+id: reference-ser-jory-bell
+name: Ser Jory Bell
+description: Measured and candid. Several patrol reports describe the same stranger, but their
+  descriptions cannot all be true.
+details: 'Ser Jory Bell works as a guard captain. Measured and candid. Current complication:
+  Several patrol reports describe the same stranger, but their descriptions cannot all be true.
+  Personal goal: Earn the trust of a town divided over how its watch should operate.'
+job: Guard Captain
+race: Human
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Earn the trust of a town divided over how its watch should operate.
+secrets:
+- He is considering resigning but has not told the guards who depend on him.
+knowledge:
+- 'Ser Jory Bell can speak to the current situation: Several patrol reports describe the same
+  stranger, but their descriptions cannot all be true.'

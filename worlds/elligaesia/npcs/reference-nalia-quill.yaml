@@ -1,0 +1,23 @@
+id: reference-nalia-quill
+name: Nalia Quill
+description: Methodical and quietly adventurous. Travelers' maps all show a different bend in
+  the same road, despite leaving on the same day.
+details: 'Nalia Quill works as a cartographer. Methodical and quietly adventurous. Current complication:
+  Travelers'' maps all show a different bend in the same road, despite leaving on the same day.
+  Personal goal: Publish maps that show uncertainty honestly instead of pretending every route
+  is safe.'
+job: Cartographer
+race: Half-Elf
+alignment: Lawful Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Publish maps that show uncertainty honestly instead of pretending every route is safe.
+secrets:
+- She copied one dangerous route onto a map to draw treasure hunters away from a village.
+knowledge:
+- 'Nalia Quill can speak to the current situation: Travelers'' maps all show a different bend
+  in the same road, despite leaving on the same day.'

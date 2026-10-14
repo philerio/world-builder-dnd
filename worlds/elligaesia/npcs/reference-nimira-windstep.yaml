@@ -1,0 +1,22 @@
+id: reference-nimira-windstep
+name: Nimira Windstep
+description: Keen-eyed and nimble. A line of fresh tracks circles the party's campsite but never
+  approaches it.
+details: 'Nimira Windstep works as a scout. Keen-eyed and nimble. Current complication: A line
+  of fresh tracks circles the party''s campsite but never approaches it. Personal goal: Keep
+  travelers away from hazards without turning every warning into a toll.'
+job: Scout
+race: Lightfoot Halfling
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep travelers away from hazards without turning every warning into a toll.
+secrets:
+- Nimira has been leaving false trail marks to protect a hidden settlement.
+knowledge:
+- 'Nimira Windstep can speak to the current situation: A line of fresh tracks circles the party''s
+  campsite but never approaches it.'

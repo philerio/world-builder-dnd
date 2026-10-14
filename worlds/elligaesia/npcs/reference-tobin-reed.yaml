@@ -1,0 +1,23 @@
+id: reference-tobin-reed
+name: Tobin Reed
+description: Dry-humored and an excellent listener. Two patrons have been asking the same questions
+  about the old road, but claim not to know one another.
+details: 'Tobin Reed works as a barkeep. Dry-humored and an excellent listener. Current complication:
+  Two patrons have been asking the same questions about the old road, but claim not to know
+  one another. Personal goal: Protect the privacy of his regulars while keeping trouble out
+  of the taproom.'
+job: Barkeep
+race: Halfling
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Protect the privacy of his regulars while keeping trouble out of the taproom.
+secrets:
+- He recognizes a signet ring connected to a family he refuses to discuss.
+knowledge:
+- 'Tobin Reed can speak to the current situation: Two patrons have been asking the same questions
+  about the old road, but claim not to know one another.'

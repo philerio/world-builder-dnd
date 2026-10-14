@@ -1,0 +1,22 @@
+id: reference-edrin-vale
+name: Edrin Vale
+description: Careful and quietly competitive. A page has been removed from several unrelated
+  public records, all on the same date.
+details: 'Edrin Vale works as a scribe. Careful and quietly competitive. Current complication:
+  A page has been removed from several unrelated public records, all on the same date. Personal
+  goal: Create a trustworthy archive of local agreements and history.'
+job: Scribe
+race: Elf
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Create a trustworthy archive of local agreements and history.
+secrets:
+- Edrin once altered a record to protect someone from an unjust penalty.
+knowledge:
+- 'Edrin Vale can speak to the current situation: A page has been removed from several unrelated
+  public records, all on the same date.'

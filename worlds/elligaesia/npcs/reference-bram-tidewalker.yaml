@@ -1,0 +1,22 @@
+id: reference-bram-tidewalker
+name: Bram Tidewalker
+description: Patient and laconic. The river has started returning objects lost upstream, each
+  clean and dry.
+details: 'Bram Tidewalker works as a fisher. Patient and laconic. Current complication: The
+  river has started returning objects lost upstream, each clean and dry. Personal goal: Understand
+  the water well enough to keep the fishing boats safe.'
+job: Fisher
+race: Half-Elf
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Understand the water well enough to keep the fishing boats safe.
+secrets:
+- Bram found a sealed bottle with a plea for help and has not opened it.
+knowledge:
+- 'Bram Tidewalker can speak to the current situation: The river has started returning objects
+  lost upstream, each clean and dry.'

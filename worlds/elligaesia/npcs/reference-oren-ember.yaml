@@ -1,0 +1,22 @@
+id: reference-oren-ember
+name: Oren Ember
+description: Bright, curious, and undisciplined. A small household charm has begun predicting
+  visitors with unsettling accuracy.
+details: 'Oren Ember works as a hedge mage. Bright, curious, and undisciplined. Current complication:
+  A small household charm has begun predicting visitors with unsettling accuracy. Personal goal:
+  Learn enough controlled magic to stop relying on luck.'
+job: Hedge Mage
+race: Gnome
+alignment: Chaotic Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Learn enough controlled magic to stop relying on luck.
+secrets:
+- He accidentally bound a minor spirit to his old kettle and is afraid to admit it.
+knowledge:
+- 'Oren Ember can speak to the current situation: A small household charm has begun predicting
+  visitors with unsettling accuracy.'

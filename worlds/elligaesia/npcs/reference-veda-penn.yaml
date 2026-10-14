@@ -1,0 +1,22 @@
+id: reference-veda-penn
+name: Veda Penn
+description: Diplomatic and highly organized. Three competing merchants have submitted identical
+  bids in different handwriting.
+details: 'Veda Penn works as a guild factor. Diplomatic and highly organized. Current complication:
+  Three competing merchants have submitted identical bids in different handwriting. Personal
+  goal: Keep trade agreements transparent enough to survive political pressure.'
+job: Guild Factor
+race: Half-Elf
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep trade agreements transparent enough to survive political pressure.
+secrets:
+- Veda has a private arrangement with a rival guild that could be seen as betrayal.
+knowledge:
+- 'Veda Penn can speak to the current situation: Three competing merchants have submitted identical
+  bids in different handwriting.'

@@ -1,0 +1,22 @@
+id: reference-oric-malt
+name: Oric Malt
+description: Meticulous and proud of local ingredients. A cask sealed for years has developed
+  a second label in unfamiliar handwriting.
+details: 'Oric Malt works as a brewer. Meticulous and proud of local ingredients. Current complication:
+  A cask sealed for years has developed a second label in unfamiliar handwriting. Personal goal:
+  Create a drink that becomes a local tradition.'
+job: Brewer
+race: Dwarf
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Create a drink that becomes a local tradition.
+secrets:
+- He knows one supplier has been diluting the grain and has not confronted them.
+knowledge:
+- 'Oric Malt can speak to the current situation: A cask sealed for years has developed a second
+  label in unfamiliar handwriting.'

@@ -1,6 +1,7 @@
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from worldbuilder.models.combat import CombatEncounter, CombatResult
 
 
 class StoryText(BaseModel):
@@ -89,6 +90,7 @@ class StoryBeatCheck(BaseModel):
 
 
 class StoryBeat(BaseModel):
+    encounter: CombatEncounter | None = None
     id: str
     name: str
 
@@ -186,6 +188,7 @@ class SessionPrep(BaseModel):
 
 
 class CampaignStory(BaseModel):
+    combat_results: list[CombatResult] = Field(default_factory=list)
     beats: list[StoryBeat] = Field(default_factory=list)
 
     current_beat: str | None = None

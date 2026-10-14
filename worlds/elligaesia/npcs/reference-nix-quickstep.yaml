@@ -1,0 +1,22 @@
+id: reference-nix-quickstep
+name: Nix Quickstep
+description: Fast-talking and unfailingly punctual. A sealed message keeps returning to the
+  delivery bag after Nix leaves it at its destination.
+details: 'Nix Quickstep works as a courier. Fast-talking and unfailingly punctual. Current complication:
+  A sealed message keeps returning to the delivery bag after Nix leaves it at its destination.
+  Personal goal: Build a courier network that reaches isolated communities.'
+job: Courier
+race: Lightfoot Halfling
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Build a courier network that reaches isolated communities.
+secrets:
+- Nix has memorized a message they were paid to forget.
+knowledge:
+- 'Nix Quickstep can speak to the current situation: A sealed message keeps returning to the
+  delivery bag after Nix leaves it at its destination.'

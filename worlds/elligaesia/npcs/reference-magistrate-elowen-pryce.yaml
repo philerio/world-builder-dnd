@@ -1,0 +1,22 @@
+id: reference-magistrate-elowen-pryce
+name: Magistrate Elowen Pryce
+description: Thoughtful and difficult to intimidate. A witness in an ordinary property case
+  has asked for protection before giving testimony.
+details: 'Magistrate Elowen Pryce works as a magistrate. Thoughtful and difficult to intimidate.
+  Current complication: A witness in an ordinary property case has asked for protection before
+  giving testimony. Personal goal: Make rulings that can withstand scrutiny from both sides.'
+job: Magistrate
+race: Human
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Make rulings that can withstand scrutiny from both sides.
+secrets:
+- She is sitting on evidence that implicates a respected official, waiting to verify it.
+knowledge:
+- 'Magistrate Elowen Pryce can speak to the current situation: A witness in an ordinary property
+  case has asked for protection before giving testimony.'

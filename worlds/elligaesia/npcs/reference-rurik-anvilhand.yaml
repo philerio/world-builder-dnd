@@ -1,0 +1,22 @@
+id: reference-rurik-anvilhand
+name: Rurik Anvilhand
+description: Exacting and reserved. A customer paid in advance for armor sized for someone unusually
+  tall, then vanished.
+details: 'Rurik Anvilhand works as a armorer. Exacting and reserved. Current complication: A
+  customer paid in advance for armor sized for someone unusually tall, then vanished. Personal
+  goal: Build a reputation for dependable protective gear.'
+job: Armorer
+race: Dwarf
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Build a reputation for dependable protective gear.
+secrets:
+- He keeps a private ledger of commissions he believes were intended for violence.
+knowledge:
+- 'Rurik Anvilhand can speak to the current situation: A customer paid in advance for armor
+  sized for someone unusually tall, then vanished.'

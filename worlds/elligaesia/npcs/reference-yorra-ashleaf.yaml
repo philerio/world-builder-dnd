@@ -1,0 +1,23 @@
+id: reference-yorra-ashleaf
+name: Yorra Ashleaf
+description: Careful and selective about commissions. A wand she never made has appeared with
+  her maker's mark and a flaw only she would notice.
+details: 'Yorra Ashleaf works as a wandmaker. Careful and selective about commissions. Current
+  complication: A wand she never made has appeared with her maker''s mark and a flaw only she
+  would notice. Personal goal: Craft useful magical tools without making dangerous power too
+  easy to misuse.'
+job: Wandmaker
+race: Wood Elf
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Craft useful magical tools without making dangerous power too easy to misuse.
+secrets:
+- Yorra once destroyed a customer's finished wand rather than return it to an abusive owner.
+knowledge:
+- 'Yorra Ashleaf can speak to the current situation: A wand she never made has appeared with
+  her maker''s mark and a flaw only she would notice.'

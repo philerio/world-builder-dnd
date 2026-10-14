@@ -1,0 +1,22 @@
+id: reference-talla-merrow
+name: Talla Merrow
+description: Watchful and fair-minded. Someone has been leaving food at the gate for a prisoner
+  who insists they have no visitors.
+details: 'Talla Merrow works as a town guard. Watchful and fair-minded. Current complication:
+  Someone has been leaving food at the gate for a prisoner who insists they have no visitors.
+  Personal goal: Keep ordinary residents safe without escalating every dispute.'
+job: Town Guard
+race: Half-Orc
+alignment: Lawful Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep ordinary residents safe without escalating every dispute.
+secrets:
+- She has disobeyed an order once to prevent an innocent arrest.
+knowledge:
+- 'Talla Merrow can speak to the current situation: Someone has been leaving food at the gate
+  for a prisoner who insists they have no visitors.'

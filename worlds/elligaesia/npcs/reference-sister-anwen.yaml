@@ -1,0 +1,22 @@
+id: reference-sister-anwen
+name: Sister Anwen
+description: Compassionate but firm about boundaries. Patients with unrelated injuries describe
+  hearing the same lullaby before they were hurt.
+details: 'Sister Anwen works as a healer. Compassionate but firm about boundaries. Current complication:
+  Patients with unrelated injuries describe hearing the same lullaby before they were hurt.
+  Personal goal: Keep medical care available to anyone who needs it.'
+job: Healer
+race: Human
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Keep medical care available to anyone who needs it.
+secrets:
+- She is exhausted and has begun secretly refusing new patients to avoid a breakdown.
+knowledge:
+- 'Sister Anwen can speak to the current situation: Patients with unrelated injuries describe
+  hearing the same lullaby before they were hurt.'

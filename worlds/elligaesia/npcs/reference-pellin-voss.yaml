@@ -1,0 +1,22 @@
+id: reference-pellin-voss
+name: Pellin Voss
+description: Unassuming and hard to fluster. Receipts from a remote district show tax paid in
+  coins that have not been minted yet.
+details: 'Pellin Voss works as a tax collector. Unassuming and hard to fluster. Current complication:
+  Receipts from a remote district show tax paid in coins that have not been minted yet. Personal
+  goal: Balance the books without punishing people for a bad harvest.'
+job: Tax Collector
+race: Human
+alignment: True Neutral
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Balance the books without punishing people for a bad harvest.
+secrets:
+- He has been quietly forgiving debts that were caused by fraudulent assessments.
+knowledge:
+- 'Pellin Voss can speak to the current situation: Receipts from a remote district show tax
+  paid in coins that have not been minted yet.'

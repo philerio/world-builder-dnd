@@ -1,0 +1,23 @@
+id: reference-milo-brightsong
+name: Milo Brightsong
+description: Charming, dramatic, and more sincere than he lets on. A new verse is appearing
+  in Milo's songs before he writes it, describing places he has never visited.
+details: 'Milo Brightsong works as a traveling performer. Charming, dramatic, and more sincere
+  than he lets on. Current complication: A new verse is appearing in Milo''s songs before he
+  writes it, describing places he has never visited. Personal goal: Collect stories that would
+  otherwise disappear with their tellers.'
+job: Traveling Performer
+race: Tiefling
+alignment: Chaotic Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Collect stories that would otherwise disappear with their tellers.
+secrets:
+- One of his most popular ballads falsely takes credit away from its real hero.
+knowledge:
+- 'Milo Brightsong can speak to the current situation: A new verse is appearing in Milo''s songs
+  before he writes it, describing places he has never visited.'

@@ -1,0 +1,22 @@
+id: reference-sella-moss
+name: Sella Moss
+description: Curious, gentle, and easily distracted by rare plants. A harmless-looking moss
+  is spreading near wells and causing unsettling shared dreams.
+details: 'Sella Moss works as a apothecary. Curious, gentle, and easily distracted by rare plants.
+  Current complication: A harmless-looking moss is spreading near wells and causing unsettling
+  shared dreams. Personal goal: Find a reliable treatment for a recurring local fever.'
+job: Apothecary
+race: Gnome
+alignment: Neutral Good
+city: null
+region: null
+kingdom: null
+tags:
+- Reference NPC
+goals:
+- Find a reliable treatment for a recurring local fever.
+secrets:
+- She has tested a remedy on herself and is hiding an unexpected side effect.
+knowledge:
+- 'Sella Moss can speak to the current situation: A harmless-looking moss is spreading near
+  wells and causing unsettling shared dreams.'
