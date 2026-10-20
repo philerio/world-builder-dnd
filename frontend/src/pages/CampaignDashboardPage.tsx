@@ -21,6 +21,7 @@ import {
   GlobalStyles,
   IconButton,
   LinearProgress,
+  Menu,
   MenuItem,
   Select,
   Stack,
@@ -44,12 +45,15 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EventIcon from "@mui/icons-material/Event";
 import HistoryIcon from "@mui/icons-material/History";
 import TimelineIcon from "@mui/icons-material/Timeline";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import type {
   Campaign,
+  CampaignArcSection,
   CampaignStory,
   EntityResponse,
   StoryBeat,
   StoryBeatCheck,
+  StoryBeatNpcKnowledge,
   StoryBeatStatus,
   StoryConsequence,
   StoryContent,
@@ -95,6 +99,13 @@ const CONSEQUENCE_STATUSES: StoryConsequence["status"][] = [
 ];
 
 type ClockProgressFilter = "all" | "not_started" | "started" | "finished";
+
+type CampaignArcDraft = {
+  description: string;
+  overview: string;
+  overarching_plot_sections: CampaignArcSection[];
+  world_stories: string[];
+};
 type DeleteTarget = {
   kind: "plot point" | "consequence" | "clock" | "player action";
   id: string;
@@ -131,6 +142,7 @@ type BeatDraft = {
   triggers_content: StoryContent;
   possible_approaches_content: StoryContent;
   checks: StoryBeatCheck[];
+  npc_knowledge: StoryBeatNpcKnowledge[];
   status: StoryBeatStatus;
   act: string;
   order: string;
@@ -344,6 +356,135 @@ function PlotPointChecksView({ checks }: { checks: StoryBeatCheck[] }) {
   );
 }
 
+function PlotPointNpcKnowledgeEditor({
+  entries,
+  npcs,
+  onChange,
+  disabled,
+}: {
+  entries: StoryBeatNpcKnowledge[];
+  npcs: EntitySummary[];
+  onChange: (entries: StoryBeatNpcKnowledge[]) => void;
+  disabled?: boolean;
+}) {
+  const updateEntry = (id: string, update: Partial<StoryBeatNpcKnowledge>) => {
+    onChange(entries.map((entry) => entry.id === id ? { ...entry, ...update } : entry));
+  };
+
+  return (
+    <Stack spacing={1} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+        <Box>
+          <Typography variant="subtitle2">NPC knowledge</Typography>
+          <Typography variant="caption" color="text.secondary">Scene-specific information an NPC knows and may share.</Typography>
+        </Box>
+        <Button size="small" startIcon={<AddIcon />} onClick={() => onChange([...entries, {
+          id: crypto.randomUUID(), npc_id: "", information: "",
+        }])} disabled={disabled}>Add NPC knowledge</Button>
+      </Stack>
+      {entries.map((entry, index) => (
+        <Box key={entry.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
+          <Stack spacing={1}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <FormControl size="small" fullWidth>
+                <Select
+                  value={entry.npc_id}
+                  displayEmpty
+                  aria-label={`NPC for knowledge ${index + 1}`}
+                  onChange={(event) => updateEntry(entry.id, { npc_id: event.target.value })}
+                  disabled={disabled}
+                  renderValue={(value) => typeof value === "string" && value
+                    ? npcs.find((npc) => npc.id === value)?.name ?? value
+                    : "Choose an NPC"}
+                >
+                  <MenuItem value=""><em>Choose an NPC</em></MenuItem>
+                  {npcs.map((npc) => <MenuItem key={npc.id} value={npc.id}>{npc.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <Tooltip title="Remove this NPC knowledge entry">
+                <span><IconButton aria-label={`Remove NPC knowledge ${index + 1}`} onClick={() => onChange(entries.filter((item) => item.id !== entry.id))} disabled={disabled} size="small"><DeleteOutlineIcon /></IconButton></span>
+              </Tooltip>
+            </Stack>
+            <TextField label="What they know" value={entry.information} onChange={(event) => updateEntry(entry.id, { information: event.target.value })} multiline minRows={2} disabled={disabled} />
+            <TextField label="What they believe (optional)" value={entry.belief ?? ""} onChange={(event) => updateEntry(entry.id, { belief: event.target.value || undefined })} multiline minRows={1} disabled={disabled} />
+            <TextField label="What prompts them to share it (optional)" value={entry.shares_if ?? ""} onChange={(event) => updateEntry(entry.id, { shares_if: event.target.value || undefined })} multiline minRows={1} disabled={disabled} />
+            {entry.check ? <>
+              <Typography variant="caption" color="text.secondary">Optional check to reveal this information</Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                <FormControl size="small" fullWidth>
+                  <Select value={entry.check.roll_type} aria-label={`Roll type for NPC knowledge ${index + 1}`} onChange={(event) => updateEntry(entry.id, { check: { ...entry.check!, roll_type: event.target.value as StoryBeatCheck["roll_type"] } })} disabled={disabled}>
+                    {CHECK_ROLL_TYPES.map((rollType) => <MenuItem key={rollType.value} value={rollType.value}>{rollType.label}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <FormControl size="small" fullWidth>
+                  <Select value={entry.check.skill ?? ""} displayEmpty aria-label={`Skill for NPC knowledge ${index + 1}`} onChange={(event) => updateEntry(entry.id, { check: { ...entry.check!, skill: event.target.value || undefined } })} disabled={disabled} renderValue={(value) => typeof value === "string" && value ? value : "Skill (optional)"}>
+                    <MenuItem value=""><em>Skill (optional)</em></MenuItem>
+                    {CHECK_SKILLS.map((skill) => <MenuItem key={skill} value={skill}>{skill}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <TextField size="small" label="DC" type="number" value={entry.check.dc ?? ""} onChange={(event) => updateEntry(entry.id, { check: { ...entry.check!, dc: event.target.value ? Number(event.target.value) : undefined } })} disabled={disabled} slotProps={{ htmlInput: { min: 1, max: 40, step: 1 } }} sx={{ minWidth: { sm: 100 } }} />
+              </Stack>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                <TextField fullWidth size="small" label="On success" value={entry.check.success ?? ""} onChange={(event) => updateEntry(entry.id, { check: { ...entry.check!, success: event.target.value || undefined } })} multiline minRows={1} disabled={disabled} />
+                <TextField fullWidth size="small" label="On failure" value={entry.check.failure ?? ""} onChange={(event) => updateEntry(entry.id, { check: { ...entry.check!, failure: event.target.value || undefined } })} multiline minRows={1} disabled={disabled} />
+              </Stack>
+              <Box><Button size="small" onClick={() => updateEntry(entry.id, { check: undefined })} disabled={disabled}>Remove check</Button></Box>
+            </> : <Box><Button size="small" onClick={() => updateEntry(entry.id, { check: {
+              id: crypto.randomUUID(), name: "Reveal information", category: "notice", roll_type: "skill_check", ability: "wisdom",
+            } })} disabled={disabled}>Add check</Button></Box>}
+          </Stack>
+        </Box>
+      ))}
+      {!entries.length && <Typography variant="body2" color="text.secondary">No NPC-specific information added.</Typography>}
+    </Stack>
+  );
+}
+
+function PlotClockCard({
+  clock,
+  plotPointName,
+  disabled,
+  onUpdate,
+  onEdit,
+  onDelete,
+}: {
+  clock: WorldClock;
+  plotPointName: string;
+  disabled?: boolean;
+  onUpdate: (updater: (clock: WorldClock) => WorldClock) => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <Box sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+      <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 600 }}>{clock.name}</Typography>
+          <Typography variant="caption" color="text.secondary">{plotPointName} · {clock.current} of {clock.maximum} · {formatStatusLabel(clock.status)}</Typography>
+        </Box>
+        {(onEdit || onDelete) && <Stack direction="row" spacing={0.25}>
+          {onEdit && <IconButton aria-label={`Edit clock ${clock.name}`} title="Edit clock" size="small" onClick={onEdit} disabled={disabled}><EditIcon fontSize="small" /></IconButton>}
+          {onDelete && <IconButton aria-label={`Delete clock ${clock.name}`} title="Delete clock" size="small" onClick={onDelete} disabled={disabled}><DeleteOutlineIcon fontSize="small" /></IconButton>}
+        </Stack>}
+      </Stack>
+      {clock.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{clock.description}</Typography>}
+      <LinearProgress variant="determinate" value={Math.min(100, (clock.current / Math.max(1, clock.maximum)) * 100)} sx={{ my: 1 }} />
+      {clock.current > 0 && clock.stages?.[clock.current - 1] && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>{clock.stages[clock.current - 1]}</Typography>}
+      <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+        {clock.status === "completed" && <Chip size="small" color="success" label="Complete" />}
+        <Tooltip title="Undo one step"><span><IconButton aria-label={`Undo one step on ${clock.name}`} size="small" onClick={() => onUpdate((item) => ({ ...item, current: Math.max(0, item.current - 1), status: item.status === "completed" ? "active" : item.status }))} disabled={disabled || clock.current <= 0}><UndoIcon /></IconButton></span></Tooltip>
+        <Tooltip title={clock.status === "paused" ? "Resume clock" : "Pause clock"}><span><IconButton aria-label={clock.status === "paused" ? `Resume ${clock.name}` : `Pause ${clock.name}`} size="small" onClick={() => onUpdate((item) => ({ ...item, status: item.status === "paused" ? "active" : "paused" }))} disabled={disabled || clock.status === "completed"}>{clock.status === "paused" ? <PlayArrowIcon /> : <PauseIcon />}</IconButton></span></Tooltip>
+        <Tooltip title="Advance one step"><span><IconButton aria-label={`Advance ${clock.name}`} size="small" onClick={() => onUpdate((item) => {
+          const current = Math.min(item.maximum, item.current + 1);
+          return { ...item, current, status: current >= item.maximum ? "completed" : item.status };
+        })} disabled={disabled || clock.status === "paused" || clock.status === "completed" || clock.current >= clock.maximum}><PlayArrowIcon /></IconButton></span></Tooltip>
+        <Tooltip title="Reset clock"><span><IconButton aria-label={`Reset ${clock.name}`} size="small" onClick={() => onUpdate((item) => ({ ...item, current: 0, status: "active" }))} disabled={disabled || (clock.current === 0 && clock.status === "active")}><RestartAltIcon /></IconButton></span></Tooltip>
+      </Stack>
+      {clock.completion && <Typography variant="caption" color="text.secondary">At completion: {clock.completion}</Typography>}
+    </Box>
+  );
+}
+
 type ConsequenceDraft = {
   description: string;
   trigger: string;
@@ -357,6 +498,7 @@ type ConsequenceDraft = {
 
 type ClockDraft = {
   name: string;
+  plot_point_id: string;
   description: string;
   current: string;
   maximum: string;
@@ -434,7 +576,15 @@ type WorldEventSourceDraft = {
 
 const listToText = (values?: string[]) => (values ?? []).join("\n");
 const textToList = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
-const optionalText = (value: string) => value.trim() || undefined;
+const optionalText = (value: string | undefined) => value?.trim() || undefined;
+
+function campaignArcSections(campaign: Campaign): CampaignArcSection[] {
+  if (campaign.overarching_plot_sections?.length) return campaign.overarching_plot_sections;
+  return (campaign.overarching_plot ?? "")
+    .split(/\n\s*\n/)
+    .map((content, index) => ({ id: `legacy-arc-${index + 1}`, title: `Arc Section ${index + 1}`, content: content.trim() }))
+    .filter((section) => section.content.length > 0);
+}
 const optionalInteger = (value: string) => {
   if (!value.trim()) return undefined;
   const parsed = Number.parseInt(value, 10);
@@ -906,6 +1056,8 @@ function CampaignDashboardPage() {
   const [linkingReference, setLinkingReference] = useState(false);
   const [loadedCampaignId, setLoadedCampaignId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [campaignArcEditorOpen, setCampaignArcEditorOpen] = useState(false);
+  const [campaignArcDraft, setCampaignArcDraft] = useState<CampaignArcDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [beatName, setBeatName] = useState("");
   const [beatDescription, setBeatDescription] = useState("");
@@ -916,9 +1068,19 @@ function CampaignDashboardPage() {
   const [beatStatusFilter, setBeatStatusFilter] = useState<StoryBeatStatus | "all">("all");
   const [beatConsequenceFilterIds, setBeatConsequenceFilterIds] = useState<string[]>([]);
   const [beatEventFilterIds, setBeatEventFilterIds] = useState<string[]>([]);
+  const [consequenceBeatFilterIds, setConsequenceBeatFilterIds] = useState<string[]>([]);
+  const [consequenceTargetFilterIds, setConsequenceTargetFilterIds] = useState<string[]>([]);
+  const [consequenceStatusFilter, setConsequenceStatusFilter] = useState<StoryConsequence["status"] | "all">("all");
+  const [consequenceSearch, setConsequenceSearch] = useState("");
+  const [consequenceFiltersAnchorEl, setConsequenceFiltersAnchorEl] = useState<HTMLElement | null>(null);
   const [clockProgressFilter, setClockProgressFilter] = useState<ClockProgressFilter>("all");
+  const [plotClockProgressFilter, setPlotClockProgressFilter] = useState<ClockProgressFilter>("all");
+  const [plotClockBeatFilterId, setPlotClockBeatFilterId] = useState("all");
   const [clockName, setClockName] = useState("");
   const [clockMaximum, setClockMaximum] = useState("3");
+  const [plotClockName, setPlotClockName] = useState("");
+  const [plotClockMaximum, setPlotClockMaximum] = useState("3");
+  const [plotClockCreateBeatId, setPlotClockCreateBeatId] = useState("");
   const [consequenceDescription, setConsequenceDescription] = useState("");
   const [editingBeatId, setEditingBeatId] = useState<string | null>(null);
   const [beatDraft, setBeatDraft] = useState<BeatDraft | null>(null);
@@ -1029,9 +1191,14 @@ function CampaignDashboardPage() {
   const closeoutActions = unreviewedActions.filter((action) => closeoutSessionFilter === "all"
     || (closeoutSessionFilter === "unassigned" ? action.session === undefined : String(action.session) === closeoutSessionFilter));
   const clocks = campaignStory.world_clocks;
+  const worldClocks = clocks.filter((clock) => !clock.plot_point_id);
+  const plotClocks = clocks.filter((clock) => Boolean(clock.plot_point_id));
   const filteredClocks = clockProgressFilter === "all"
-    ? clocks
-    : clocks.filter((clock) => getClockProgress(clock) === clockProgressFilter);
+    ? worldClocks
+    : worldClocks.filter((clock) => getClockProgress(clock) === clockProgressFilter);
+  const filteredPlotClocks = plotClocks.filter((clock) =>
+    (plotClockProgressFilter === "all" || getClockProgress(clock) === plotClockProgressFilter)
+    && (plotClockBeatFilterId === "all" || clock.plot_point_id === plotClockBeatFilterId));
   const linkedEntityIds = [
     ...(campaign?.player_characters ?? []),
     ...(campaign?.npcs ?? []),
@@ -1060,6 +1227,10 @@ function CampaignDashboardPage() {
   const currentBeat = beats.find(
     (beat) => beat.id === campaignStory.current_beat,
   );
+  const currentPlotClocks = currentBeat
+    ? plotClocks.filter((clock) => clock.plot_point_id === currentBeat.id)
+    : [];
+  const selectedPrepPlotClocks = plotClocks.filter((clock) => prepPlotPointIds.includes(clock.plot_point_id ?? ""));
   const consequences = useMemo(
     () =>
       beats.flatMap((beat) =>
@@ -1075,6 +1246,20 @@ function CampaignDashboardPage() {
     entity_type: "consequence",
     name: `${beat.name}: ${consequence.description}`,
   }));
+  const consequenceTargetOptions = [...plotPointOptions, ...worldEventOptions];
+  const consequenceFilterCount = Number(Boolean(consequenceSearch.trim()))
+    + Number(consequenceBeatFilterIds.length > 0)
+    + Number(consequenceStatusFilter !== "all")
+    + Number(consequenceTargetFilterIds.length > 0);
+  const filteredConsequences = consequences.filter(({ beat, consequence }) => {
+    if (consequenceBeatFilterIds.length && !consequenceBeatFilterIds.includes(beat.id)) return false;
+    if (consequenceStatusFilter !== "all" && consequence.status !== consequenceStatusFilter) return false;
+    if (consequenceTargetFilterIds.length && !consequenceTargetFilterIds.some((id) => consequence.leads_to?.includes(id))) return false;
+    const search = consequenceSearch.trim().toLocaleLowerCase();
+    if (search && ![beat.name, consequence.description, consequence.trigger, consequence.player_action, consequence.timing]
+      .some((value) => value?.toLocaleLowerCase().includes(search))) return false;
+    return true;
+  });
   const worldEventIds = new Set(worldEventOptions.map((event) => event.id));
   const filteredBeats = beats.filter((beat) => {
     if (beatStatusFilter !== "all" && beat.status !== beatStatusFilter) return false;
@@ -1140,6 +1325,7 @@ function CampaignDashboardPage() {
   const selectedPrepConsequences = consequences.filter(({ beat, consequence }) =>
     (prepPlotPointIds.includes(beat.id) || consequence.leads_to?.some((beatId) => prepPlotPointIds.includes(beatId)))
     && (consequence.status === "pending" || consequence.status === "active"));
+  const otherSelectedPrepConsequences = selectedPrepConsequences.filter(({ beat }) => beat.id !== currentBeat?.id);
   const prepStoryIds = [...new Set(selectedPrepBeats.flatMap((beat) => beat.world_stories ?? []))];
   const prepStoryThreads = [...new Map(selectedPrepBeats.flatMap((beat) => beat.world_story_threads ?? [])
     .map((link) => [encodeThreadLink(link), link])).values()];
@@ -1235,6 +1421,41 @@ function CampaignDashboardPage() {
       setCampaign(saved.entity as unknown as Campaign);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not update campaign status.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openCampaignArcEditor = () => {
+    setCampaignArcDraft({
+      description: campaign?.description ?? "",
+      overview: campaign?.overview ?? "",
+      overarching_plot_sections: campaign ? campaignArcSections(campaign) : [],
+      world_stories: campaign?.world_stories ?? [],
+    });
+    setCampaignArcEditorOpen(true);
+  };
+
+  const saveCampaignArc = async () => {
+    if (!campaign || !campaignId || !campaignArcDraft) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const saved = await updateEntity(campaignId, {
+        ...campaign,
+        description: optionalText(campaignArcDraft.description),
+        overview: optionalText(campaignArcDraft.overview),
+        overarching_plot: optionalText(campaignArcDraft.overarching_plot_sections.map((section) => section.content.trim()).filter(Boolean).join("\n\n")),
+        overarching_plot_sections: campaignArcDraft.overarching_plot_sections
+          .map((section) => ({ ...section, title: section.title.trim(), content: section.content.trim() }))
+          .filter((section) => section.title || section.content),
+        world_stories: campaignArcDraft.world_stories,
+      });
+      setCampaign(saved.entity as unknown as Campaign);
+      setCampaignArcEditorOpen(false);
+      setCampaignArcDraft(null);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Could not update the campaign arc.");
     } finally {
       setSaving(false);
     }
@@ -1718,6 +1939,9 @@ function CampaignDashboardPage() {
             })),
           })),
         current_beat: current.current_beat === deleteTarget.id ? undefined : current.current_beat,
+        world_clocks: current.world_clocks.map((clock) => clock.plot_point_id === deleteTarget.id
+          ? { ...clock, plot_point_id: undefined }
+          : clock),
         player_actions: current.player_actions.map((action) => ({
           ...action,
           story_beat: action.story_beat === deleteTarget.id ? undefined : action.story_beat,
@@ -1806,13 +2030,14 @@ function CampaignDashboardPage() {
     setActionWorldStoryThreads([]);
   };
 
-  const addClock = () => {
-    const name = clockName.trim();
-    const maximum = Math.max(1, Number.parseInt(clockMaximum, 10) || 1);
+  const addClock = (nameValue: string, maximumValue: string, plotPointId?: string) => {
+    const name = nameValue.trim();
+    const maximum = Math.max(1, Number.parseInt(maximumValue, 10) || 1);
     if (!name) return;
     const clock: WorldClock = {
       id: crypto.randomUUID(),
       name,
+      plot_point_id: optionalText(plotPointId),
       current: 0,
       maximum,
       status: "active",
@@ -1822,8 +2047,14 @@ function CampaignDashboardPage() {
       ...current,
       world_clocks: [...current.world_clocks, clock],
     }));
-    setClockName("");
-    setClockMaximum("3");
+    if (plotPointId) {
+      setPlotClockName("");
+      setPlotClockMaximum("3");
+      setPlotClockCreateBeatId("");
+    } else {
+      setClockName("");
+      setClockMaximum("3");
+    }
   };
 
   const addConsequence = () => {
@@ -1900,6 +2131,7 @@ function CampaignDashboardPage() {
       triggers_content: beat.triggers_content ?? storyContentFromText(listToText(beat.triggers)),
       possible_approaches_content: beat.possible_approaches_content ?? storyContentFromText(listToText(beat.possible_approaches)),
       checks: beat.checks ?? [],
+      npc_knowledge: beat.npc_knowledge ?? [],
       status: beat.status,
       act: beat.act ?? "",
       order: beat.order === undefined ? "" : String(beat.order),
@@ -1937,9 +2169,13 @@ function CampaignDashboardPage() {
         possible_approaches: textToList(storyContentText(beatDraft.possible_approaches_content)),
         possible_approaches_content: hasEntityLinks(beatDraft.possible_approaches_content) ? beatDraft.possible_approaches_content : undefined,
         checks: beatDraft.checks,
+        npc_knowledge: beatDraft.npc_knowledge,
         leads_to: textToList(beatDraft.leads_to),
         locations: textToList(beatDraft.locations),
-        npcs: textToList(beatDraft.npcs),
+        npcs: [...new Set([
+          ...textToList(beatDraft.npcs),
+          ...beatDraft.npc_knowledge.map((entry) => entry.npc_id).filter(Boolean),
+        ])],
         player_characters: textToList(beatDraft.player_characters),
         world_events: textToList(beatDraft.world_events),
         world_stories: withThreadStories(beatDraft.world_stories, beatDraft.world_story_threads),
@@ -2001,6 +2237,7 @@ function CampaignDashboardPage() {
     setEditingClockId(clock.id);
     setClockDraft({
       name: clock.name,
+      plot_point_id: clock.plot_point_id ?? "",
       description: clock.description ?? "",
       current: String(clock.current),
       maximum: String(clock.maximum),
@@ -2017,6 +2254,7 @@ function CampaignDashboardPage() {
     updateClock(clockId, (clock) => ({
       ...clock,
       name: clockDraft.name.trim(),
+      plot_point_id: optionalText(clockDraft.plot_point_id),
       description: optionalText(clockDraft.description),
       current,
       maximum,
@@ -2217,11 +2455,15 @@ function CampaignDashboardPage() {
               <Stack spacing={2}>
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>World clocks</Typography>
-                  {clocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{clocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                  {worldClocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{worldClocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
                     <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between" }}><Typography sx={{ fontWeight: 600 }}>{clock.name}</Typography><Typography variant="caption">{clock.current}/{clock.maximum} · {formatStatusLabel(clock.status)}</Typography></Stack>
                     {clock.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{clock.description}</Typography>}
                     {clock.completion && <Typography variant="caption" color="text.secondary">At completion: {clock.completion}</Typography>}
                   </Box>)}</Stack> : <Typography color="text.secondary">No active world clocks.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Plot clocks</Typography>
+                  {selectedPrepPlotClocks.length ? <Stack spacing={1}>{selectedPrepPlotClocks.map((clock) => <PlotClockCard key={clock.id} clock={clock} plotPointName={beats.find((beat) => beat.id === clock.plot_point_id)?.name ?? "Plot Point"} disabled onUpdate={() => undefined} />)}</Stack> : <Typography color="text.secondary">Select Plot Points in Session Prep to see their clocks here.</Typography>}
                 </CardContent></Card>
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>World Stories</Typography>
@@ -2309,6 +2551,19 @@ function CampaignDashboardPage() {
                       <Typography variant="subtitle2" color="warning.main">DM-only information</Typography>
                       <Stack component="ul" spacing={0.5} sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{currentBeat.secrets.map((secret) => <li key={`${currentBeat.id}-${secret}`}><Typography variant="body2">{secret}</Typography></li>)}</Stack>
                     </Box> : null}
+                    {currentBeat.npc_knowledge?.length ? <Box>
+                      <Typography variant="subtitle2">NPC knowledge</Typography>
+                      <Stack spacing={0.75} sx={{ mt: 0.5 }}>{currentBeat.npc_knowledge.map((entry) => {
+                        const npc = entities.find((entity) => entity.id === entry.npc_id);
+                        return <Box key={entry.id} sx={{ p: 1, border: 1, borderColor: "divider", borderRadius: 1 }}>
+                          <Chip size="small" clickable label={npc?.name ?? "Unknown NPC"} onClick={() => npc && openEntity(npc.id)} />
+                          <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>{entry.information}</Typography>
+                          {entry.belief && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>Believes: {entry.belief}</Typography>}
+                          {entry.shares_if && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>Shares if: {entry.shares_if}</Typography>}
+                          {entry.check && <Box sx={{ mt: 0.75 }}><PlotPointChecksView checks={[entry.check]} /></Box>}
+                        </Box>;
+                      })}</Stack>
+                    </Box> : null}
                     {currentBeat.consequences?.length ? <Box>
                       <Typography variant="subtitle2">Consequences</Typography>
                       <Stack spacing={0.75} sx={{ mt: 0.5 }}>{currentBeat.consequences.map((consequence) => <Box key={consequence.id} sx={{ p: 1, border: 1, borderColor: "divider", borderRadius: 1 }}>
@@ -2319,10 +2574,24 @@ function CampaignDashboardPage() {
                         {consequence.trigger && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>Trigger: {consequence.trigger}</Typography>}
                         {consequence.timing && <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Timing: {consequence.timing}</Typography>}
                         {consequence.player_action && <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Related action: {consequence.player_action}</Typography>}
+                        {consequence.leads_to?.length ? <Box sx={{ mt: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">May lead to</Typography>
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                            {consequence.leads_to.map((beatId) => {
+                              const nextBeat = beats.find((item) => item.id === beatId);
+                              return nextBeat ? <Chip key={beatId} size="small" clickable label={nextBeat.name} onClick={() => setCurrentBeat(beatId)} /> : null;
+                            })}
+                          </Stack>
+                        </Box> : null}
                         <WorldStoryReferenceChips worldStoryIds={consequence.world_stories ?? []} threadLinks={consequence.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                          {consequence.status === "pending" && <Button size="small" onClick={() => updateConsequenceStatus(currentBeat.id, consequence.id, "active")} disabled={saving || legacyStory}>Activate</Button>}
+                          {consequence.status !== "resolved" && <Button size="small" onClick={() => updateConsequenceStatus(currentBeat.id, consequence.id, "resolved")} disabled={saving || legacyStory}>Resolve</Button>}
+                          {consequence.status !== "prevented" && <Button size="small" onClick={() => updateConsequenceStatus(currentBeat.id, consequence.id, "prevented")} disabled={saving || legacyStory}>Prevent</Button>}
+                        </Stack>
                       </Box>)}</Stack>
                     </Box> : null}
-                    {!currentBeat.description && !currentBeat.description_content?.nodes.length && !currentBeat.events && !currentBeat.events_content?.nodes.length && !currentBeat.triggers?.length && !currentBeat.triggers_content?.nodes.length && !currentBeat.possible_approaches?.length && !currentBeat.possible_approaches_content?.nodes.length && !currentBeat.checks?.length && !currentBeat.secrets?.length && !currentBeat.consequences?.length && <Typography variant="body2" color="text.secondary">No additional preparation details have been added to this Plot Point yet.</Typography>}
+                    {!currentBeat.description && !currentBeat.description_content?.nodes.length && !currentBeat.events && !currentBeat.events_content?.nodes.length && !currentBeat.triggers?.length && !currentBeat.triggers_content?.nodes.length && !currentBeat.possible_approaches?.length && !currentBeat.possible_approaches_content?.nodes.length && !currentBeat.checks?.length && !currentBeat.secrets?.length && !currentBeat.npc_knowledge?.length && !currentBeat.consequences?.length && <Typography variant="body2" color="text.secondary">No additional preparation details have been added to this Plot Point yet.</Typography>}
                   </Stack>
                 </CardContent></Card>}
                 <Card variant="outlined"><CardContent>
@@ -2345,7 +2614,7 @@ function CampaignDashboardPage() {
               <Stack spacing={2}>
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>World clocks</Typography>
-                  {clocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{clocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                  {worldClocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{worldClocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
                     <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "center" }}><Typography sx={{ fontWeight: 600 }}>{clock.name}</Typography><Typography variant="caption">{clock.current}/{clock.maximum}</Typography></Stack>
                     <LinearProgress variant="determinate" value={Math.min(100, clock.current / Math.max(1, clock.maximum) * 100)} sx={{ my: 1 }} />
                     <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end" }}>
@@ -2356,17 +2625,23 @@ function CampaignDashboardPage() {
                   </Box>)}</Stack> : <Typography color="text.secondary">No active world clocks.</Typography>}
                 </CardContent></Card>
                 <Card variant="outlined"><CardContent>
-                  <Typography variant="h3" sx={{ mb: 1.5 }}>Consequences to watch</Typography>
-                  {selectedPrepConsequences.length ? <Stack spacing={1}>{selectedPrepConsequences.map(({ beat, consequence }) => <Box key={`${beat.id}-${consequence.id}`} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Current Plot Clocks</Typography>
+                  {currentPlotClocks.length ? <Stack spacing={1}>{currentPlotClocks.map((clock) => <PlotClockCard key={clock.id} clock={clock} plotPointName={currentBeat?.name ?? "Current Plot Point"} disabled={saving || legacyStory} onUpdate={(updater) => updateClock(clock.id, updater)} />)}</Stack> : <Typography color="text.secondary">No Plot Clocks are attached to the current Plot Point.</Typography>}
+                </CardContent></Card>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="h3" sx={{ mb: 1.5 }}>Other prepared consequences</Typography>
+                  {otherSelectedPrepConsequences.length ? <Stack spacing={1}>{otherSelectedPrepConsequences.map(({ beat, consequence }) => <Box key={`${beat.id}-${consequence.id}`} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
                     <Typography>{consequence.description}</Typography>
                     <Typography variant="caption" color="text.secondary">{beat.name} · {formatStatusLabel(consequence.status)}</Typography>
+                    {consequence.trigger && <Typography variant="body2" color="text.secondary">Trigger: {consequence.trigger}</Typography>}
+                    {consequence.timing && <Typography variant="body2" color="text.secondary">Timing: {consequence.timing}</Typography>}
                     <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
                       {consequence.status === "pending" && <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "active")} disabled={saving || legacyStory}>Activate</Button>}
                       <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "resolved")} disabled={saving || legacyStory}>Resolve</Button>
                       <Button size="small" onClick={() => updateConsequenceStatus(beat.id, consequence.id, "prevented")} disabled={saving || legacyStory}>Prevent</Button>
                     </Stack>
-                  </Box>)}</Stack> : <Typography color="text.secondary">No pending consequences on selected Plot Points.</Typography>}
-                  {!prepPlotPointIds.length && <Typography variant="caption" color="text.secondary">Select Plot Points in Session Prep to pin their consequences here.</Typography>}
+                  </Box>)}</Stack> : <Typography color="text.secondary">No other pending consequences from the prepared Plot Points.</Typography>}
+                  {!prepPlotPointIds.length && <Typography variant="caption" color="text.secondary">Consequences for the current Plot Point appear in its reference card. Select Plot Points in Session Prep to pin additional consequences here.</Typography>}
                 </CardContent></Card>
               </Stack>
             </Box>
@@ -2401,11 +2676,52 @@ function CampaignDashboardPage() {
 
       <Box sx={{ mb: 4 }}>
         <Typography variant="h1">{campaign.name}</Typography>
-        <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 900 }}>
-          {campaign.overview || campaign.description || "Campaign session workspace."}
-        </Typography>
         <Box sx={{ mt: 2 }}>{workspaceNavigation}</Box>
       </Box>
+
+      <Accordion
+        sx={{ mb: 2.5, border: 1, borderColor: "divider", borderRadius: "12px !important", "&:before": { display: "none" } }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 2, minHeight: 64, "& .MuiAccordionSummary-content": { my: 1 } }}>
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", width: "100%", minWidth: 0, gap: 1, pr: 1 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.2 }}>CAMPAIGN ARC</Typography>
+              <Typography variant="h2" sx={{ fontSize: "1.2rem" }}>Overview and overarching plot</Typography>
+            </Box>
+            <Tooltip title="Edit campaign description and arc">
+              <IconButton
+                aria-label="Edit campaign description and arc"
+                onClick={(event) => { event.stopPropagation(); openCampaignArcEditor(); }}
+                onFocus={(event) => event.stopPropagation()}
+                disabled={saving}
+                size="small"
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 2, pt: 0, pb: 2 }}>
+          <Box sx={{ maxHeight: { xs: 260, md: 340 }, overflowY: "auto", pr: 1 }}>
+            {campaign.description && <Typography color="text.secondary" sx={{ mb: 1.5, whiteSpace: "pre-wrap" }}>{campaign.description}</Typography>}
+            {campaign.overview && <Typography sx={{ mb: 1.5, whiteSpace: "pre-wrap" }}>{campaign.overview}</Typography>}
+            {campaignArcSections(campaign).length
+              ? <Stack spacing={1.5} sx={{ mt: campaign.description || campaign.overview ? 1 : 0 }}>
+                {campaignArcSections(campaign).map((section) => <Box key={section.id} sx={{ pl: 1.25, borderLeft: 2, borderColor: "divider" }}>
+                  <Typography variant="subtitle2" color="primary.main" sx={{ mb: 0.35 }}>{section.title || "Untitled section"}</Typography>
+                  <Typography sx={{ whiteSpace: "pre-wrap" }}>{section.content}</Typography>
+                </Box>)}
+              </Stack>
+              : <Typography color="text.secondary">Add the campaign’s high-level direction here. Plot Points and Consequences can track how it unfolds during play.</Typography>}
+            {(campaign.world_stories?.length ?? 0) > 0 && <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 1.5 }}>
+              {campaign.world_stories?.map((storyId) => {
+                const worldStory = worldStories.find((item) => item.id === storyId);
+                return worldStory ? <Chip key={storyId} size="small" label={worldStory.name} onClick={() => openEntity(storyId)} clickable /> : null;
+              })}
+            </Stack>}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {legacyStory && (
@@ -2664,6 +2980,12 @@ function CampaignDashboardPage() {
                           onChange={(checks) => setBeatDraft({ ...beatDraft, checks })}
                           disabled={saving}
                         />
+                        <PlotPointNpcKnowledgeEditor
+                          entries={beatDraft.npc_knowledge}
+                          npcs={npcOptions}
+                          onChange={(npc_knowledge) => setBeatDraft({ ...beatDraft, npc_knowledge })}
+                          disabled={saving}
+                        />
                         <CombatEncounterEditor value={beatDraft.encounter} onChange={(encounter) => setBeatDraft({ ...beatDraft, encounter })} entities={entities} maps={worldData?.maps ?? []} locations={locationOptions} disabled={saving} />
                         <TextField label="DM-only information (one per line)" value={beatDraft.secrets} onChange={(event) => setBeatDraft({ ...beatDraft, secrets: event.target.value })} multiline minRows={2} disabled={saving} />
                         <EntityIdMultiSelect label="Leads to plot points" ids={textToList(beatDraft.leads_to)} options={plotPointOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, leads_to: listToText(ids) })} disabled={saving} />
@@ -2685,7 +3007,7 @@ function CampaignDashboardPage() {
                         </Stack>
                       </Stack>
                     )}
-                    {editingBeatId !== beat.id && (beat.events || beat.events_content?.nodes.length || beat.triggers?.length || beat.triggers_content?.nodes.length || beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length || beat.checks?.length || beat.secrets?.length) && (
+                    {editingBeatId !== beat.id && (beat.events || beat.events_content?.nodes.length || beat.triggers?.length || beat.triggers_content?.nodes.length || beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length || beat.checks?.length || beat.npc_knowledge?.length || beat.secrets?.length) && (
                       <Accordion disableGutters elevation={0} sx={{ mt: 1, "&:before": { display: "none" } }}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0, minHeight: 36, "& .MuiAccordionSummary-content": { my: 0.5 } }}>
                           <Typography variant="caption" color="text.secondary">Preparation details</Typography>
@@ -2696,6 +3018,10 @@ function CampaignDashboardPage() {
                             {(beat.triggers?.length || beat.triggers_content?.nodes.length) ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Possible triggers</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{(beat.triggers_content ? splitStoryContentLines(beat.triggers_content) : (beat.triggers ?? []).map((trigger) => storyContentFromText(trigger))).map((content, index) => <li key={`${beat.id}-trigger-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}</Box></Box> : null}
                             {(beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length) ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Possible approaches</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{(beat.possible_approaches_content ? splitStoryContentLines(beat.possible_approaches_content) : (beat.possible_approaches ?? []).map((approach) => storyContentFromText(approach))).map((content, index) => <li key={`${beat.id}-approach-${index}`}><Typography variant="body2"><StoryContentView content={content} onOpenEntity={openEntity} /></Typography></li>)}</Box></Box> : null}
                             {beat.checks?.length ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>Checks & possible notices</Typography><Box sx={{ mt: 0.5 }}><PlotPointChecksView checks={beat.checks} /></Box></Box> : null}
+                            {beat.npc_knowledge?.length ? <Box><Typography variant="caption" sx={{ fontWeight: 700 }}>NPC knowledge</Typography><Stack spacing={0.75} sx={{ mt: 0.5 }}>{beat.npc_knowledge.map((entry) => {
+                              const npc = entities.find((entity) => entity.id === entry.npc_id);
+                              return <Box key={entry.id}><Button size="small" onClick={() => npc && openEntity(npc.id)} sx={{ p: 0, minWidth: 0 }}>{npc?.name ?? "Unknown NPC"}</Button><Typography variant="body2">{entry.information}</Typography>{entry.belief && <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Believes: {entry.belief}</Typography>}{entry.shares_if && <Typography variant="caption" color="text.secondary">Shares if: {entry.shares_if}</Typography>}{entry.check && <PlotPointChecksView checks={[entry.check]} />}</Box>;
+                            })}</Stack></Box> : null}
                             {beat.secrets?.length ? <Box><Typography variant="caption" color="warning.main" sx={{ fontWeight: 700 }}>DM-only information</Typography><Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2.5 }}>{beat.secrets.map((secret) => <li key={secret}><Typography variant="body2">{secret}</Typography></li>)}</Box></Box> : null}
                           </Stack>
                         </AccordionDetails>
@@ -2827,9 +3153,51 @@ function CampaignDashboardPage() {
               ) : <Typography variant="body2" color="text.secondary">No actions logged yet.</Typography>}
           </CollapsibleDashboardSection>
 
-          <CollapsibleDashboardSection eyebrow="FOLLOW THROUGH" title="Consequences" gridRow={3}>
+          <CollapsibleDashboardSection eyebrow="FOLLOW THROUGH" title="Consequences" gridRow={3} summaryAdornment={<Chip size="small" label={`${filteredConsequences.length} / ${consequences.length}`} />}>
               <Stack spacing={1.25}>
-                {consequences.length ? consequences.map(({ beat, consequence }) => (
+                <Stack spacing={0.75}>
+                  <Box>
+                    <Button size="small" variant={consequenceFilterCount ? "contained" : "outlined"} startIcon={<FilterListIcon />} onClick={(event) => setConsequenceFiltersAnchorEl(event.currentTarget)}>
+                      Filters{consequenceFilterCount ? ` · ${consequenceFilterCount}` : ""}
+                    </Button>
+                    <Menu
+                      anchorEl={consequenceFiltersAnchorEl}
+                      open={Boolean(consequenceFiltersAnchorEl)}
+                      onClose={() => setConsequenceFiltersAnchorEl(null)}
+                      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                      transformOrigin={{ vertical: "top", horizontal: "left" }}
+                      slotProps={{ paper: { sx: { p: 1.5, width: 360, maxWidth: "calc(100vw - 32px)" } } }}
+                    >
+                      <Stack spacing={1.25}>
+                        <TextField size="small" label="Search consequences" value={consequenceSearch} onChange={(event) => setConsequenceSearch(event.target.value)} />
+                        <EntityIdMultiSelect label="Plot Points" ids={consequenceBeatFilterIds} options={plotPointOptions} onChange={setConsequenceBeatFilterIds} />
+                        <FormControl size="small" fullWidth>
+                          <Select aria-label="Filter consequences by status" value={consequenceStatusFilter} onChange={(event) => setConsequenceStatusFilter(event.target.value as StoryConsequence["status"] | "all")}>
+                            <MenuItem value="all">All statuses</MenuItem>
+                            {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
+                          </Select>
+                        </FormControl>
+                        <EntityIdMultiSelect label="Leads to" ids={consequenceTargetFilterIds} options={consequenceTargetOptions} onChange={setConsequenceTargetFilterIds} />
+                        <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                          <Button size="small" onClick={() => {
+                            setConsequenceSearch("");
+                            setConsequenceBeatFilterIds([]);
+                            setConsequenceTargetFilterIds([]);
+                            setConsequenceStatusFilter("all");
+                          }} disabled={!consequenceFilterCount}>Clear all</Button>
+                          <Button size="small" onClick={() => setConsequenceFiltersAnchorEl(null)}>Done</Button>
+                        </Stack>
+                      </Stack>
+                    </Menu>
+                  </Box>
+                  {consequenceFilterCount > 0 && <Stack direction="row" spacing={0.75} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
+                    {consequenceSearch.trim() && <Chip size="small" variant="outlined" label={`Search: ${consequenceSearch.trim()}`} onDelete={() => setConsequenceSearch("")} />}
+                    {consequenceBeatFilterIds.map((id) => <Chip key={`beat-${id}`} size="small" variant="outlined" label={plotPointOptions.find((option) => option.id === id)?.name ?? id} onDelete={() => setConsequenceBeatFilterIds((current) => current.filter((item) => item !== id))} />)}
+                    {consequenceStatusFilter !== "all" && <Chip size="small" variant="outlined" label={`Status: ${formatStatusLabel(consequenceStatusFilter)}`} onDelete={() => setConsequenceStatusFilter("all")} />}
+                    {consequenceTargetFilterIds.map((id) => <Chip key={`target-${id}`} size="small" variant="outlined" label={consequenceTargetOptions.find((option) => option.id === id)?.name ?? id} onDelete={() => setConsequenceTargetFilterIds((current) => current.filter((item) => item !== id))} />)}
+                  </Stack>}
+                </Stack>
+                {filteredConsequences.length ? filteredConsequences.map(({ beat, consequence }) => (
                   <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       {editingConsequenceId === consequence.id && consequenceDraft ? (
@@ -2931,7 +3299,7 @@ function CampaignDashboardPage() {
                       </Stack>
                     </>}
                   </Stack>
-                )) : <Typography color="text.secondary">No consequences recorded. Add one once an action has a possible follow-on effect.</Typography>}
+                )) : consequences.length ? <Typography color="text.secondary">No consequences match these filters.</Typography> : <Typography color="text.secondary">No consequences recorded. Add one once an action has a possible follow-on effect.</Typography>}
               </Stack>
               <Divider sx={{ my: 2.5 }} />
               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
@@ -2953,7 +3321,7 @@ function CampaignDashboardPage() {
             eyebrow="THREATS &amp; TIMING"
             title="World Clocks"
             gridRow={5}
-            summaryAdornment={<Chip size="small" label={`${filteredClocks.length} / ${clocks.length}`} />}
+            summaryAdornment={<Chip size="small" label={`${filteredClocks.length} / ${worldClocks.length}`} />}
           >
               <Stack direction="row" sx={{ justifyContent: "flex-end", mb: 1 }}>
                 <FormControl size="small" sx={{ minWidth: 145 }}>
@@ -3004,6 +3372,12 @@ function CampaignDashboardPage() {
                     {editingClockId === clock.id && clockDraft ? (
                       <Stack spacing={1} sx={{ mt: 1.25 }}>
                         <TextField label="Clock name" value={clockDraft.name} onChange={(event) => setClockDraft({ ...clockDraft, name: event.target.value })} disabled={saving} />
+                        <FormControl size="small" fullWidth>
+                          <Select aria-label="Plot Point for clock" displayEmpty value={clockDraft.plot_point_id} onChange={(event) => setClockDraft({ ...clockDraft, plot_point_id: event.target.value as string })} disabled={saving} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "World clock — no Plot Point"}>
+                            <MenuItem value=""><em>World clock — no Plot Point</em></MenuItem>
+                            {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
+                          </Select>
+                        </FormControl>
                         <TextField label="Description" value={clockDraft.description} onChange={(event) => setClockDraft({ ...clockDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                           <TextField label="Current step" type="number" slotProps={{ htmlInput: { min: 0 } }} value={clockDraft.current} onChange={(event) => setClockDraft({ ...clockDraft, current: event.target.value })} disabled={saving} />
@@ -3023,14 +3397,83 @@ function CampaignDashboardPage() {
                       </Stack>
                     ) : clock.completion && <Typography variant="caption" color="text.secondary">At the end: {clock.completion}</Typography>}
                   </Box>
-                )) : clocks.length ? <Typography color="text.secondary">No clocks match this progress filter.</Typography> : <Typography color="text.secondary">No active clocks. Add one for a threat or event that advances over time.</Typography>}
+                )) : worldClocks.length ? <Typography color="text.secondary">No clocks match this progress filter.</Typography> : <Typography color="text.secondary">No active world clocks. Add one for a threat or event that advances over time.</Typography>}
               </Stack>
               <Divider sx={{ my: 2.5 }} />
               <Stack spacing={1.25}>
                 <TextField label="Clock name" value={clockName} onChange={(event) => setClockName(event.target.value)} disabled={saving || legacyStory} />
                 <TextField label="Steps to completion" type="number" value={clockMaximum} slotProps={{ htmlInput: { min: 1 } }} onChange={(event) => setClockMaximum(event.target.value)} disabled={saving || legacyStory} />
-                <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={addClock} disabled={!clockName.trim() || saving || legacyStory}>Add Clock</Button></Box>
+                <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={() => addClock(clockName, clockMaximum)} disabled={!clockName.trim() || saving || legacyStory}>Add Clock</Button></Box>
               </Stack>
+          </CollapsibleDashboardSection>
+          <CollapsibleDashboardSection
+            eyebrow="PLOT PROGRESS"
+            title="Plot Clocks"
+            gridRow={6}
+            summaryAdornment={<Chip size="small" label={`${filteredPlotClocks.length} / ${plotClocks.length}`} />}
+          >
+            <Stack spacing={1.5}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "flex-end" }}>
+                <FormControl size="small" sx={{ minWidth: 190 }}>
+                  <Select aria-label="Filter plot clocks by Plot Point" value={plotClockBeatFilterId} onChange={(event) => setPlotClockBeatFilterId(event.target.value as string)}>
+                    <MenuItem value="all">All Plot Points</MenuItem>
+                    {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <Select aria-label="Filter plot clocks by progress" value={plotClockProgressFilter} onChange={(event) => setPlotClockProgressFilter(event.target.value as ClockProgressFilter)}>
+                    <MenuItem value="all">All plot clocks</MenuItem>
+                    <MenuItem value="not_started">Not started</MenuItem>
+                    <MenuItem value="started">Started</MenuItem>
+                    <MenuItem value="finished">Finished</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+              {filteredPlotClocks.length ? <Stack spacing={1}>{filteredPlotClocks.map((clock) => <Box key={clock.id}>
+                <PlotClockCard
+                  clock={clock}
+                  plotPointName={beats.find((beat) => beat.id === clock.plot_point_id)?.name ?? "Unknown Plot Point"}
+                  disabled={saving || legacyStory || editingClockId !== null}
+                  onUpdate={(updater) => updateClock(clock.id, updater)}
+                  onEdit={() => startClockEdit(clock)}
+                  onDelete={() => setDeleteTarget({ kind: "clock", id: clock.id, label: clock.name })}
+                />
+                {editingClockId === clock.id && clockDraft && <Stack spacing={1} sx={{ mt: 1 }}>
+                  <TextField label="Clock name" value={clockDraft.name} onChange={(event) => setClockDraft({ ...clockDraft, name: event.target.value })} disabled={saving} />
+                  <FormControl size="small" fullWidth>
+                    <Select aria-label="Plot Point for clock" displayEmpty value={clockDraft.plot_point_id} onChange={(event) => setClockDraft({ ...clockDraft, plot_point_id: event.target.value as string })} disabled={saving} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "World clock — no Plot Point"}>
+                      <MenuItem value=""><em>World clock — no Plot Point</em></MenuItem>
+                      {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <TextField label="Description" value={clockDraft.description} onChange={(event) => setClockDraft({ ...clockDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    <TextField label="Current step" type="number" slotProps={{ htmlInput: { min: 0 } }} value={clockDraft.current} onChange={(event) => setClockDraft({ ...clockDraft, current: event.target.value })} disabled={saving} />
+                    <TextField label="Steps to completion" type="number" slotProps={{ htmlInput: { min: 1 } }} value={clockDraft.maximum} onChange={(event) => setClockDraft({ ...clockDraft, maximum: event.target.value })} disabled={saving} />
+                    <FormControl size="small" fullWidth><Select aria-label="Plot clock status" value={clockDraft.status} onChange={(event) => setClockDraft({ ...clockDraft, status: event.target.value as WorldClock["status"] })} disabled={saving}>{["active", "paused", "completed"].map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}</Select></FormControl>
+                  </Stack>
+                  <TextField label="Stages (one per step, one per line)" value={clockDraft.stages} onChange={(event) => setClockDraft({ ...clockDraft, stages: event.target.value })} multiline minRows={2} disabled={saving} />
+                  <TextField label="What happens at completion" value={clockDraft.completion} onChange={(event) => setClockDraft({ ...clockDraft, completion: event.target.value })} multiline minRows={2} disabled={saving} />
+                  <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                    <Button size="small" startIcon={<SaveIcon />} onClick={() => saveClockEdit(clock.id)} disabled={saving || !clockDraft.name.trim()}>Save changes</Button>
+                    <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingClockId(null); setClockDraft(null); }} disabled={saving}>Cancel</Button>
+                  </Stack>
+                </Stack>}
+              </Box>)}</Stack> : plotClocks.length
+                ? <Typography color="text.secondary">No Plot Clocks match the current filters.</Typography>
+                : <Typography color="text.secondary">No Plot Clocks yet. Add one for a scene-specific progress track.</Typography>}
+              <Divider />
+              <Typography variant="subtitle2">Add a Plot Clock</Typography>
+              <FormControl size="small" fullWidth>
+                <Select aria-label="Choose Plot Point for new plot clock" displayEmpty value={plotClockCreateBeatId} onChange={(event) => setPlotClockCreateBeatId(event.target.value as string)} disabled={saving || legacyStory} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "Choose a Plot Point"}>
+                  <MenuItem value=""><em>Choose a Plot Point</em></MenuItem>
+                  {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <TextField label="Clock name" value={plotClockName} onChange={(event) => setPlotClockName(event.target.value)} disabled={saving || legacyStory} />
+              <TextField label="Steps to completion" type="number" value={plotClockMaximum} slotProps={{ htmlInput: { min: 1 } }} onChange={(event) => setPlotClockMaximum(event.target.value)} disabled={saving || legacyStory} />
+              <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={() => addClock(plotClockName, plotClockMaximum, plotClockCreateBeatId)} disabled={!plotClockName.trim() || !plotClockCreateBeatId || saving || legacyStory}>Add Plot Clock</Button></Box>
+            </Stack>
           </CollapsibleDashboardSection>
         </Stack>
       </Box>
@@ -3400,6 +3843,76 @@ function CampaignDashboardPage() {
           >
             {creatingTimelineEvent ? "Creating…" : "Create timeline event"}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={campaignArcEditorOpen} onClose={() => !saving && setCampaignArcEditorOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>Edit campaign arc</DialogTitle>
+        <DialogContent>
+          {campaignArcDraft && <Stack spacing={2} sx={{ pt: 1 }}>
+            <TextField label="Campaign description" value={campaignArcDraft.description} onChange={(event) => setCampaignArcDraft({ ...campaignArcDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
+            <TextField label="Campaign overview" helperText="A concise summary of the campaign so far or its central premise." value={campaignArcDraft.overview} onChange={(event) => setCampaignArcDraft({ ...campaignArcDraft, overview: event.target.value })} multiline minRows={3} disabled={saving} />
+            <Box>
+              <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", gap: 1, mb: 1 }}>
+                <Box>
+                  <Typography variant="subtitle1">Overarching plot sections</Typography>
+                  <Typography variant="body2" color="text.secondary">Give each thread or phase a short title. Existing paragraphs are kept as editable sections.</Typography>
+                </Box>
+                <Button size="small" startIcon={<AddIcon />} onClick={() => setCampaignArcDraft({
+                  ...campaignArcDraft,
+                  overarching_plot_sections: [...campaignArcDraft.overarching_plot_sections, { id: crypto.randomUUID(), title: "", content: "" }],
+                })} disabled={saving}>Add section</Button>
+              </Stack>
+              <Stack spacing={1.5}>
+                {campaignArcDraft.overarching_plot_sections.map((section, index) => <Box key={section.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                  <Stack spacing={1}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={`Section ${index + 1} title`}
+                        value={section.title}
+                        onChange={(event) => setCampaignArcDraft({
+                          ...campaignArcDraft,
+                          overarching_plot_sections: campaignArcDraft.overarching_plot_sections.map((item) => item.id === section.id ? { ...item, title: event.target.value } : item),
+                        })}
+                        disabled={saving}
+                      />
+                      <Tooltip title="Remove section"><span><IconButton aria-label={`Remove arc section ${index + 1}`} onClick={() => setCampaignArcDraft({
+                        ...campaignArcDraft,
+                        overarching_plot_sections: campaignArcDraft.overarching_plot_sections.filter((item) => item.id !== section.id),
+                      })} disabled={saving}><DeleteOutlineIcon /></IconButton></span></Tooltip>
+                    </Stack>
+                    <TextField
+                      label="Section details"
+                      value={section.content}
+                      onChange={(event) => setCampaignArcDraft({
+                        ...campaignArcDraft,
+                        overarching_plot_sections: campaignArcDraft.overarching_plot_sections.map((item) => item.id === section.id ? { ...item, content: event.target.value } : item),
+                      })}
+                      multiline
+                      minRows={3}
+                      disabled={saving}
+                    />
+                  </Stack>
+                </Box>)}
+              </Stack>
+            </Box>
+            <Autocomplete
+              multiple
+              options={worldStoryOptions}
+              value={worldStoryOptions.filter((option) => campaignArcDraft.world_stories.includes(option.id))}
+              onChange={(_, values) => setCampaignArcDraft({ ...campaignArcDraft, world_stories: values.map((value) => value.id) })}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => <TextField {...params} label="Connected World Stories" helperText="Link setting-wide storylines that this campaign contributes to." />}
+              disabled={saving}
+            />
+          </Stack>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCampaignArcEditorOpen(false)} disabled={saving}>Cancel</Button>
+          <Button onClick={() => void saveCampaignArc()} variant="contained" startIcon={<SaveIcon />} disabled={saving || !campaignArcDraft}>{saving ? "Saving…" : "Save"}</Button>
         </DialogActions>
       </Dialog>
 

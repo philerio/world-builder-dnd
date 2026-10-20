@@ -4,7 +4,70 @@ description: Rumors have spread of undead appearing in the woods of Zeffo.
 tags: []
 created: '2026-10-08T23:58:57.776875'
 updated: '2026-10-08T23:58:57.776880'
-overview: Rumors have spread of undead appearing in the woods of Zeffo.
+overview: 'The party travels to Zeffo to investigate reports of undead appearing in
+  the surrounding woods. What begins as isolated encounters with the restless dead
+  develops into a mystery involving disturbed graves, frightened villagers, and strange
+  green-glowing eyes.
+
+
+  Through conversations with Captain Ressa Thorn, the villagers, and Old Bram the
+  gravedigger, the party can uncover evidence that the undead are rising without any
+  apparent necromancer controlling them. Some appear instinctively drawn toward the
+  northern forest.
+
+
+  Their investigation eventually leads toward forgotten Dwarmar ruins, where an ancient
+  artifact is releasing unnatural energy. The party must discover how to stop its
+  influence while confronting a local healer whose desperate efforts to save his daughter
+  are making the situation worse.'
+overarching_plot: 'Following the events of The Unforgiven, Bane''s influence has begun
+  spreading across Elligaesia. Although Bane remains imprisoned within a mortal body,
+  his awakening has caused ancient Dwarmar artifacts throughout the world to reactivate.
+  These artifacts contain remnants of his former divine power.
+
+
+  One such artifact lies hidden beneath the northern forest near Zeffo. Its reactivation
+  has disturbed the boundary between life and death, causing corpses to rise as undead.
+  Creatures affected by the artifact display an unnatural green glow, often in their
+  eyes. Some of the undead instinctively move toward the artifact, although they are
+  not following deliberate orders.
+
+
+  Edrin Vale, a respected healer in Zeffo, discovered the artifact after it had already
+  awakened. Desperate to save his dying daughter, Mira, he began drawing on its power
+  to sustain her life. Although Edrin is not responsible for the original outbreak,
+  his repeated use of the artifact amplifies its necromantic influence and causes
+  more undead to rise.
+
+
+  Captain Ressa Thorn attempts to protect the settlement and investigate the disturbances,
+  unaware of the artifact''s existence. Old Bram, the village gravedigger, notices
+  that graves are opening from within and that some undead wander toward the northern
+  forest. His discoveries may eventually lead him into danger.
+
+
+  As the party investigates, two threats develop: the growing undead outbreak and
+  Edrin''s increasing desperation. The Rising Dead clock tracks the expansion of the
+  artifact''s influence, while Edrin''s Desperation tracks his willingness to take
+  greater risks to save Mira.
+
+
+  The party may eventually discover the forgotten Dwarmar facility and confront Edrin''s
+  actions. They must decide how to deal with the artifact and whether Mira can be
+  saved without allowing the outbreak to continue. Possible outcomes include containing,
+  disabling, destroying, or attempting to preserve the artifact, with consequences
+  determined by the party''s choices.
+
+
+  The artifact''s connection to Bane is part of the larger story of Elligaesia and
+  should not be fully revealed during this adventure. Bane seeks to reclaim the remnants
+  of his power from multiple Dwarmar artifacts and ultimately open a portal to the
+  realm of the gods to take revenge on those who banished him. The exact method and
+  number of remnants required remain undefined.'
+overarching_plot_sections: []
+world_stories:
+- bane-overarching-story
+- northern-elligaesia-s-turmoil-world-story
 status: planned
 locations: []
 npcs: []
@@ -12,8 +75,10 @@ player_characters: []
 outcome: null
 consequences: null
 story:
+  combat_results: []
   beats:
-  - id: opening-zeffo-undead-sightings
+  - encounter: null
+    id: opening-zeffo-undead-sightings
     name: Zeffo Undead
     description: Rumors have spread of undead appearing in the woods of Zeffo.
     description_content:
@@ -38,6 +103,7 @@ story:
     secrets: []
     possible_approaches: []
     checks: []
+    npc_knowledge: []
     leads_to: []
     locations:
     - the-woods-of-zeffo-location
@@ -51,42 +117,619 @@ story:
     world_story_threads:
     - world_story_id: bane-overarching-story
       thread_id: influence-unleashed
-  - id: 649145af-ebe9-40c1-9257-cc72da817a24
-    name: The Adventurers arrive in Zeffo
-    description: The city of Zeffo appears to be a normal city. People are moving
-      about as if nothing is going on.
-    description_content:
+  - encounter: null
+    id: c1dcbe0b-8394-4fd7-8375-c80f784e43f9
+    name: The Dead on the Road
+    description: The party is traveling along a forest road when they hear a scream.
+      A merchant's wagon has overturned, and a figure is struggling to pull someone
+      from beneath it.
+    description_content: null
+    events_content:
       nodes:
       - type: text
-        text: 'The city of '
+        text: 'The party hears a scream from an overturned wagon.
+
+          A zombie attacks the merchant ('
+      - type: entity_link
+        text: Venn Calder
+        entity_id: reference-venn-calder
+      - type: text
+        text: ') trapped beneath the wagon.
+
+          The merchant recognizes the undead as his deceased brother.
+
+          The zombie carries an unfamiliar metal token.
+
+          The merchant asks the party to escort him to '
       - type: entity_link
         text: Zeffo
         entity_id: zeffo-city
       - type: text
-        text: ' appears to be a normal city. People are moving about as if nothing
-          is going on.'
-    events_content: null
+        text: '.
+
+          If the party delays, the merchant may be injured or killed.'
     triggers_content: null
     possible_approaches_content: null
     status: planned
     act: null
     order: 1
-    triggers: []
-    events: null
-    secrets: []
-    possible_approaches: []
+    triggers:
+    - The party travels toward Zeffo along the forest road.
+    - The party investigates reports of undead near Zeffo.
+    - The party encounters the merchant while traveling through the region.
+    events: 'The party hears a scream from an overturned wagon.
+
+      A zombie attacks the merchant (Venn Calder) trapped beneath the wagon.
+
+      The merchant recognizes the undead as his deceased brother.
+
+      The zombie carries an unfamiliar metal token.
+
+      The merchant asks the party to escort him to Zeffo.
+
+      If the party delays, the merchant may be injured or killed.'
+    secrets:
+    - The corpse rose because of the Dwarmar artifact beneath Zeffo.
+    - The artifact awakened due to Bane's growing influence after The Unforgiven.
+    - The undead is being drawn toward the northern forest.
+    - The metal token bears an ancient Dwarmar symbol.
+    - The merchant knows nothing about the artifact or Bane.
+    - The merchant's brother died two years ago and was buried in Zeffo.
+    possible_approaches:
+    - Attack the undead and protect the merchant.
+    - Attempt to rescue the merchant without fighting.
+    - Use the wagon or terrain to restrain or distract the undead.
+    - Observe the undead before intervening.
+    - Flee the encounter.
+    - Investigate the corpse after the encounter.
+    - Question the merchant about his brother and Zeffo.
     checks:
-    - id: 0d1784a4-1271-459c-9bf0-e480022f3597
-      name: Upon entering the city they notice none of the citizens are talking to
-        each. They all seem in a hurry to get to their desitination
+    - id: 2b8aa5a9-3f5a-43c6-844e-f67490680ff9
+      name: Party examines body of undead
       category: notice
-      description: null
+      description: Undead has been defeated
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 10
+      success: Examining the corpse reveals roots and burial soil embedded in its
+        clothing.
+      failure: The party still recognizes that it was previously buried, but misses
+        the details.
+    - id: b8c63b4c-8f55-451e-8396-db4c48357d8c
+      name: Party examines body of undead
+      category: notice
+      description: Undead has been defeated
+      roll_type: skill_check
+      ability: wisdom
+      skill: Survival
+      dc: 12
+      success: The corpse's boots contain pale clay associated with the northern forest.
+      failure: The party finds mud but cannot identify its origin yet.
+    - id: fc9961cf-c7fb-4b03-8aff-aa08fd83d134
+      name: Lift or shift the overturned wagon enough to free the merchant.
+      category: obstacle
+      description: Approaching the wagon
+      roll_type: skill_check
+      ability: strength
+      skill: Athletics
+      dc: 10
+      success: Successfully frees merchant
+      failure: he rescue takes longer or requires another approach; the merchant isn't
+        automatically killed.
+    - id: 94d4d65a-2635-4c3d-b3d8-28cf24e71eb9
+      name: Party sees the undead creature
+      category: notice
+      description: Approaches struggle with merchant
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 12
+      success: Notice the eyes of the undead are glowing green
+      failure: fail to notice the glowing eyes
+    npc_knowledge:
+    - id: dcb30e6b-46eb-4d24-9890-effcd2a5e95c
+      npc_id: reference-venn-calder
+      information: Undead have been rising  Isn't in the city enough to know much.
+        Does know that the cptain might have information.
+      belief: null
+      shares_if: null
+      check: null
+    leads_to: []
+    locations:
+    - zeffo-city
+    npcs:
+    - reference-venn-calder
+    player_characters: []
+    consequences:
+    - id: 3cb11fc2-098f-45d7-b87f-38819c974423
+      description: The rescued merchant becomes grateful to the party and offers information,
+        introductions, and assistance when they arrive in Zeffo.
+      trigger: The merchant survives the roadside undead encounter because of the
+        party's intervention.
+      player_action: The party rescues the merchant and protects him from the undead.
+      timing: Immediately after the encounter; additional benefits become available
+        upon arriving in Zeffo.
+      status: pending
+      leads_to:
+      - zeffo-undead-sightings
+      - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
+      world_stories: []
+      world_story_threads: []
+    - id: 0ad48d23-665d-41cd-89dc-608e32815e6e
+      description: Merchant Dies
+      trigger: The merchant dies during the roadside attack.
+      player_action: The party fails to rescue him, withdraws, or chooses not to intervene.
+      timing: Immediately; repercussions occur upon arrival in Zeffo.
+      status: pending
+      leads_to:
+      - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
+      world_stories: []
+      world_story_threads: []
+    - id: a597f4b3-07fe-4376-b9f4-208b9c9c12e3
+      description: Undead Escapes Into the Forest
+      trigger: The undead survives and leaves the roadside encounter.
+      player_action: The party avoids, distracts, releases, or fails to stop the undead.
+      timing: Immediately; a possible later sighting in the forest.
+      status: pending
+      leads_to:
+      - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: 31e601bf-e0b5-4dfb-8800-6325b337cb5e
+    name: Arrival in Zeffo
+    description: The party arrives in Zeffo, a settlement bordering the northern forest.
+      The residents are increasingly frightened by reports of undead with unnatural
+      green-glowing eyes. Captain Ressa Thorn is struggling to maintain order while
+      villagers disagree about the cause of the disturbances. The party can speak
+      with residents, investigate recent incidents, or offer to help protect the settlement.
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 2
+    triggers:
+    - The party reaches Zeffo after traveling along the forest road.
+    - The party escorts the rescued merchant to the settlement.
+    - The party arrives while investigating reports of undead in the region.
+    events: 'The party arrives to find villagers preparing to barricade their homes
+      before sunset.
+
+      If the merchant survived, he introduces the party to Captain Ressa Thorn.
+
+      Captain Ressa questions the party about their journey and any undead they encountered.
+
+      Villagers share conflicting rumors about the undead sightings.
+
+      A resident reports seeing a deceased relative near the cemetery.
+
+      The village healer, Edrin Vale, is mentioned as someone who has recently performed
+      unusual cures.
+
+      A bell rings unexpectedly from the cemetery after dark.'
+    secrets:
+    - The undead outbreak is caused by an ancient Dwarmar artifact beneath the northern
+      forest.
+    - The artifact reactivated because of Bane's growing influence following The Unforgiven.
+    - The green glow in the undead's eyes is a manifestation of the artifact's power.
+    - Edrin has discovered the artifact and is secretly using it to sustain his daughter
+      Mira.
+    - Edrin did not cause the artifact to awaken, but his experiments are making the
+      outbreak worse.
+    - Captain Ressa does not know about the artifact or Edrin's involvement.
+    - Old Bram, the gravedigger, has noticed that some undead seem to travel toward
+      the northern forest.
+    possible_approaches:
+    - Speak with Captain Ressa and offer assistance.
+    - Question villagers about recent undead sightings.
+    - Investigate the cemetery or reports of missing bodies.
+    - Visit Edrin Vale's clinic to ask about unusual illnesses or injuries.
+    - Look for lodging and gather rumors at the local inn.
+    - Examine the village's defenses and offer to help prepare for another attack.
+    - Ignore the local troubles and pursue another objective.
+    checks:
+    - id: 0aef538e-b665-4b1e-8ac0-5914fd25b3d4
+      name: Question the villagers
+      category: notice
+      description: The party asks residents about recent undead sightings.
+      roll_type: skill_check
+      ability: charisma
+      skill: Persuasion
+      dc: 10
+      success: The villagers share several specific sightings, including reports of
+        green-eyed undead near the cemetery and northern forest.
+      failure: The villagers are nervous and offer only general rumors. Captain Ressa
+        can provide more reliable information.
+    - id: a4960d9d-a6e7-4ffc-b0eb-4c05d7d4f916
+      name: Examine the village's defenses
+      category: notice
+      description: A character studies the barricades, guard patrols, or signs of
+        recent disturbances.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 11
+      success: The defenses are concentrated near the northern approach, suggesting
+        that most reported threats come from that direction.
+      failure: The character notices that the village is preparing for danger but
+        cannot determine which approach is most threatened.
+    - id: 188df1d9-b9e9-4028-bc42-9f3e3500844a
+      name: Assess Captain Ressa's behavior
+      category: notice
+      description: The party speaks with Captain Ressa about the undead.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Insight
+      dc: 12
+      success: Ressa is genuinely worried and overwhelmed. She is withholding details
+        about how few guards she has, but doesn't appear to be concealing the cause
+        of the outbreak.
+      failure: Ressa appears tense and guarded, but her reasons are unclear.
+    npc_knowledge:
+    - id: zeffo-arrival-marta-knowledge
+      npc_id: marta-npc
+      information: Saw her deceased husband standing outside her window, his eyes
+        glowing green.
+      belief: He has returned to warn her about something.
+      shares_if: null
+      check: null
+    - id: zeffo-arrival-tomas-knowledge
+      npc_id: thomas-npc
+      information: Found footprints crossing his fields toward the northern forest.
+      belief: The dead are gathering for an attack.
+      shares_if: null
+      check: null
+    - id: zeffo-arrival-nella-knowledge
+      npc_id: nella-npc
+      information: Several travelers have reported figures wandering the roads at
+        night.
+      belief: The forest is cursed.
+      shares_if: null
+      check: null
+    - id: zeffo-arrival-old-bram-knowledge
+      npc_id: old-bram-npc
+      information: Graves have opened from within, and some bodies are missing.
+      belief: Something is calling the dead away from their resting places.
+      shares_if: null
+      check: null
+    - id: zeffo-arrival-edrin-knowledge
+      npc_id: reference-edrin-vale
+      information: Has discovered the ancient artifact and used its power to sustain
+        Mira.
+      belief: The artifact's power might save his daughter.
+      shares_if: null
+      check: null
+    leads_to:
+    - b78d97e5-e377-4334-8f6b-a756758bdc58
+    locations:
+    - zeffo-city
+    npcs:
+    - marta-npc
+    - thomas-npc
+    - nella-npc
+    - old-bram-npc
+    - reference-edrin-vale
+    player_characters: []
+    consequences:
+    - id: 5984e994-94b6-4388-a880-342e30f1ddb1
+      description: 'Party earns trust of Captain Ressa
+
+        Captain Ressa regards the party as useful allies and shares information about
+        undead sightings, missing residents, and the village''s defenses.'
+      trigger: The party assists the village or demonstrates a willingness to investigate
+        the undead threat.
+      player_action: The party offers help, shares reliable information, or assists
+        the guards.
+      timing: During or shortly after their arrival in Zeffo.
+      status: pending
+      leads_to:
+      - b78d97e5-e377-4334-8f6b-a756758bdc58
+      - zeffo-undead-sightings
+      world_stories: []
+      world_story_threads: []
+    - id: 5164a614-7082-42cd-9149-2b77c1b296f2
+      description: 'The villagers become suspicious
+
+        Some residents begin to distrust the party, making witnesses more reluctant
+        to cooperate. Captain Ressa may question their intentions.'
+      trigger: The party threatens residents, causes a serious disturbance, or behaves
+        in a way that frightens the village.
+      player_action: The party intimidates, harms, or seriously antagonizes local
+        residents.
+      timing: Immediately; distrust may continue through later investigations.
+      status: pending
+      leads_to:
+      - b78d97e5-e377-4334-8f6b-a756758bdc58
+      - zeffo-undead-sightings
+      world_stories: []
+      world_story_threads: []
+    - id: a824eb65-fb3a-432a-9d95-4900befce80f
+      description: 'The cemetery goes uninvestigated
+
+        A newly risen undead creature leaves the cemetery and travels toward the northern
+        forest. Its departure may provide another lead through later sightings or
+        tracks.'
+      trigger: The cemetery bell rings, but nobody investigates before the creature
+        departs.
+      player_action: The party chooses not to investigate the disturbance or delays
+        until the area is quiet.
+      timing: That night, with evidence discoverable the following morning.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      - b78d97e5-e377-4334-8f6b-a756758bdc58
+      - zeffo-undead-sightings
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - encounter:
+      id: b367fa3b-1dbb-499f-ab4d-9398bf9ce7bd
+      name: Encounter
+      map_id: null
+      location_id: zeffo-city
+      notes: null
+      participants:
+      - id: 21c0e4ac-9572-4998-93a0-82e8f400b9fa
+        entity_id: null
+        name: Undead 1
+        allegiance: enemy
+        quantity: 1
+        stats:
+          race: null
+          class_name: null
+          level: 1
+          hp: 22
+          ac: 8
+          abilities: {}
+      - id: bc2cb37b-c408-4bae-a0f3-a01a0cde9867
+        entity_id: null
+        name: Undead 2
+        allegiance: enemy
+        quantity: 1
+        stats:
+          race: null
+          class_name: null
+          level: 1
+          hp: 25
+          ac: 8
+          abilities: {}
+    id: b78d97e5-e377-4334-8f6b-a756758bdc58
+    name: The Cemetery Investigation
+    description: The party investigates Zeffo's cemetery after reports of disturbed
+      graves and sightings of deceased residents. Several graves appear to have opened
+      from within, and witnesses describe corpses with faintly glowing green eyes
+      wandering toward the northern forest. The investigation offers evidence that
+      the undead are rising without a visible necromancer directing them.
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 3
+    triggers:
+    - The party hears the cemetery bell ring after dark.
+    - Captain Ressa asks the party to investigate disturbed graves.
+    - The merchant's testimony leads the party to examine his brother's burial site.
+    - Villagers report seeing deceased relatives near the cemetery.
+    - The party independently investigates the source of the undead sightings.
+    events: 'The party finds several disturbed or empty graves.
+
+      Old Bram, the gravedigger, describes strange noises beneath the cemetery at
+      night.
+
+      Bram explains that some of the undead appear to wander toward the northern forest.
+
+      A villager recognizes one of the empty graves as belonging to a recently deceased
+      relative.
+
+      The party discovers tracks leading away from the cemetery.
+
+      If the party visits at night, a newly risen undead creature may emerge from
+      a grave.
+
+      The undead''s eyes glow faintly green, especially in darkness.'
+    secrets:
+    - The ancient Dwarmar artifact beneath the northern forest is causing the dead
+      to rise.
+    - The artifact awakened because of Bane's spreading influence, independently of
+      Edrin's actions.
+    - The green glow in the undead's eyes indicates the artifact's influence.
+    - The undead are not receiving deliberate orders from a necromancer.
+    - Some undead instinctively wander toward the northern forest, although not all
+      follow a direct route.
+    - Old Bram has begun noticing a pattern in the undead's movements.
+    - The cemetery does not contain the source of the outbreak.
+    - Bram's investigation will eventually lead him toward the forgotten forest ruins.
+    possible_approaches:
+    - Inspect disturbed graves and examine the surrounding soil.
+    - Question Old Bram about recent burials and unusual activity.
+    - Review burial records to identify missing bodies.
+    - Watch the cemetery overnight to observe the undead.
+    - Follow tracks leading away from the cemetery.
+    - Attempt to restrain or follow a newly risen undead creature instead of destroying
+      it.
+    - Use religious or magical knowledge to investigate the undead phenomenon.
+    - Report the findings to Captain Ressa.
+    checks:
+    - id: be8cc853-e181-47a6-a4a3-b19d710e9f82
+      name: Examine disturbed graves
+      category: notice
+      description: A character inspects an open grave or examines the surrounding
+        soil.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 10
+      success: Scratches and displaced earth indicate that the coffin was forced open
+        from within. There are no signs of grave robbers.
+      failure: The grave is clearly disturbed and the body is missing, but the character
+        cannot confidently determine how it was opened.
+    - id: 7dd2b40e-124b-45e6-8078-38cc242fb555
+      name: Follow the cemetery tracks
+      category: notice
+      description: The party examines footprints or attempts to follow a recently
+        risen undead creature.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Survival
+      dc: 12
+      success: The tracks lead toward the northern forest. Other tracks appear to
+        converge in the same general direction.
+      failure: The tracks become difficult to follow beyond the cemetery, but Bram
+        can identify another location where undead were seen.
+    - id: 57802e06-f042-4cd4-9780-6726671537d4
+      name: Examine the green glow
+      category: notice
+      description: A character observes the eyes of a risen undead creature or examines
+        its magical aura.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Arcana
+      dc: 13
+      success: The green glow appears to be a persistent magical effect rather than
+        ordinary light. Its source cannot be determined from the creature alone.
+      failure: The glow is clearly unnatural, but the character cannot identify the
+        magic responsible.
+    - id: f959c6db-d39a-43ba-8bba-cfe97c514d1b
+      name: Question Old Bram
+      category: notice
+      description: The party asks Bram about the graves, undead sightings, or unusual
+        activity.
+      roll_type: skill_check
+      ability: charisma
+      skill: Persuasion
+      dc: 10
+      success: Bram shares his observations and offers to show the party where he
+        saw several undead heading toward the forest.
+      failure: Bram remains nervous and gives only basic information. He can be approached
+        again after the party earns his trust.
+    - id: 1a4141c0-e9db-41bb-b8f9-05273df31fce
+      name: Character hears movement beneath a grave
+      category: notice
+      description: The party investigates the cemetery
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 10
+      success: Notices scratching before the undead emerges, allowing time to prepare
+      failure: The undead's emergence surprises the characters narratively, but doesn't
+        automatically impose the Surprised condition
+    - id: f664b122-c9e4-456c-8e12-e71634b518e2
+      name: Character studies the undead's movement
+      category: notice
+      description: Party asks to watch the undead before attacking
       roll_type: skill_check
       ability: wisdom
       skill: null
       dc: 12
-      success: null
-      failure: null
+      success: Notices a creature repeatedly turning toward the northern forest
+      failure: Sees erratic movements without recognizing a pattern
+    npc_knowledge: []
+    leads_to: []
+    locations: []
+    npcs: []
+    player_characters: []
+    consequences:
+    - id: ae095d4f-decc-48a8-8d69-f7a94c703a92
+      description: The party discovers that multiple undead have traveled toward the
+        northern forest, providing a direction for further investigation.
+      trigger: The party follows tracks, observes undead movements, or obtains reliable
+        information from Bram.
+      player_action: The party investigates the undead's movements or questions witnesses.
+      timing: Immediately after the discovery.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      - zeffo-undead-sightings
+      world_stories: []
+      world_story_threads: []
+    - id: 438e9777-70fe-43e1-8513-5c69bc32c1d3
+      description: Old Bram becomes willing to share his observations and assist with
+        the investigation. He may warn the party before exploring the forest himself.
+      trigger: The party treats Bram respectfully, protects him, or takes his concerns
+        seriously.
+      player_action: The party cooperates with Bram and investigates his reports.
+      timing: During the cemetery investigation and later interactions.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      world_stories: []
+      world_story_threads: []
+    - id: 60e1fb9e-8d07-4dbd-87e8-1e78a1b5906f
+      description: A newly risen undead creature leaves the cemetery and travels toward
+        the northern forest. Its movements may create another trail or lead to a later
+        encounter.
+      trigger: An undead rises during the investigation and leaves without being stopped.
+      player_action: The party follows, avoids, releases, or fails to contain the
+        undead.
+      timing: Immediately, with possible consequences during later forest exploration.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      - b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
+      world_stories: []
+      world_story_threads: []
+    - id: d252b555-b296-4c77-bc0f-fcb9adc42a76
+      description: 'The Cemetery Is Secured
+
+        The cemetery becomes temporarily safe, and Captain Ressa gains confidence
+        in the party. However, the underlying artifact remains active, so new undead
+        may rise later.'
+      trigger: The party defeats, contains, or drives away the undead threatening
+        the cemetery.
+      player_action: Protects Bram and prevents the immediate outbreak from spreading
+        into the village.
+      timing: Immediately after the encounter.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      world_stories: []
+      world_story_threads: []
+    - id: 8a0da5e3-f932-4019-b7f5-86ef2c04ee88
+      description: 'The Cemetery Is Overrun
+
+        Several undead escape into the surrounding area. Captain Ressa organizes additional
+        patrols, and villagers become more frightened.'
+      trigger: The party retreats or cannot contain the newly risen undead.
+      player_action: Withdraws from the cemetery or fails to stop the creatures.
+      timing: That night and the following morning.
+      status: pending
+      leads_to:
+      - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+      - b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - encounter: null
+    id: f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+    name: The Missing Gravedigger
+    description: null
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 4
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    checks: []
+    npc_knowledge: []
     leads_to: []
     locations: []
     npcs: []
@@ -95,8 +738,125 @@ story:
     world_events: []
     world_stories: []
     world_story_threads: []
-  current_beat: opening-zeffo-undead-sightings
+  - encounter: null
+    id: c5f4520e-970e-4c0d-a821-3164bf4e5f90
+    name: The Healer's Miracles
+    description: null
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 5
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    checks: []
+    npc_knowledge: []
+    leads_to: []
+    locations: []
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  - encounter: null
+    id: b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
+    name: The Forgotten Soldier
+    description: null
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 6
+    triggers: []
+    events: null
+    secrets: []
+    possible_approaches: []
+    checks: []
+    npc_knowledge: []
+    leads_to: []
+    locations: []
+    npcs: []
+    player_characters: []
+    consequences: []
+    world_events: []
+    world_stories: []
+    world_story_threads: []
+  current_beat: b78d97e5-e377-4334-8f6b-a756758bdc58
   player_actions: []
   session_recaps: []
   session_preps: []
-  world_clocks: []
+  world_clocks:
+  - id: cc78bb5c-7f31-4731-96d6-20cce75045b8
+    name: The Rising Dead
+    plot_point_id: null
+    description: An ancient Dwarmar artifact beneath the forests of Zeffo has awakened
+      following the spread of Bane's influence across Elligaesia. Its necromantic
+      energy is causing the dead to rise, their eyes glowing an unnatural green. As
+      the artifact's influence grows, more undead awaken and begin threatening the
+      surrounding settlements. The undead sometimes appear instinctively drawn toward
+      the northern forest, where the artifact lies hidden.
+    current: 0
+    maximum: 6
+    stages:
+    - Reports of undead sightings become more frequent in the northern forest.
+    - Graves begin opening throughout Zeffo, and recently buried villagers are seen
+      wandering at night.
+    - Travelers disappear along forest roads, and merchants begin avoiding Zeffo.
+    - Undead begin entering the village after dark, forcing residents to barricade
+      their homes.
+    - A large procession of green-eyed undead gathers and moves toward the ancient
+      ruins beneath the forest.
+    - The artifact's influence spreads beyond Zeffo, causing the dead to rise in nearby
+      settlements.
+    completion: The artifact's necromantic influence spreads beyond Zeffo. Graves
+      open in surrounding settlements, trade routes become dangerous, and local authorities
+      struggle to contain the undead. The outbreak becomes a regional crisis. Even
+      if the party later disables the artifact, they must still deal with the undead
+      already raised and the consequences of the outbreak.
+    status: active
+  - id: d7ec951c-400e-420a-9cce-086b7c7c7b77
+    name: Edrin's Desperation
+    plot_point_id: null
+    description: Edrin Vale, a respected healer in Zeffo, has discovered an ancient
+      Dwarmar artifact and believes its power can save his dying daughter, Mira. Although
+      he did not cause the artifact to awaken, his experiments are intensifying its
+      necromantic effects. As Mira's condition worsens, Edrin becomes increasingly
+      desperate and willing to take dangerous risks.
+    current: 0
+    maximum: 4
+    stages:
+    - Edrin secretly begins drawing small amounts of energy from the artifact to sustain
+      Mira.
+    - Mira's condition worsens, and Edrin increases his use of the artifact, unintentionally
+      accelerating the undead outbreak.
+    - Edrin realizes his experiments are contributing to the undead activity but refuses
+      to stop, fearing Mira will die.
+    - Edrin attempts a dangerous ritual to permanently restore Mira's health, risking
+      an uncontrolled surge of necromantic energy.
+    completion: Edrin performs the ritual, causing the Dwarmar artifact to release
+      a powerful surge of necromantic energy. Advance The Rising Dead clock by 2 steps,
+      up to its maximum. Mira's fate remains uncertain and depends on the party's
+      intervention. Edrin may be injured, corrupted, or forced to confront the consequences
+      of his actions.
+    status: active
+  - id: 788a62b2-a056-460f-8934-66d2792b921b
+    name: More Undead Rise
+    plot_point_id: b78d97e5-e377-4334-8f6b-a756758bdc58
+    description: This occurs if the players defeat the undead in the cemetery too
+      quickly
+    current: 0
+    maximum: 2
+    stages:
+    - Undead are defeated/or close to death. Party might start hearing movement under
+      one of the graves
+    - If Undead are defeated, the  Party might start hearing movement under one of
+      the graves
+    completion: If Undead are still active after round 2, the undead no longer stir
+    status: active

@@ -89,6 +89,17 @@ class StoryBeatCheck(BaseModel):
     failure: str | None = None
 
 
+class StoryBeatNpcKnowledge(BaseModel):
+    """Scene-specific information an NPC can reveal during a plot point."""
+
+    id: str
+    npc_id: str
+    information: str
+    belief: str | None = None
+    shares_if: str | None = None
+    check: StoryBeatCheck | None = None
+
+
 class StoryBeat(BaseModel):
     encounter: CombatEncounter | None = None
     id: str
@@ -118,6 +129,9 @@ class StoryBeat(BaseModel):
 
     # Optional structured checks and outcomes for notices, approaches, or obstacles.
     checks: list[StoryBeatCheck] = Field(default_factory=list)
+
+    # Scene-specific information linked NPCs know and may reveal.
+    npc_knowledge: list[StoryBeatNpcKnowledge] = Field(default_factory=list)
 
     leads_to: list[str] = Field(default_factory=list)
 
@@ -154,6 +168,9 @@ class PlayerAction(BaseModel):
 class WorldClock(BaseModel):
     id: str
     name: str
+
+    # Optional plot point association; absent means this clock advances at world scale.
+    plot_point_id: str | None = None
 
     description: str | None = None
 

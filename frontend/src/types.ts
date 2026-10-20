@@ -122,6 +122,12 @@ export type NPC = Character;
 
 export type PlayerCharacter = Character;
 
+export type CampaignArcSection = {
+  id: string;
+  title: string;
+  content: string;
+};
+
 export type Campaign = {
   // existing fields...
 
@@ -133,6 +139,9 @@ export type Campaign = {
   updated?: string;
 
   overview?: string;
+  overarching_plot?: string;
+  overarching_plot_sections?: CampaignArcSection[];
+  world_stories?: string[];
   status?: string;
 
   locations?: string[];
@@ -463,6 +472,15 @@ export type StoryBeatCheck = {
   failure?: string;
 };
 
+export type StoryBeatNpcKnowledge = {
+  id: string;
+  npc_id: string;
+  information: string;
+  belief?: string;
+  shares_if?: string;
+  check?: StoryBeatCheck;
+};
+
 export type CombatStats = {
   race?: string;
   class_name?: string;
@@ -523,6 +541,9 @@ export type StoryBeat = {
 
   // DM-facing checks and outcomes for possible notices, approaches, or obstacles
   checks?: StoryBeatCheck[];
+
+  // Scene-specific information linked NPCs know and may reveal
+  npc_knowledge?: StoryBeatNpcKnowledge[];
 
   // Other story beats this can lead toward
   leads_to?: string[];
@@ -587,6 +608,9 @@ export type StoryConsequence = {
 export type WorldClock = {
   id: string;
   name: string;
+
+  // Plot point-specific clocks are separate from campaign-wide world clocks.
+  plot_point_id?: string;
 
   description?: string;
 

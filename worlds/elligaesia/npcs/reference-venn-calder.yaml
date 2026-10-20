@@ -1,22 +1,30 @@
 id: reference-venn-calder
 name: Venn Calder
-description: Sociable and shrewd about fair value. One crate in his latest shipment is addressed
-  to a town that does not appear on any map.
-details: 'Venn Calder works as a general merchant. Sociable and shrewd about fair value. Current
-  complication: One crate in his latest shipment is addressed to a town that does not appear
-  on any map. Personal goal: Expand his route without taking on dangerous debt.'
-job: General Merchant
-race: Human
-alignment: True Neutral
-city: null
-region: null
-kingdom: null
+description: Sociable and shrewd about fair value. One crate in his latest shipment
+  is addressed to a town that does not appear on any map.
 tags:
 - Reference NPC
+created: '2026-10-18T03:05:52.952114'
+updated: '2026-10-18T03:05:52.952118'
+race: Human
+alignment: True Neutral
+role: null
+city: zeffo-city
+region: null
+kingdom: north-elligaesia
+details: 'Venn Calder works as a general merchant. Sociable and shrewd about fair
+  value. Current complication: One crate in his latest shipment is addressed to a
+  town that does not appear on any map. Personal goal: Expand his route without taking
+  on dangerous debt.'
+motives: []
 goals:
 - Expand his route without taking on dangerous debt.
+fears: []
 secrets:
 - He sometimes carries letters for clients without reading them.
 knowledge:
-- 'Venn Calder can speak to the current situation: One crate in his latest shipment is addressed
-  to a town that does not appear on any map.'
+- 'Venn Calder can speak to the current situation: One crate in his latest shipment
+  is addressed to a town that does not appear on any map.'
+events: []
+relationships: []
+job: General Merchant

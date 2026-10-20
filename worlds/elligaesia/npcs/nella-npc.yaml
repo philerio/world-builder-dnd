@@ -1,0 +1,21 @@
+id: nella-npc
+name: Nella
+description: Innkeeper in Zeffo
+tags: []
+created: '2026-10-18T04:57:15.179321'
+updated: '2026-10-18T04:57:15.179323'
+race: Gnome
+alignment: Lawful Neutral
+role: null
+city: zeffo-city
+region: null
+kingdom: null
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Innkeeper

@@ -1,22 +1,31 @@
 id: reference-edrin-vale
 name: Edrin Vale
-description: Careful and quietly competitive. A page has been removed from several unrelated
-  public records, all on the same date.
-details: 'Edrin Vale works as a scribe. Careful and quietly competitive. Current complication:
-  A page has been removed from several unrelated public records, all on the same date. Personal
-  goal: Create a trustworthy archive of local agreements and history.'
-job: Scribe
+description: Village healer in Zeffo. He discovered an ancient artifact and is using its power to sustain his daughter Mira.
+details: >-
+  Edrin believes the artifact's power may save Mira, but his repeated use of it
+  is worsening the undead outbreak.
+
+  Roleplaying Edrin: Avoid making him obviously suspicious. At first, he is
+  genuinely helpful: he treats injured villagers, offers the party medical
+  assistance, and expresses concern about the undead. He may help Captain Ressa
+  care for people wounded in attacks.
+
+  Watch for inconsistencies that suggest he is protecting a secret, not
+  necessarily acting with evil intent:
+  - He becomes uncomfortable when asked where he obtains certain treatments.
+  - He is exhausted from traveling into the forest at night.
+  - He refuses to let strangers examine Mira's treatment.
+  - He reacts with unusual concern when the party mentions investigating the
+    northern ruins.
+job: Healer
 race: Elf
 alignment: Lawful Neutral
-city: null
+city: zeffo-city
 region: null
 kingdom: null
-tags:
-- Reference NPC
+tags: []
 goals:
-- Create a trustworthy archive of local agreements and history.
+- Save his daughter Mira.
 secrets:
-- Edrin once altered a record to protect someone from an unjust penalty.
-knowledge:
-- 'Edrin Vale can speak to the current situation: A page has been removed from several unrelated
-  public records, all on the same date.'
+- Edrin discovered the artifact and is using its power to sustain Mira.
+knowledge: []

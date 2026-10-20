@@ -1,0 +1,21 @@
+id: old-bram-npc
+name: Old Bram
+description: Care taker to cemetery in Zeffo
+tags: []
+created: '2026-10-18T04:58:15.481338'
+updated: '2026-10-18T04:58:15.481340'
+race: Half-Elf
+alignment: Lawful Neutral
+role: null
+city: zeffo-city
+region: null
+kingdom: north-elligaesia
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Gravedigger

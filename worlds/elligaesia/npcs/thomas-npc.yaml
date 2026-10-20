@@ -1,0 +1,21 @@
+id: thomas-npc
+name: Tomas
+description: Farmer of grain in city of Zeffo
+tags: []
+created: '2026-10-18T04:56:27.426950'
+updated: '2026-10-18T04:56:27.426953'
+race: Human
+alignment: Chaotic Good
+role: null
+city: zeffo-city
+region: null
+kingdom: null
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Farmer

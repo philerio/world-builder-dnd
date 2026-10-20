@@ -1,0 +1,21 @@
+id: marta-npc
+name: Marta
+description: Elderly woman who lives in the city of Zeffo
+tags: []
+created: '2026-10-18T04:55:45.589114'
+updated: '2026-10-18T04:55:45.589121'
+race: Human
+alignment: Neutral Good
+role: null
+city: zeffo-city
+region: null
+kingdom: null
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Retired
