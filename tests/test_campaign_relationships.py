@@ -1,4 +1,5 @@
 from worldbuilder.models.campaign import Campaign
+from worldbuilder.models.artifact import Artifact
 from worldbuilder.models.city import City
 from worldbuilder.models.lore import Lore
 from worldbuilder.models.npc import NPC
@@ -39,10 +40,20 @@ def test_campaign_related_entities_includes_events_and_lore() -> None:
             campaigns=["campaign-one"],
         )
     )
+    registry.add_artifact(
+        Artifact(
+            id="traveler-journal",
+            name="Traveler's Journal",
+            item_type="journal",
+            player_text="The ink describes a ruined watchtower.",
+            campaigns=["campaign-one"],
+        )
+    )
 
     references = get_campaign_related_entities(registry, "campaign-one")
 
     assert [(item.entity_type, item.id) for item in references] == [
+        ("artifact", "traveler-journal"),
         ("lore", "local-custom"),
         ("timeline_event", "old-battle"),
         ("world_event", "current-crisis"),

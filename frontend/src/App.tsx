@@ -134,7 +134,7 @@ const navigation = [
   },
   {
     path: "/artifacts",
-    label: "Artifacts",
+    label: "Story Items & Artifacts",
     icon: <DiamondIcon />,
   },
   {
@@ -368,7 +368,7 @@ function Dashboard({ data }: { data: WorldData }) {
       count: data.lores.length,
     },
     {
-      name: "Artifacts",
+      name: "Story Items & Artifacts",
       count: data.artifacts.length,
     },
     {

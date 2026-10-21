@@ -11,12 +11,20 @@ class MapLayer(BaseModel):
     name: str = Field(min_length=1, max_length=80)
 
 
+class MapFogOfWar(BaseModel):
+    """Player-facing fog settings; reveal geometry lives on area markers."""
+
+    enabled: bool = False
+    color: str = Field(default="#17191f", min_length=4, max_length=32)
+
+
 class Map(WorldObject):
     """A map representing a geographic or navigational area."""
 
     map_type: str | None = None
     parent_map: str | None = None
     image_path: str | None = None
+    fog_of_war: MapFogOfWar = Field(default_factory=MapFogOfWar)
     canvas_width: int | None = Field(default=None, ge=500, le=10000)
     canvas_height: int | None = Field(default=None, ge=500, le=10000)
     details: str | None = None

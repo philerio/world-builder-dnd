@@ -307,7 +307,7 @@ def get_campaign_related_entities(
     registry: WorldRegistry,
     campaign_id: str,
 ) -> list[EntityReference]:
-    """Return event and lore records associated with a campaign."""
+    """Return records associated with a campaign."""
     if campaign_id not in registry.campaigns:
         return []
 
@@ -325,6 +325,11 @@ def get_campaign_related_entities(
         EntityReference(id=lore.id, entity_type="lore")
         for lore in registry.lores.values()
         if campaign_id in lore.campaigns
+    )
+    references.extend(
+        EntityReference(id=artifact.id, entity_type="artifact")
+        for artifact in registry.artifacts.values()
+        if campaign_id in artifact.campaigns
     )
     references.extend(
         EntityReference(id=story.id, entity_type="world_story")

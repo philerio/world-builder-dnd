@@ -59,6 +59,14 @@ function MarkerDrawer({
       return markerType === "area" || markerType === "path";
     }
 
+    if (field.name === "player_view_mask") {
+      return markerType === "area";
+    }
+
+    if (field.name === "fog_reveal") {
+      return markerType === "area";
+    }
+
     return true;
   });
   useEffect(() => {

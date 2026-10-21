@@ -63,8 +63,68 @@ overarching_plot: 'Following the events of The Unforgiven, Bane''s influence has
   should not be fully revealed during this adventure. Bane seeks to reclaim the remnants
   of his power from multiple Dwarmar artifacts and ultimately open a portal to the
   realm of the gods to take revenge on those who banished him. The exact method and
-  number of remnants required remain undefined.'
-overarching_plot_sections: []
+  number of remnants required remain undefined.
+
+
+  Edrin has figured out how to power the iron golems found in the facility. He knows
+  that the golems require a living body to power/control them. So he puts himself
+  inside one in order to defeat the party. Unfortunately once inside the person loses
+  all autonomy, and only seeks to destroy those who are not aligned with Bane or controls
+  a crystal.'
+overarching_plot_sections:
+- id: legacy-arc-1
+  title: Arc Section 1
+  content: Following the events of The Unforgiven, Bane's influence has begun spreading
+    across Elligaesia. Although Bane remains imprisoned within a mortal body, his
+    awakening has caused ancient Dwarmar artifacts throughout the world to reactivate.
+    These artifacts contain remnants of his former divine power.
+- id: legacy-arc-2
+  title: Arc Section 2
+  content: One such artifact lies hidden beneath the northern forest near Zeffo. Its
+    reactivation has disturbed the boundary between life and death, causing corpses
+    to rise as undead. Creatures affected by the artifact display an unnatural green
+    glow, often in their eyes. Some of the undead instinctively move toward the artifact,
+    although they are not following deliberate orders.
+- id: legacy-arc-3
+  title: Arc Section 3
+  content: Edrin Vale, a respected healer in Zeffo, discovered the artifact after
+    it had already awakened. Desperate to save his dying daughter, Mira, he began
+    drawing on its power to sustain her life. Although Edrin is not responsible for
+    the original outbreak, his repeated use of the artifact amplifies its necromantic
+    influence and causes more undead to rise.
+- id: legacy-arc-4
+  title: Arc Section 4
+  content: Captain Ressa Thorn attempts to protect the settlement and investigate
+    the disturbances, unaware of the artifact's existence. Old Bram, the village gravedigger,
+    notices that graves are opening from within and that some undead wander toward
+    the northern forest. His discoveries may eventually lead him into danger.
+- id: legacy-arc-5
+  title: Arc Section 5
+  content: 'As the party investigates, two threats develop: the growing undead outbreak
+    and Edrin''s increasing desperation. The Rising Dead clock tracks the expansion
+    of the artifact''s influence, while Edrin''s Desperation tracks his willingness
+    to take greater risks to save Mira.'
+- id: legacy-arc-6
+  title: Arc Section 6
+  content: The party may eventually discover the forgotten Dwarmar facility and confront
+    Edrin's actions. They must decide how to deal with the artifact and whether Mira
+    can be saved without allowing the outbreak to continue. Possible outcomes include
+    containing, disabling, destroying, or attempting to preserve the artifact, with
+    consequences determined by the party's choices.
+- id: legacy-arc-7
+  title: Arc Section 7
+  content: The artifact's connection to Bane is part of the larger story of Elligaesia
+    and should not be fully revealed during this adventure. Bane seeks to reclaim
+    the remnants of his power from multiple Dwarmar artifacts and ultimately open
+    a portal to the realm of the gods to take revenge on those who banished him. The
+    exact method and number of remnants required remain undefined.
+- id: 2fc75f15-d1d4-4cb1-9561-20a4239d3b21
+  title: Final Battle
+  content: Edrin has figured out how to power the iron golems found in the facility.
+    He knows that the golems require a living body to power/control them. So he puts
+    himself inside one in order to defeat the party. Unfortunately once inside the
+    person loses all autonomy, and only seeks to destroy those who are not aligned
+    with Bane or controls a crystal.
 world_stories:
 - bane-overarching-story
 - northern-elligaesia-s-turmoil-world-story
@@ -117,7 +177,20 @@ story:
     world_story_threads:
     - world_story_id: bane-overarching-story
       thread_id: influence-unleashed
-  - encounter: null
+  - encounter:
+      id: 6b9928da-cf6a-4d9e-8ced-0b91eed89b2d
+      name: Merchant in Danger
+      map_id: null
+      location_id: zeffo-city
+      notes: The undead will mostly be focused on his brother , unless a party member
+        attacks
+      participants:
+      - id: 0b062f81-d676-4044-87ee-00b6c1845c7f
+        entity_id: null
+        name: Undead
+        allegiance: enemy
+        quantity: 1
+        stats: null
     id: c1dcbe0b-8394-4fd7-8375-c80f784e43f9
     name: The Dead on the Road
     description: The party is traveling along a forest road when they hear a scream.

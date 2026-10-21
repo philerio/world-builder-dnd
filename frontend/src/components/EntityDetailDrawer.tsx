@@ -778,7 +778,13 @@ function EntityDetails({
       );
 
     case "artifact":
-      return <ArtifactDetails entity={data.entity} />;
+      return (
+        <ArtifactDetails
+          entity={data.entity}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+      );
 
     case "lore":
       return (
@@ -1615,14 +1621,46 @@ function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
     </DetailSection>
   );
 }
-function ArtifactDetails({ entity }: { entity: Record<string, unknown> }) {
+function ArtifactDetails({ entity, onOpenEntity, getEntity }: {
+  entity: Record<string, unknown>;
+  onOpenEntity?: (id: string) => void;
+  getEntity: (id: string) => EntitySummary | undefined;
+}) {
   return (
-    <DetailSection title="Artifact" icon={<PublicIcon />}>
-      <TextField
-        value={entity.details}
-        fallback="No additional details available."
+    <DetailSection
+      title={typeof entity.item_type === "string" ? entity.item_type.replaceAll("_", " ") : "Story Item / Artifact"}
+      icon={<MenuBookIcon />}
+    >
+      <LabeledText label="Player-Facing Text" value={entity.player_text} />
+      <LabeledText label="Details" value={entity.details} />
+      <EntityReferenceListField
+        label="Campaigns"
+        entityIds={getStringArray(entity.campaigns)}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
       />
+      <EntityReferenceListField
+        label="World Stories"
+        entityIds={getStringArray(entity.world_stories)}
+        onOpenEntity={onOpenEntity}
+        getEntity={getEntity}
+      />
+      <LabeledText label="DM Notes" value={entity.dm_notes} />
     </DetailSection>
+  );
+}
+
+function LabeledText({ label, value }: { label: string; value: unknown }) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="body2" sx={{ mt: 0.5, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+        {value}
+      </Typography>
+    </Box>
   );
 }
 

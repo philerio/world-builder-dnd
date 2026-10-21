@@ -1,0 +1,13 @@
+id: edrin-s-journal-artifact
+name: Edrin's Journal
+description: null
+tags: []
+created: '2026-10-20T12:44:35.533815'
+updated: '2026-10-20T12:44:35.533821'
+item_type: journal
+details: null
+dm_notes: null
+player_text: null
+campaigns:
+- zeffo-undead-campaign
+world_stories: []

@@ -1,0 +1,149 @@
+id: zeffo-dwarmar-ruins-map
+name: Zeffo Dwarmar Ruins
+description: An image-free schematic map.
+tags: []
+created: '2026-10-20T19:39:20.848369'
+updated: '2026-10-20T19:39:20.848373'
+map_type: Schematic
+parent_map: null
+image_path: /maps/untitled_1eec0a55eaf4.jpg
+fog_of_war:
+  enabled: true
+  color: '#384261'
+canvas_width: null
+canvas_height: null
+details: null
+dm_notes: null
+markers:
+- id: 067182eb-30ef-4df6-a376-1b31e16dd08f
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: point
+  points: []
+  x: 89.06250953860618
+  y: 75.45469899946879
+  label: New grand artifact platform
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-sprites/grand_artifact_platform_255c4538824c.png
+  icon_size: 100
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
+- id: 946dd7bf-c9f6-4679-b5ae-7552edfd31f8
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: point
+  points: []
+  x: 53.80861282721234
+  y: 42.87111151150341
+  label: New circular conduit mechanism
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-sprites/circular_conduit_mechanism_4dcc98157c4c.png
+  icon_size: 100
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
+- id: ea86af42-9c2a-4f0b-a29e-5127f031b186
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: point
+  points: []
+  x: 32.2754955496679
+  y: 51.23651736757796
+  label: New crystal pedestal variant
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-sprites/crystal_pedestal_variant_58914c981924.png
+  icon_size: 56
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
+- id: a1078d33-0f6d-4092-9770-783b797ef841
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: area
+  points:
+  - - 0.05090092835804555
+    - 12.385579815314241
+  - - 0.05090092835804555
+    - 8.218250883265636
+  - - 15.506573284697511
+    - 8.218250883265636
+  - - 15.506573284697511
+    - 12.385579815314241
+  x: 0.05090092835804555
+  y: 12.385579815314241
+  label: Revealed area
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: null
+  icon_size: 72
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: '#69bd9b'
+  fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: true
+- id: b6cea716-c6f0-4bf4-814c-57a1fde9f8f8
+  entity_id: null
+  layer_id: null
+  z_index: 0
+  type: point
+  points: []
+  x: 80.0059605931354
+  y: 45.08866782397545
+  label: New horizontal crystal
+  linked_map: null
+  visible: true
+  dm_only: false
+  tooltip: null
+  hide_label: true
+  icon: null
+  icon_image: /map-sprites/horizontal_crystal_72aad6605faf.png
+  icon_size: 24
+  rotation: 0.0
+  mirror_x: false
+  mirror_y: false
+  fill_color: null
+  fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
+layers: []
+linked_map: null
+entity_id: zeffo-dwarmar-ruins-location
+tooltip: null

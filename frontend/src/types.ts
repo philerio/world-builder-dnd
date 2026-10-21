@@ -232,8 +232,12 @@ export type Artifact = {
   name: string;
   description?: string;
   tags?: string[];
+  item_type?: "artifact" | "book" | "journal" | "letter" | "map" | "relic" | "key" | "other";
   details?: string;
   dm_notes?: string;
+  player_text?: string;
+  campaigns?: string[];
+  world_stories?: string[];
 };
 
 export type PriceListItem = {
@@ -275,6 +279,8 @@ export type MapMarker = {
   hide_label?: boolean;
   fill_color?: string;
   fill_opacity?: number;
+  player_view_mask?: boolean;
+  fog_reveal?: boolean;
 };
 
 export type MapLayer = {
@@ -291,6 +297,7 @@ export type Map = {
   parent_map?: string;
   entity_id?: string;
   image_path?: string;
+  fog_of_war?: { enabled?: boolean; color?: string };
   canvas_width?: number;
   canvas_height?: number;
   details?: string;
@@ -396,7 +403,7 @@ export const ENTITY_TYPES = [
   { value: "world_story", label: "World Story" },
   { value: "timeline_event", label: "Timeline Event" },
   { value: "lore", label: "Lore" },
-  { value: "artifact", label: "Artifact" },
+  { value: "artifact", label: "Story Item / Artifact" },
   { value: "map", label: "Map" },
   { value: "dm_scratchpad_entry", label: "DM Scratchpad Entry" },
   { value: "price_list", label: "Price List" },

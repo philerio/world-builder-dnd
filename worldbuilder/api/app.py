@@ -40,13 +40,22 @@ app.add_middleware(
 WORLD_PATH = Path("worlds/elligaesia/world.yaml")
 app.include_router(create_combat_router(lambda: WORLD_PATH))
 MAP_ASSETS_PATH = WORLD_PATH.parent / "map_assets"
+MAP_SPRITES_PATH = WORLD_PATH.parent / "map_sprites"
+MAP_IMAGES_PATH = Path(__file__).resolve().parents[2] / "frontend" / "public" / "maps"
 MAX_MAP_ASSET_BYTES = 5 * 1024 * 1024
+MAX_MAP_IMAGE_BYTES = 10 * 1024 * 1024
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MAP_IMAGE_FORMATS = {
+    "image/png": (".png", lambda data: data.startswith(PNG_SIGNATURE)),
+    "image/jpeg": (".jpg", lambda data: data.startswith(b"\xff\xd8\xff")),
+    "image/webp": (".webp", lambda data: data.startswith(b"RIFF") and data[8:12] == b"WEBP"),
+    "image/gif": (".gif", lambda data: data.startswith((b"GIF87a", b"GIF89a"))),
+}
 
 
-def _read_map_asset_default_sizes() -> dict[str, int]:
+def _read_map_asset_default_sizes(asset_path: Path = MAP_ASSETS_PATH) -> dict[str, int]:
     try:
-        stored_settings = json.loads((MAP_ASSETS_PATH / ".stamp-settings.json").read_text(encoding="utf-8"))
+        stored_settings = json.loads((asset_path / ".stamp-settings.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(stored_settings, dict):
@@ -120,6 +129,93 @@ def get_map_asset(filename: str) -> FileResponse:
     if not image_path.is_file():
         raise HTTPException(status_code=404, detail="Map image not found.")
     return FileResponse(image_path, media_type="image/png")
+
+
+@app.get("/map-sprites")
+def list_map_sprites() -> dict[str, list[dict[str, str | int]]]:
+    MAP_SPRITES_PATH.mkdir(parents=True, exist_ok=True)
+    default_sizes = _read_map_asset_default_sizes(MAP_SPRITES_PATH)
+    assets = [
+        {
+            "name": path.stem.rsplit("_", maxsplit=1)[0].replace("_", " "),
+            "image_path": f"/map-sprites/{path.name}",
+            "default_size": default_sizes.get(path.name, 56),
+            "category": "sprite",
+        }
+        for path in sorted(MAP_SPRITES_PATH.glob("*.png"), key=lambda item: item.name.lower())
+        if path.is_file()
+    ]
+    return {"assets": assets}
+
+
+@app.post("/map-sprites")
+async def upload_map_sprite(request: Request, name: str = "Dungeon Sprite") -> dict[str, str | int]:
+    content_type = request.headers.get("content-type", "").split(";", maxsplit=1)[0].strip().lower()
+    if content_type != "image/png":
+        raise HTTPException(status_code=415, detail="Only PNG dungeon sprites are supported.")
+
+    image_bytes = await request.body()
+    if len(image_bytes) > MAX_MAP_ASSET_BYTES:
+        raise HTTPException(status_code=413, detail="PNG files must be 5 MB or smaller.")
+    if len(image_bytes) <= len(PNG_SIGNATURE) or not image_bytes.startswith(PNG_SIGNATURE):
+        raise HTTPException(status_code=415, detail="The uploaded file is not a valid PNG image.")
+
+    safe_name = "".join(character.lower() if character.isalnum() else "_" for character in Path(name).stem)
+    safe_name = "_".join(part for part in safe_name.split("_") if part)[:48] or "dungeon_sprite"
+    filename = f"{safe_name}_{uuid4().hex[:12]}.png"
+    MAP_SPRITES_PATH.mkdir(parents=True, exist_ok=True)
+    (MAP_SPRITES_PATH / filename).write_bytes(image_bytes)
+    return {"name": safe_name.replace("_", " "), "image_path": f"/map-sprites/{filename}", "default_size": 56, "category": "sprite"}
+
+
+@app.put("/map-sprites/{filename}/settings")
+def update_map_sprite_settings(filename: str, payload: dict) -> dict[str, str | int]:
+    if Path(filename).name != filename or not filename.endswith(".png"):
+        raise HTTPException(status_code=404, detail="Map sprite not found.")
+    if not (MAP_SPRITES_PATH / filename).is_file():
+        raise HTTPException(status_code=404, detail="Map sprite not found.")
+
+    default_size = payload.get("default_size")
+    if type(default_size) is not int or not 24 <= default_size <= 256:
+        raise HTTPException(status_code=422, detail="Default sprite size must be a whole number from 24 to 256.")
+
+    settings = _read_map_asset_default_sizes(MAP_SPRITES_PATH)
+    settings[filename] = default_size
+    (MAP_SPRITES_PATH / ".stamp-settings.json").write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+    return {"image_path": f"/map-sprites/{filename}", "default_size": default_size}
+
+
+@app.get("/map-sprites/{filename}")
+def get_map_sprite(filename: str) -> FileResponse:
+    if Path(filename).name != filename or not filename.endswith(".png"):
+        raise HTTPException(status_code=404, detail="Map sprite not found.")
+    image_path = MAP_SPRITES_PATH / filename
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="Map sprite not found.")
+    return FileResponse(image_path, media_type="image/png")
+
+
+@app.post("/map-images")
+async def upload_map_image(request: Request, name: str = "Map") -> dict[str, str]:
+    """Store an uploaded map background at a URL the map editor can render."""
+    content_type = request.headers.get("content-type", "").split(";", maxsplit=1)[0].strip().lower()
+    image_format = MAP_IMAGE_FORMATS.get(content_type)
+    if image_format is None:
+        raise HTTPException(status_code=415, detail="Use a PNG, JPEG, WebP, or GIF map image.")
+
+    image_bytes = await request.body()
+    extension, signature_check = image_format
+    if len(image_bytes) > MAX_MAP_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Map images must be 10 MB or smaller.")
+    if not image_bytes or not signature_check(image_bytes):
+        raise HTTPException(status_code=415, detail="The uploaded file does not match its image type.")
+
+    safe_name = "".join(character.lower() if character.isalnum() else "_" for character in Path(name).stem)
+    safe_name = "_".join(part for part in safe_name.split("_") if part)[:48] or "map"
+    filename = f"{safe_name}_{uuid4().hex[:12]}{extension}"
+    MAP_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+    (MAP_IMAGES_PATH / filename).write_bytes(image_bytes)
+    return {"image_path": f"/maps/{filename}", "name": safe_name.replace("_", " ")}
 
 
 @app.get("/health")

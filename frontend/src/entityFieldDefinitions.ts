@@ -739,6 +739,26 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
     artifact: [
       ...COMMON_FIELDS,
       {
+        name: "item_type",
+        label: "Item Type",
+        type: "autocomplete",
+        options: [
+          { value: "artifact", label: "Artifact" },
+          { value: "book", label: "Book" },
+          { value: "journal", label: "Journal" },
+          { value: "letter", label: "Letter" },
+          { value: "map", label: "Map" },
+          { value: "relic", label: "Relic" },
+          { value: "key", label: "Key" },
+          { value: "other", label: "Other" },
+        ],
+      },
+      {
+        name: "player_text",
+        label: "Player-Facing Text or Excerpt",
+        type: "textarea",
+      },
+      {
         name: "details",
         label: "Details",
         type: "textarea",
@@ -747,6 +767,18 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "dm_notes",
         label: "DM Notes",
         type: "textarea",
+      },
+      {
+        name: "campaigns",
+        label: "Campaigns",
+        type: "referenceArray",
+        referenceType: "campaign",
+      },
+      {
+        name: "world_stories",
+        label: "World Stories",
+        type: "referenceArray",
+        referenceType: "world_story",
       },
     ],
 
@@ -772,6 +804,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
         name: "image_path",
         label: "Image Path",
         type: "text",
+        hidden: true,
       },
       {
         name: "linked_map",
@@ -882,6 +915,16 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
           {
             name: "dm_only",
             label: "DM Only",
+            type: "boolean",
+          },
+          {
+            name: "player_view_mask",
+            label: "Mask this area in Player View",
+            type: "boolean",
+          },
+          {
+            name: "fog_reveal",
+            label: "Reveal this area through Player View fog",
             type: "boolean",
           },
         ],

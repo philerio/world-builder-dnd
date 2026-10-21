@@ -1204,7 +1204,7 @@ function CampaignDashboardPage() {
     ...(campaign?.npcs ?? []),
     ...(campaign?.locations ?? []),
   ];
-  const linkableEntityTypes = new Set(["world_event", "timeline_event", "lore"]);
+  const linkableEntityTypes = new Set(["world_event", "timeline_event", "lore", "artifact"]);
   const linkedReferenceIds = new Set(campaignLinkedRecords.map((reference) => reference.id));
   const availableReferences = entities.filter(
     (entity) => linkableEntityTypes.has(entity.entity_type) && !linkedReferenceIds.has(entity.id),
@@ -2764,7 +2764,7 @@ function CampaignDashboardPage() {
                 <AccordionDetails sx={{ px: 0, pt: 0, width: "100%", minWidth: 0, boxSizing: "border-box" }}>
                   <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", mb: 1 }}>
                     <Button size="small" startIcon={<AddIcon />} onClick={() => setLinkDialogOpen(true)} disabled={linkingReference}>
-                      Add event or lore
+                      Add story reference
                     </Button>
                   </Stack>
                   {linkedEntityIds.length || campaignLinkedRecords.length ? (
@@ -2797,7 +2797,7 @@ function CampaignDashboardPage() {
                 <DialogTitle>Add a campaign reference</DialogTitle>
                 <DialogContent>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Link an existing world event, timeline event, or lore record. The original record stays in the world database.
+                    Link an existing event, lore record, or story item. The original record stays in the world database.
                   </Typography>
                   <Autocomplete
                     multiple
@@ -2807,8 +2807,8 @@ function CampaignDashboardPage() {
                     getOptionLabel={(option) => option.name}
                     groupBy={(option) => option.entity_type.replaceAll("_", " ")}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
-                    renderInput={(params) => <TextField {...params} label="Search events and lore" />}
-                    noOptionsText="No unlinked events or lore found"
+                    renderInput={(params) => <TextField {...params} label="Search events, lore, and story items" />}
+                    noOptionsText="No unlinked story references found"
                   />
                 </DialogContent>
                 <DialogActions>

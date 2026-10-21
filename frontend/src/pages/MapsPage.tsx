@@ -92,6 +92,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useWorldData } from "../context/WorldDataContext";
 import DashboardFilters from "../components/filters/DashboardFilters";
 import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
+import { publishMapToCombat } from "../utils/playerMapExport";
 
 import "leaflet/dist/leaflet.css";
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
@@ -127,7 +128,7 @@ const QUICK_SHAPE_LABELS: Record<QuickShapePreset, string> = {
   "building-t": "T-shaped building",
   "building-u": "U-shaped building",
 };
-type MapStampAsset = { name: string; image_path: string; default_size: number };
+type MapStampAsset = { name: string; image_path: string; default_size: number; category?: "building" | "sprite" };
 type PendingStampSize = { stamp: MapStampAsset; size: number; originalSize: number };
 type StoredMapEditorDraft = { map: Map; stampSizes: [string, PendingStampSize][] };
 type MapEditSnapshot = { markers: MapMarker[]; layers?: MapLayer[] };
@@ -488,6 +489,10 @@ type MapViewerProps = {
   editMode: boolean;
   hasUnsavedChanges: boolean;
   onSaveChanges: () => void;
+  onSaveMapDraft: () => Promise<boolean>;
+  onUploadMapImage: (file: File) => Promise<void>;
+  onClearMapImage: () => void;
+  onFogSettingsChange: (settings: { enabled?: boolean; color?: string }) => void;
   onEditModeChange: (enabled: boolean) => void;
   focusEntityId: string | null;
   fromWorldMap: boolean;
@@ -524,7 +529,7 @@ type MapViewerProps = {
   onPointPlacementModeChange: (enabled: boolean) => void;
   onShapePresetChange: (preset: QuickShapePreset | null) => void;
   onSelectMode: () => void;
-  onStartDrawing: (type: "area" | "path") => void;
+  onStartDrawing: (type: "area" | "path" | "rectangle", marker?: MapMarker) => void;
   onFinishShapeEdit: () => void;
   onBack: () => void;
   onOpenEntity: (entityId: string) => void;
@@ -556,12 +561,14 @@ type MapViewerProps = {
   onDeleteMapLayer: (layerId: string) => void;
   onAssignSelectedMarkersToLayer: (layerId: string | null) => void;
   buildingStamps: MapStampAsset[];
+  dungeonSprites: MapStampAsset[];
   showStampLabelsByDefault: boolean;
   onShowStampLabelsByDefaultChange: (enabled: boolean) => void;
   selectedStampPath: string | null;
   stampUploadBusy: boolean;
   stampUploadError: string | null;
   onUploadBuildingStamp: (file: File) => Promise<void>;
+  onUploadDungeonSprites: (files: File[]) => Promise<void>;
   onStageBuildingStampSize: (stamp: MapStampAsset, size: number) => Promise<void>;
   onSelectBuildingStamp: (stamp: MapStampAsset | null) => void;
   savingMap: boolean;
@@ -569,7 +576,7 @@ type MapViewerProps = {
   onOpenMarkerEditor: (markerId: string) => void;
   onChangeMarkerOrder: (markerId: string, direction: "front" | "back") => void;
   shapeEditId: string | null;
-  drawShape: "area" | "path" | null;
+  drawShape: "area" | "path" | "rectangle" | null;
   onDrawShapeHandled: () => void;
   onOpenMarkerMenu: (
     event: React.MouseEvent,
@@ -614,7 +621,7 @@ type LeafletMapProps = {
   onOpenMarkerEditor: (markerId: string) => void;
   onChangeMarkerOrder: (markerId: string, direction: "front" | "back") => void;
   shapeEditId: string | null;
-  drawShape: "area" | "path" | null;
+  drawShape: "area" | "path" | "rectangle" | null;
   onDrawShapeHandled: () => void;
   onOpenMarkerMenu: (
     event: React.MouseEvent,
@@ -657,7 +664,7 @@ type GeomanControllerProps = {
   snapToGrid: boolean;
   snapGridSize: number;
   shapeEditId: string | null;
-  drawShape: "area" | "path" | null;
+  drawShape: "area" | "path" | "rectangle" | null;
   onDrawShapeHandled: () => void;
   onShapeCreated: (marker: MapMarker, layer: L.Layer) => void;
   onShapeEdited: (marker: MapMarker) => void;
@@ -1044,6 +1051,7 @@ function MapExplorer({
           const subtitle = [
             marker.type === "area" ? "Area" : marker.type === "path" ? "Path" : entity?.entity_type ?? "Point",
             marker.layer_id ? layers.find((layer) => layer.id === marker.layer_id)?.name : "Unassigned",
+            marker.player_view_mask ? "Masks Player View" : null,
             marker.dm_only ? "DM only" : null,
             marker.visible ? null : "Hidden",
           ].filter(Boolean).join(" · ");
@@ -1625,6 +1633,13 @@ function layerToPoints(
   return null;
 }
 
+function constrainLatLngToAxis(map: L.Map, previous: L.LatLng, target: L.LatLng): L.LatLng {
+  const start = map.latLngToContainerPoint(previous);
+  const end = map.latLngToContainerPoint(target);
+  const horizontalIsLonger = Math.abs(end.x - start.x) >= Math.abs(end.y - start.y);
+  return horizontalIsLonger ? L.latLng(previous.lat, target.lng) : L.latLng(target.lat, previous.lng);
+}
+
 function MapsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1640,6 +1655,7 @@ function MapsPage() {
   const [mapDraftDirty, setMapDraftDirty] = useState(false);
   const [mapDraftSaving, setMapDraftSaving] = useState(false);
   const [buildingStamps, setBuildingStamps] = useState<MapStampAsset[]>([]);
+  const [dungeonSprites, setDungeonSprites] = useState<MapStampAsset[]>([]);
   const [selectedBuildingStamp, setSelectedBuildingStamp] = useState<MapStampAsset | null>(null);
   const [showStampLabelsByDefault, setShowStampLabelsByDefault] = useState(() => {
     try {
@@ -1665,7 +1681,7 @@ function MapsPage() {
   const [showGrid, setShowGrid] = useState(false);
   const [pendingMapEntitySelection, setPendingMapEntitySelection] = useState<EntitySummary | null>(null);
   const [shapeEditId, setShapeEditId] = useState<string | null>(null);
-  const [drawShape, setDrawShape] = useState<"area" | "path" | null>(null);
+  const [drawShape, setDrawShape] = useState<"area" | "path" | "rectangle" | null>(null);
   const [shapeDraft, setShapeDraft] = useState<MapMarker | null>(null);
   const [draftShapeLayer, setDraftShapeLayer] = useState<L.Layer | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -1722,6 +1738,20 @@ function MapsPage() {
       .catch((error: unknown) => {
         if (active) setStampUploadError(error instanceof Error ? error.message : "Could not load building images.");
       });
+    void fetch("http://localhost:8000/map-sprites")
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`Could not load dungeon sprites (${response.status}).`);
+        const result = await response.json() as { assets: MapStampAsset[] };
+        if (active) {
+          const stagedSprites = new globalThis.Map<string, MapStampAsset>(
+            [...pendingStampSizesRef.current.values()].map((pendingSize): [string, MapStampAsset] => [pendingSize.stamp.image_path, pendingSize.stamp]),
+          );
+          setDungeonSprites(result.assets.map((sprite) => stagedSprites.get(sprite.image_path) ?? sprite));
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setStampUploadError(error instanceof Error ? error.message : "Could not load dungeon sprites.");
+      });
     return () => { active = false; };
   }, []);
 
@@ -1745,7 +1775,7 @@ function MapsPage() {
       });
       const result = await response.json() as MapStampAsset & { detail?: string };
       if (!response.ok) throw new Error(result.detail ?? `Could not upload PNG (${response.status}).`);
-      const uploadedStamp = { name: result.name, image_path: result.image_path, default_size: result.default_size };
+      const uploadedStamp = { name: result.name, image_path: result.image_path, default_size: result.default_size, category: "building" as const };
       setBuildingStamps((current) => [...current, uploadedStamp]);
       setSelectedBuildingStamp(uploadedStamp);
       setStampUploadError(null);
@@ -1762,6 +1792,49 @@ function MapsPage() {
     }
   };
 
+  const handleUploadDungeonSprites = async (files: File[]) => {
+    setStampUploadError(null);
+    const invalid = files.find((file) => file.type !== "image/png" || file.size > 5 * 1024 * 1024);
+    if (invalid) {
+      setStampUploadError(invalid.type !== "image/png" ? `${invalid.name}: choose a PNG image.` : `${invalid.name}: PNG files must be 5 MB or smaller.`);
+      return;
+    }
+    if (!files.length) return;
+
+    setStampUploadBusy(true);
+    const uploaded: MapStampAsset[] = [];
+    try {
+      for (const file of files) {
+        const response = await fetch(`http://localhost:8000/map-sprites?name=${encodeURIComponent(file.name)}`, {
+          method: "POST",
+          headers: { "Content-Type": "image/png" },
+          body: file,
+        });
+        const result = await response.json() as MapStampAsset & { detail?: string };
+        if (!response.ok) throw new Error(result.detail ?? `Could not upload ${file.name}.`);
+        uploaded.push({ ...result, category: "sprite" });
+      }
+      setDungeonSprites((current) => [...current, ...uploaded]);
+      if (uploaded.length === 1) {
+        const firstSprite = uploaded[0];
+        setSelectedBuildingStamp(firstSprite);
+        setPointPlacementMode(true);
+        setShapePlacementPreset(null);
+        setMarkerEditMode(false);
+        setSelectionMode(false);
+        setSelectedMarkerIds([]);
+        clearPendingMapEntity();
+      }
+      setStampUploadError(null);
+    } catch (error) {
+      setDungeonSprites((current) => [...current, ...uploaded]);
+      setStampUploadError(error instanceof Error ? `${error.message}${uploaded.length ? ` (${uploaded.length} uploaded successfully)` : ""}` : "Could not upload these sprites.");
+    } finally {
+      setStampUploadBusy(false);
+    }
+  };
+
+
   const handleStageBuildingStampSize = (stamp: MapStampAsset, size: number): Promise<void> => {
     setStampUploadError(null);
     const filename = stamp.image_path.split("/").pop();
@@ -1775,6 +1848,7 @@ function MapsPage() {
       pendingStampSizesRef.current.set(filename, { stamp: updatedStamp, size, originalSize });
     }
     setBuildingStamps((current) => current.map((asset) => asset.image_path === stamp.image_path ? updatedStamp : asset));
+    setDungeonSprites((current) => current.map((asset) => asset.image_path === stamp.image_path ? updatedStamp : asset));
     setSelectedBuildingStamp((current) => current?.image_path === stamp.image_path ? updatedStamp : current);
     const draft = mapDraftRef.current;
     const baseline = mapBaselineRef.current;
@@ -1858,6 +1932,7 @@ function MapsPage() {
         [...pendingStampSizesRef.current.values()].map((pendingSize): [string, MapStampAsset] => [pendingSize.stamp.image_path, pendingSize.stamp]),
       );
       setBuildingStamps((current) => current.map((stamp) => stagedStamps.get(stamp.image_path) ?? stamp));
+      setDungeonSprites((current) => current.map((sprite) => stagedStamps.get(sprite.image_path) ?? sprite));
     }
     setMapDraft(snapshot);
     setMapDraftDirty(JSON.stringify(snapshot) !== JSON.stringify(map) || pendingStampSizesRef.current.size > 0);
@@ -1949,6 +2024,41 @@ function MapsPage() {
   }, []);
   const editableMap = selectedMap && mapDraft?.id === selectedMap.id ? mapDraft : selectedMap;
 
+  const handleUploadMapImage = async (file: File) => {
+    if (!selectedMap) throw new Error("Choose a map before uploading a background.");
+    const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    if (!supportedTypes.includes(file.type)) throw new Error("Choose a PNG, JPEG, WebP, or GIF map image.");
+    if (file.size > 10 * 1024 * 1024) throw new Error("Map images must be 10 MB or smaller.");
+
+    const response = await fetch(`http://localhost:8000/map-images?name=${encodeURIComponent(file.name)}`, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    const result = await response.json() as { image_path?: string; detail?: string };
+    if (!response.ok || !result.image_path) {
+      throw new Error(result.detail ?? `Could not upload map image (${response.status}).`);
+    }
+    const currentMap = mapDraftRef.current?.id === selectedMap.id ? mapDraftRef.current : editableMap;
+    if (!currentMap) throw new Error("The selected map is no longer available.");
+    stageMapDraft({ ...currentMap, image_path: result.image_path });
+  };
+
+  const handleClearMapImage = () => {
+    const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
+    if (!currentMap) return;
+    stageMapDraft({ ...currentMap, image_path: undefined });
+  };
+
+  const handleFogSettingsChange = (settings: { enabled?: boolean; color?: string }) => {
+    const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
+    if (!currentMap) return;
+    stageMapDraft({
+      ...currentMap,
+      fog_of_war: { enabled: false, color: "#17191f", ...currentMap.fog_of_war, ...settings },
+    });
+  };
+
   const saveMapDraft = async (): Promise<boolean> => {
     if (mapDraftSaving) return false;
     if (!hasPendingEditorChanges()) {
@@ -1970,7 +2080,8 @@ function MapsPage() {
         const pendingEntry = pendingStampSizesRef.current.entries().next().value as [string, { stamp: MapStampAsset; size: number; originalSize: number }] | undefined;
         if (!pendingEntry) break;
         const [filename, pendingSize] = pendingEntry;
-        const response = await fetch(`http://localhost:8000/map-assets/${encodeURIComponent(filename)}/settings`, {
+        const assetRoute = pendingSize.stamp.category === "sprite" ? "map-sprites" : "map-assets";
+        const response = await fetch(`http://localhost:8000/${assetRoute}/${encodeURIComponent(filename)}/settings`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ default_size: pendingSize.size }),
@@ -1981,6 +2092,7 @@ function MapsPage() {
           pendingStampSizesRef.current.delete(filename);
           const updatedStamp = { ...pendingSize.stamp, default_size: result.default_size };
           setBuildingStamps((current) => current.map((stamp) => stamp.image_path === updatedStamp.image_path ? updatedStamp : stamp));
+          setDungeonSprites((current) => current.map((sprite) => sprite.image_path === updatedStamp.image_path ? updatedStamp : sprite));
           setSelectedBuildingStamp((current) => current?.image_path === updatedStamp.image_path ? updatedStamp : current);
         }
       }
@@ -2459,6 +2571,7 @@ function MapsPage() {
           points: marker.points,
           fill_color: shapeDraft.fill_color ?? marker.fill_color,
           fill_opacity: shapeDraft.fill_opacity ?? marker.fill_opacity,
+          fog_reveal: shapeDraft.fog_reveal ?? marker.fog_reveal,
         }
       : marker;
     const markerToSave = {
@@ -2528,7 +2641,7 @@ function MapsPage() {
     setDrawShape(null);
   };
 
-  const handleStartDrawing = (type: "area" | "path", draft?: MapMarker) => {
+  const handleStartDrawing = (type: "area" | "path" | "rectangle", draft?: MapMarker) => {
     setSelectionMode(false);
     setSelectedMarkerIds([]);
     setSelectedBuildingStamp(null);
@@ -2537,7 +2650,7 @@ function MapsPage() {
     setMarkerEditMode(false);
     setShapeEditId(null);
     setMarkerDrawer({ open: false, mode: "create", marker: null });
-    setShapeDraft(draft ? { ...draft, type } : null);
+    setShapeDraft(draft ? { ...draft, type: type === "path" ? "path" : "area" } : null);
     setDrawShape(type);
   };
 
@@ -2947,6 +3060,10 @@ function MapsPage() {
           editMode={mapEditMode}
           hasUnsavedChanges={mapDraftDirty}
           onSaveChanges={() => void saveMapDraft()}
+          onSaveMapDraft={saveMapDraft}
+          onUploadMapImage={handleUploadMapImage}
+          onClearMapImage={handleClearMapImage}
+          onFogSettingsChange={handleFogSettingsChange}
           onEditModeChange={handleMapEditModeChange}
           focusEntityId={searchParams.get("focusEntity")}
           fromWorldMap={searchParams.get("from") === "world-map"}
@@ -3059,6 +3176,7 @@ function MapsPage() {
           onDeleteMapLayer={handleDeleteMapLayer}
           onAssignSelectedMarkersToLayer={handleAssignSelectedMarkersToLayer}
           buildingStamps={buildingStamps}
+          dungeonSprites={dungeonSprites}
           showStampLabelsByDefault={showStampLabelsByDefault}
           onShowStampLabelsByDefaultChange={(enabled) => {
             setShowStampLabelsByDefault(enabled);
@@ -3072,6 +3190,7 @@ function MapsPage() {
           stampUploadBusy={stampUploadBusy}
           stampUploadError={stampUploadError}
           onUploadBuildingStamp={handleUploadBuildingStamp}
+          onUploadDungeonSprites={handleUploadDungeonSprites}
           onStageBuildingStampSize={handleStageBuildingStampSize}
           onSelectBuildingStamp={(stamp) => {
             setSelectedBuildingStamp(stamp);
@@ -3465,12 +3584,276 @@ function MapStampOption({
   );
 }
 
+function PlayerMapPublishPanel({
+  map,
+  onSaveMapDraft,
+}: {
+  map: Map;
+  onSaveMapDraft: () => Promise<boolean>;
+}) {
+  const [apiUrl, setApiUrl] = useState(() => {
+    try {
+      return (
+        window.localStorage.getItem("world-builder-player-view-api") ??
+        "http://localhost:3000"
+      );
+    } catch {
+      return "http://localhost:3000";
+    }
+  });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const baseUrl = () => {
+    const parsed = new URL(apiUrl.trim());
+    if (
+      !["http:", "https:"].includes(parsed.protocol) ||
+      parsed.username ||
+      parsed.password ||
+      parsed.search ||
+      parsed.hash
+    ) {
+      throw new Error("Use an HTTP or HTTPS DnDGameTool API address.");
+    }
+    return parsed.href.replace(/\/$/, "");
+  };
+
+  const publish = async () => {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      if (!(await onSaveMapDraft()))
+        throw new Error("Save the map changes before publishing.");
+      await publishMapToCombat(baseUrl(), map);
+      try {
+        window.localStorage.setItem("world-builder-player-view-api", baseUrl());
+      } catch {
+        // The current API address remains usable for this session.
+      }
+      setMessage(
+        `${map.name} updated: full dungeon for the DM, fogged map for players.`
+      );
+    } catch (publishError) {
+      setError(
+        publishError instanceof Error
+          ? publishError.message
+          : "Could not publish this map."
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clear = async () => {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch(`${baseUrl()}/player/map`, {
+        method: "DELETE",
+      });
+      if (!response.ok)
+        throw new Error(`DnDGameTool returned ${response.status}.`);
+      setMessage("Player View returned to its normal encounter map.");
+    } catch (clearError) {
+      setError(
+        clearError instanceof Error
+          ? clearError.message
+          : "Could not clear Player View map."
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Stack spacing={1}>
+      <Typography variant="caption" color="text.secondary">
+        Send the full map to the DM and its fogged version to players. Both
+        views share the same framing.
+      </Typography>
+      <TextField
+        size="small"
+        label="DnDGameTool API address"
+        value={apiUrl}
+        onChange={(event) => setApiUrl(event.target.value)}
+        disabled={busy}
+        placeholder="http://localhost:3000"
+      />
+      <Stack direction="row" spacing={1}>
+        <Button
+          size="small"
+          fullWidth
+          variant="contained"
+          disabled={busy}
+          onClick={() => void publish()}
+        >
+          {busy ? "Updating…" : "Update Player View"}
+        </Button>
+        <Button
+          size="small"
+          fullWidth
+          color="inherit"
+          disabled={busy}
+          onClick={() => void clear()}
+        >
+          Clear Player View
+        </Button>
+      </Stack>
+      {message && (
+        <Alert severity="success" sx={{ py: 0 }}>
+          {message}
+        </Alert>
+      )}
+      {error && (
+        <Alert severity="error" sx={{ py: 0 }}>
+          {error}
+        </Alert>
+      )}
+    </Stack>
+  );
+}
+
+function MapBackgroundFogPanel({
+  map,
+  onUpload,
+  onClearImage,
+  onFogSettingsChange,
+  onStartDrawing,
+  onSaveMapDraft,
+}: {
+  map: Map;
+  onUpload: (file: File) => Promise<void>;
+  onClearImage: () => void;
+  onFogSettingsChange: (settings: { enabled?: boolean; color?: string }) => void;
+  onStartDrawing: (type: "area" | "path" | "rectangle", marker?: MapMarker) => void;
+  onSaveMapDraft: () => Promise<boolean>;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const fogEnabled = map.fog_of_war?.enabled ?? false;
+  const revealCount = map.markers.filter((marker) => marker.type === "area" && marker.fog_reveal).length;
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    setError("");
+    try {
+      await onUpload(file);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Could not upload this map image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Accordion disableGutters elevation={0} defaultExpanded={!map.image_path} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight: 42, "& .MuiAccordionSummary-content": { my: 0.75 } }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Typography variant="overline" color="text.secondary">BACKGROUND & FOG</Typography>
+          {fogEnabled && <Chip size="small" color="primary" label={`${revealCount} revealed`} sx={{ height: 20 }} />}
+        </Stack>
+      </AccordionSummary>
+      <AccordionDetails sx={{ pt: 0 }}>
+        <Stack spacing={1}>
+          <input
+            ref={fileInput}
+            hidden
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void upload(file);
+              event.currentTarget.value = "";
+            }}
+          />
+          <Stack direction="row" spacing={0.5}>
+            <Button size="small" fullWidth variant="outlined" startIcon={uploading ? <CircularProgress size={14} /> : <FileUploadIcon />} disabled={uploading} onClick={() => fileInput.current?.click()}>
+              {uploading ? "Uploading…" : map.image_path ? "Replace image" : "Upload map image"}
+            </Button>
+            {map.image_path && <Tooltip title="Remove the background image and use the schematic canvas">
+              <IconButton size="small" aria-label="Remove map background image" disabled={uploading} onClick={onClearImage}><DeleteIcon fontSize="small" /></IconButton>
+            </Tooltip>}
+          </Stack>
+          <Typography variant="caption" color="text.secondary">
+            PNG, JPEG, WebP, or GIF up to 10 MB. The image is copied into this app and saved with the map.
+          </Typography>
+          {error && <Alert severity="error" sx={{ py: 0 }}>{error}</Alert>}
+          <Divider />
+          <FormControlLabel
+            sx={{ ml: 0, mr: 0 }}
+            control={<Switch size="small" checked={fogEnabled} onChange={(event) => onFogSettingsChange({ enabled: event.target.checked })} />}
+            label={<Typography variant="body2">Fog of war in Player View</Typography>}
+          />
+          {fogEnabled && <>
+            <TextField
+              size="small"
+              type="color"
+              label="Unrevealed area color"
+              value={map.fog_of_war?.color ?? "#17191f"}
+              onChange={(event) => onFogSettingsChange({ color: event.target.value })}
+              slotProps={{ htmlInput: { sx: { height: 30, p: 0.5 } } }}
+            />
+            <Button size="small" fullWidth variant="outlined" onClick={() => onStartDrawing("rectangle", {
+              id: crypto.randomUUID(),
+              entity_id: null,
+              type: "area",
+              x: 0,
+              y: 0,
+              points: [],
+              label: "Revealed area",
+              hide_label: true,
+              fill_color: "#69bd9b",
+              fill_opacity: 0.2,
+              visible: true,
+              dm_only: false,
+              fog_reveal: true,
+            })}>
+              Draw reveal rectangle
+            </Button>
+            <Button size="small" fullWidth variant="outlined" onClick={() => onStartDrawing("area", {
+              id: crypto.randomUUID(),
+              entity_id: null,
+              type: "area",
+              x: 0,
+              y: 0,
+              points: [],
+              label: "Revealed area",
+              hide_label: true,
+              fill_color: "#69bd9b",
+              fill_opacity: 0.2,
+              visible: true,
+              dm_only: false,
+              fog_reveal: true,
+            })}>
+              Draw reveal polygon
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              Draw a rectangle or polygon around each explored room or corridor. Republish to update Player View.
+            </Typography>
+          </>}
+          <Divider />
+          <Typography variant="overline" color="text.secondary">UPDATE PLAYER VIEW</Typography>
+          <PlayerMapPublishPanel map={map} onSaveMapDraft={onSaveMapDraft} />
+        </Stack>
+      </AccordionDetails>
+    </Accordion>
+  );
+}
+
 function MapViewer({
   map,
   maps,
   editMode,
   hasUnsavedChanges,
   onSaveChanges,
+  onSaveMapDraft,
+  onUploadMapImage,
+  onClearMapImage,
+  onFogSettingsChange,
   onEditModeChange,
   focusEntityId,
   fromWorldMap,
@@ -3548,22 +3931,26 @@ function MapViewer({
   onDeleteMapLayer,
   onAssignSelectedMarkersToLayer,
   buildingStamps,
+  dungeonSprites,
   showStampLabelsByDefault,
   onShowStampLabelsByDefaultChange,
   selectedStampPath,
   stampUploadBusy,
   stampUploadError,
   onUploadBuildingStamp,
+  onUploadDungeonSprites,
   onStageBuildingStampSize,
   onSelectBuildingStamp,
   savingMap,
   onShapeCreated,
   onShapeEdited,
 }: MapViewerProps) {
+  const [mapControlTab, setMapControlTab] = useState<"tools" | "layers" | "player">("tools");
   const [newMapLayerName, setNewMapLayerName] = useState("");
   const [mapExplorerOpen, setMapExplorerOpen] = useState(false);
   const [manualFocus, setManualFocus] = useState<{ mapId: string; markerId: string } | null>(null);
   const stampFileInput = useRef<HTMLInputElement>(null);
+  const spriteFileInput = useRef<HTMLInputElement>(null);
   const mapLayers: MapLayer[] = map.layers ?? [];
   const focusedMarkerId = manualFocus?.mapId === map.id
     ? manualFocus.markerId
@@ -3813,6 +4200,19 @@ function MapViewer({
                 }}
               >
                 <Stack spacing={1.5}>
+                  {editMode && <Tabs
+                    value={mapControlTab}
+                    onChange={(_event, value: "tools" | "layers" | "player") => setMapControlTab(value)}
+                    variant="fullWidth"
+                    aria-label="Map editor panels"
+                    sx={{ minHeight: 36, borderBottom: 1, borderColor: "divider", "& .MuiTab-root": { minHeight: 36, minWidth: 0, px: 0.5, py: 0.25, fontSize: "0.72rem" } }}
+                  >
+                    <Tab value="tools" label="Tools" />
+                    <Tab value="layers" label="Layers" />
+                    <Tab value="player" label="Player View" />
+                  </Tabs>}
+
+                  {(!editMode || mapControlTab === "layers") && <Box>
                   <Typography variant="overline" color="text.secondary">CAMPAIGN ACTIVITY</Typography>
                   <Button size="small" fullWidth variant={activityLayerEnabled ? "contained" : "outlined"} onClick={() => onActivityLayerEnabledChange(!activityLayerEnabled)}>
                     {activityLayerEnabled ? "Hide campaign activity" : "Show campaign activity"}
@@ -3845,9 +4245,9 @@ function MapViewer({
                     <Chip size="small" label={`${mappedActivityLocationCount} mapped locations`} color={activityLayerEnabled ? "primary" : "default"} />
                     {activityLayerEnabled && <Typography variant="caption" color="text.secondary">Outlined locations have linked activity.</Typography>}
                   </Stack>
+                  </Box>}
 
-                  <Divider />
-                  <Box>
+                  {(!editMode || mapControlTab === "layers") && <Box>
                     <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 0.25 }}>
                       <Typography variant="overline" color="text.secondary">MAP LAYERS</Typography>
                       <Stack direction="row" spacing={0.5}>
@@ -3896,10 +4296,9 @@ function MapViewer({
                         </Stack>
                       ))}
                     </Stack>
-                  </Box>
+                  </Box>}
 
-                  {(editMode || mapLayers.length > 0) && <Divider />}
-                  {(editMode || mapLayers.length > 0) && <Box>
+                  {(editMode || mapLayers.length > 0) && (mapControlTab === "layers" || !editMode) && <Box>
                     <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
                       <Typography variant="overline" color="text.secondary">CUSTOM LAYERS · {mapLayers.length}</Typography>
                     </Stack>
@@ -4022,8 +4421,17 @@ function MapViewer({
                     </Typography>
                   </Box>}
 
-                  {editMode && <Divider />}
-                  {editMode && (
+                  {editMode && mapControlTab === "player" && (
+                    <MapBackgroundFogPanel
+                      map={map}
+                      onUpload={onUploadMapImage}
+                      onClearImage={onClearMapImage}
+                      onFogSettingsChange={onFogSettingsChange}
+                      onStartDrawing={onStartDrawing}
+                      onSaveMapDraft={onSaveMapDraft}
+                    />
+                  )}
+                  {editMode && mapControlTab === "tools" && (
                     <Typography variant="caption" color="text.secondary">
                       Map edits stay local until you save changes or finish editing.
                     </Typography>
@@ -4056,13 +4464,13 @@ function MapViewer({
                       </Stack>
                     </Stack>
                   )}
-                  {!map.image_path && (
+                  {mapControlTab === "tools" && !map.image_path && (
                     editMode && <Typography variant="caption" color="text.secondary">
                       Schematic map: use areas for rooms or districts and paths for streets or corridors.
                     </Typography>
                   )}
 
-                  {editMode && !map.image_path && <Box>
+                  {editMode && mapControlTab === "tools" && !map.image_path && <Box>
                     <Typography variant="overline" color="text.secondary">CANVAS SIZE</Typography>
                     <FormControl size="small" fullWidth>
                       <InputLabel id="map-canvas-size-label">Workspace</InputLabel>
@@ -4091,7 +4499,7 @@ function MapViewer({
                     </Typography>
                   </Box>}
 
-                  {editMode && <Box>
+                  {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">SELECT</Typography>
                     <Stack spacing={0.75}>
                       <Button size="small" fullWidth variant={!markerEditMode && !pointPlacementMode && !shapePlacementPreset && !drawShape && !shapeEditActive ? "contained" : "outlined"} onClick={() => { onSelectMode(); onSelectBuildingStamp(null); setMapExplorerOpen(false); }}>Browse</Button>
@@ -4141,20 +4549,20 @@ function MapViewer({
                     </Stack>
                   </Box>}
 
-                  {editMode && <Box>
+                  {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">PLACE</Typography>
-                    <Stack spacing={0.75}>
-                      <Button size="small" fullWidth variant={pointPlacementMode ? "contained" : "outlined"} onClick={() => onPointPlacementModeChange(!pointPlacementMode)}>{pointPlacementMode ? (selectedStampPath ? "Cancel stamp placement" : "Cancel point placement") : "Point marker"}</Button>
+                    <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 0.5 }}>
+                      <Button size="small" sx={{ flex: "1 1 104px" }} variant={pointPlacementMode ? "contained" : "outlined"} onClick={() => onPointPlacementModeChange(!pointPlacementMode)}>{pointPlacementMode ? (selectedStampPath ? "Cancel stamp placement" : "Cancel point placement") : "Point marker"}</Button>
                       {(["room", "building", "street", "corridor"] as const).map((preset) => (
-                        <Button key={preset} size="small" fullWidth variant={shapePlacementPreset === preset ? "contained" : "outlined"} aria-pressed={shapePlacementPreset === preset} onClick={() => { onPointPlacementModeChange(false); onShapePresetChange(shapePlacementPreset === preset ? null : preset); }}>
+                        <Button key={preset} size="small" sx={{ flex: "1 1 96px" }} variant={shapePlacementPreset === preset ? "contained" : "outlined"} aria-pressed={shapePlacementPreset === preset} onClick={() => { onPointPlacementModeChange(false); onShapePresetChange(shapePlacementPreset === preset ? null : preset); }}>
                           {preset[0].toUpperCase() + preset.slice(1)}
                         </Button>
                       ))}
-                      <Button size="small" fullWidth variant={mapExplorerOpen ? "contained" : "outlined"} startIcon={<MapOutlinedIcon />} onClick={() => { if (!mapExplorerOpen) onSelectMode(); setMapExplorerOpen((open) => !open); }}>{mapExplorerOpen ? "Close entity list" : "Place entity"}</Button>
+                      <Button size="small" sx={{ flex: "1 1 104px" }} variant={mapExplorerOpen ? "contained" : "outlined"} startIcon={<MapOutlinedIcon />} onClick={() => { if (!mapExplorerOpen) onSelectMode(); setMapExplorerOpen((open) => !open); }}>{mapExplorerOpen ? "Close entity list" : "Place entity"}</Button>
                     </Stack>
                   </Box>}
 
-                  {editMode && <Accordion disableGutters elevation={0} defaultExpanded={buildingStamps.length > 0} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
+                  {editMode && mapControlTab === "tools" && <Accordion disableGutters elevation={0} defaultExpanded={false} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight: 42, "& .MuiAccordionSummary-content": { my: 0.75 } }}>
                       <Typography variant="overline" color="text.secondary">BUILDING STAMPS · {buildingStamps.length}</Typography>
                     </AccordionSummary>
@@ -4202,7 +4610,49 @@ function MapViewer({
                     </AccordionDetails>
                   </Accordion>}
 
-                  {editMode && <Accordion disableGutters elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
+                  {editMode && mapControlTab === "tools" && <Accordion disableGutters elevation={0} defaultExpanded={false} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight: 42, "& .MuiAccordionSummary-content": { my: 0.75 } }}>
+                      <Typography variant="overline" color="text.secondary">DUNGEON & ENCOUNTER SPRITES · {dungeonSprites.length}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ pt: 0 }}>
+                      <Stack spacing={0.75}>
+                        <input
+                          ref={spriteFileInput}
+                          hidden
+                          type="file"
+                          accept="image/png,.png"
+                          multiple
+                          onChange={(event) => {
+                            const files = Array.from(event.target.files ?? []);
+                            if (files.length) void onUploadDungeonSprites(files);
+                            event.currentTarget.value = "";
+                          }}
+                        />
+                        <Button size="small" fullWidth variant="outlined" startIcon={stampUploadBusy ? <CircularProgress size={15} /> : <FileUploadIcon />}
+                          disabled={stampUploadBusy} onClick={() => spriteFileInput.current?.click()}>
+                          {stampUploadBusy ? "Uploading sprites…" : "Upload dungeon sprites"}
+                        </Button>
+                        <Typography variant="caption" color="text.secondary">
+                          Upload multiple transparent PNGs at once: doors, traps, treasure, monsters, furniture, and other dungeon details. Select a sprite to place it; each placed copy can be resized, rotated, and mirrored.
+                        </Typography>
+                        {stampUploadError && <Alert severity="error" sx={{ py: 0 }}>{stampUploadError}</Alert>}
+                        {dungeonSprites.length === 0 && !stampUploadBusy && (
+                          <Typography variant="caption" color="text.secondary">No dungeon sprites yet.</Typography>
+                        )}
+                        {dungeonSprites.map((sprite) => (
+                          <MapStampOption
+                            key={`${sprite.image_path}:${sprite.default_size}`}
+                            stamp={sprite}
+                            selected={selectedStampPath === sprite.image_path}
+                            onSelect={() => onSelectBuildingStamp(selectedStampPath === sprite.image_path ? null : sprite)}
+                            onSaveSize={(size) => onStageBuildingStampSize(sprite, size)}
+                          />
+                        ))}
+                      </Stack>
+                    </AccordionDetails>
+                  </Accordion>}
+
+                  {editMode && mapControlTab === "tools" && <Accordion disableGutters elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 1, "&:before": { display: "none" } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight: 42, "& .MuiAccordionSummary-content": { my: 0.75 } }}>
                       <Typography variant="overline" color="text.secondary">COMPLEX BUILDING FOOTPRINTS</Typography>
                     </AccordionSummary>
@@ -4230,11 +4680,12 @@ function MapViewer({
                     </AccordionDetails>
                   </Accordion>}
 
-                  {editMode && <Box>
+                  {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">DRAW</Typography>
                     <Stack spacing={0.75}>
                       <Button size="small" fullWidth variant={drawShape === "area" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); onStartDrawing("area"); }}>Area</Button>
                       <Button size="small" fullWidth variant={drawShape === "path" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); onStartDrawing("path"); }}>Path</Button>
+                      <Typography variant="caption" color="text.secondary">Press Enter to finish or Esc to cancel. Hold Shift while drawing to constrain segments.</Typography>
                       <Button size="small" fullWidth variant={showGrid ? "contained" : "outlined"} aria-pressed={showGrid} onClick={() => onShowGridChange(!showGrid)}>{showGrid ? "Hide grid" : "Show grid"}</Button>
                       <Button size="small" fullWidth variant={snapToGrid ? "contained" : "outlined"} aria-pressed={snapToGrid} onClick={() => onSnapToGridChange(!snapToGrid)}>{snapToGrid ? "Grid snap on" : "Grid snap off"}</Button>
                       {(showGrid || snapToGrid) && <FormControl size="small" fullWidth>
@@ -4254,13 +4705,15 @@ function MapViewer({
                     </Stack>
                   </Box>}
 
-                  {editMode && (pointPlacementMode || shapePlacementPreset || drawShape) && (
+                  {editMode && mapControlTab === "tools" && (pointPlacementMode || shapePlacementPreset || drawShape) && (
                     <Alert severity="info" sx={{ py: 0 }}>
                       {shapePlacementPreset
                         ? `Click the map to place a ${QUICK_SHAPE_LABELS[shapePlacementPreset].toLowerCase()}.`
                         : pointPlacementMode
                           ? pendingMapEntityName ? `Click the map to place ${pendingMapEntityName}.` : "Click the map to place a point marker."
-                          : `Draw ${drawShape === "area" ? "an area" : "a path"} on the map.`}
+                          : drawShape === "rectangle"
+                            ? "Drag across the map to draw a rectangular reveal area."
+                            : `Draw ${drawShape === "area" ? "an area" : "a path"} on the map. Hold Shift to constrain segments horizontally or vertically.`}
                     </Alert>
                   )}
                 </Stack>
@@ -4810,9 +5263,9 @@ function MapMarkers({
               worldToLeaflet(point, imageWidth, imageHeight),
             )}
             pathOptions={{
-              color: selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
-              fillColor: selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
-              fillOpacity: selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? Math.max(marker.fill_opacity ?? 0.2, 0.4) : marker.fill_opacity ?? 0.2,
+              color: marker.player_view_mask ? "#555a64" : marker.fog_reveal ? "#69bd9b" : selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
+              fillColor: marker.player_view_mask ? "#14161b" : marker.fog_reveal ? "#69bd9b" : selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
+              fillOpacity: marker.player_view_mask ? 0.8 : marker.fog_reveal ? 0.25 : selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? Math.max(marker.fill_opacity ?? 0.2, 0.4) : marker.fill_opacity ?? 0.2,
               weight: selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? 4 : 2,
             }}
             ref={(layer) => {
@@ -5234,6 +5687,8 @@ function GeomanController({
   onShapeEdited,
 }: GeomanControllerProps) {
   const map = useMap();
+  const shiftHeldRef = useRef(false);
+  const drawVerticesRef = useRef<L.LatLng[]>([]);
 
   // ---------------------------------------------------------
   // Geoman controls: initialize ONCE for this map
@@ -5274,11 +5729,57 @@ function GeomanController({
 
   useEffect(() => {
     if (!editMode || !drawShape) return;
-    const shape = drawShape === "area" ? "Polygon" : "Line";
+    shiftHeldRef.current = false;
+    drawVerticesRef.current = [];
+    const shape = drawShape === "rectangle" ? "Rectangle" : drawShape === "area" ? "Polygon" : "Line";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Shift") {
+        shiftHeldRef.current = true;
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        map.pm.disableDraw(shape);
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === "Shift") shiftHeldRef.current = false;
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("keyup", handleKeyUp, true);
+    const handleMapClick = (event: L.LeafletMouseEvent) => {
+      const point = event.latlng;
+      const vertices = drawVerticesRef.current;
+      const closesShape = vertices.length > 0 && point.equals(vertices[0]);
+      if (closesShape) return;
+
+      if ((shiftHeldRef.current || event.originalEvent.shiftKey) && vertices.length > 0) {
+        event.latlng = constrainLatLngToAxis(map, vertices[vertices.length - 1], point);
+      }
+      if (!vertices.length || !event.latlng.equals(vertices[vertices.length - 1])) {
+        vertices.push(event.latlng);
+      }
+    };
+    const handleMapMouseMove = (event: L.LeafletMouseEvent) => {
+      const vertices = drawVerticesRef.current;
+      if (!(shiftHeldRef.current || event.originalEvent.shiftKey) || !vertices.length) return;
+      event.latlng = constrainLatLngToAxis(map, vertices[vertices.length - 1], event.latlng);
+    };
+    if (drawShape !== "rectangle") {
+      map.on("click", handleMapClick);
+      map.on("mousemove", handleMapMouseMove);
+    }
     map.pm.enableDraw(shape, {
       finishOnEnter: true,
     });
-    return () => map.pm.disableDraw(shape);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("keyup", handleKeyUp, true);
+      map.off("click", handleMapClick);
+      map.off("mousemove", handleMapMouseMove);
+      map.pm.disableDraw(shape);
+    };
   }, [drawShape, editMode, map]);
 
   useEffect(() => {
@@ -5291,7 +5792,11 @@ function GeomanController({
   }, [customLayerLocks, layerLocks, map, mapData.markers]);
 
   useEffect(() => {
-    const handleDrawEnd = () => onDrawShapeHandled();
+    const handleDrawEnd = () => {
+      shiftHeldRef.current = false;
+      drawVerticesRef.current = [];
+      onDrawShapeHandled();
+    };
     map.on("pm:drawend", handleDrawEnd);
     return () => {
       map.off("pm:drawend", handleDrawEnd);

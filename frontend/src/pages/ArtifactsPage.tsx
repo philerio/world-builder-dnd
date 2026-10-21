@@ -44,11 +44,13 @@ function ArtifactsPage() {
 
   const normalizedSearch = filters.search?.trim().toLowerCase() ?? "";
   const filteredArtifacts = artifacts.filter((artifact) =>
-    [artifact.name, artifact.description, artifact.details]
+    [artifact.name, artifact.description, artifact.details, artifact.player_text]
       .filter(Boolean)
       .join(" ")
       .toLowerCase()
-      .includes(normalizedSearch) && matchesEntityTag(artifact, filters.tag),
+      .includes(normalizedSearch)
+      && matchesEntityTag(artifact, filters.tag)
+      && (!filters.item_type || (artifact.item_type ?? "artifact") === filters.item_type),
   );
 
   return (
@@ -71,23 +73,33 @@ function ArtifactsPage() {
         </Typography>
 
         <Typography variant="h1" sx={{ mt: 0.5 }}>
-          Artifacts
+          Story Items & Artifacts
         </Typography>
 
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Important objects, relics, and magical creations found throughout the
-          world.
+          Books, journals, letters, relics, and other objects that carry story
+          details or world significance.
         </Typography>
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
         <DashboardFilters
-          search={{ label: "Search artifacts", placeholder: "Name or details…" }}
+          search={{ label: "Search story items", placeholder: "Name, details, or text…" }}
+          filters={[{ key: "item_type", label: "Item type", options: [
+            { value: "artifact", label: "Artifact" },
+            { value: "book", label: "Book" },
+            { value: "journal", label: "Journal" },
+            { value: "letter", label: "Letter" },
+            { value: "map", label: "Map" },
+            { value: "relic", label: "Relic" },
+            { value: "key", label: "Key" },
+            { value: "other", label: "Other" },
+          ]}]}
           taggedEntities={artifacts}
           onChange={setFilters}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Showing {filteredArtifacts.length} of {artifacts.length} artifacts
+          Showing {filteredArtifacts.length} of {artifacts.length} story items
         </Typography>
         <Stack
           direction="row"
@@ -99,16 +111,16 @@ function ArtifactsPage() {
         >
           <AutoAwesomeIcon color="primary" />
 
-          <Typography variant="h2">Artifacts</Typography>
+          <Typography variant="h2">Story Items & Artifacts</Typography>
         </Stack>
 
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Objects with significance to the world's history and stories.
+          Items can hold private DM notes alongside text intended to be shared with players.
         </Typography>
 
         {filteredArtifacts.length === 0 ? (
           <Typography color="text.secondary">
-            {artifacts.length === 0 ? "No artifacts have been added yet." : "No artifacts match this search."}
+            {artifacts.length === 0 ? "No story items have been added yet." : "No story items match these filters."}
           </Typography>
         ) : (
           <Grid container spacing={2}>
@@ -151,6 +163,10 @@ function ArtifactCard({ artifact, onOpen }: ArtifactCardProps) {
             {artifact.name}
           </Typography>
 
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, textTransform: "capitalize" }}>
+            {(artifact.item_type ?? "artifact").replaceAll("_", " ")}
+          </Typography>
+
           {artifact.description && (
             <Typography
               variant="body2"
@@ -165,6 +181,22 @@ function ArtifactCard({ artifact, onOpen }: ArtifactCardProps) {
               }}
             >
               {artifact.description}
+            </Typography>
+          )}
+
+          {artifact.player_text && (
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 1.25,
+                lineHeight: 1.6,
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {artifact.player_text}
             </Typography>
           )}
         </CardContent>

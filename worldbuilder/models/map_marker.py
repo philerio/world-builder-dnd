@@ -28,3 +28,5 @@ class MapMarker(BaseModel):
     mirror_y: bool = False
     fill_color: str | None = None
     fill_opacity: float = Field(default=0.2, ge=0, le=1)
+    player_view_mask: bool = False
+    fog_reveal: bool = False
