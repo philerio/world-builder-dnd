@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 
 import type { EntitySummary } from "../types";
@@ -15,7 +16,7 @@ function useRelatedEntities(entityId: string | null) {
 
         let cancelled = false;
 
-        fetch(`http://localhost:8000/entities/${entityId}/related`)
+        fetch(`${API_BASE_URL}/entities/${entityId}/related`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(`API returned ${response.status}`);

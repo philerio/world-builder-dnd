@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 import type { EntitySummary } from "../types";
 
@@ -8,7 +9,7 @@ function useEntityIndex() {
     useEffect(() => {
         let cancelled = false;
 
-        fetch("http://localhost:8000/entities")
+        fetch(`${API_BASE_URL}/entities`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(`API returned ${response.status}`);

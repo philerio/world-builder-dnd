@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 
 export type EntitySummary = {
@@ -20,7 +21,7 @@ export function useEntities() {
         setError(null);
 
         const response = await fetch(
-          "http://localhost:8000/entities",
+          `${API_BASE_URL}/entities`,
         );
 
         if (!response.ok) {

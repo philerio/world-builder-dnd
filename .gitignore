@@ -3,6 +3,8 @@ __pycache__/
 
 .venv/
 .env
+.worldbuilder-storage.json
+.worldbuilder-storage.tmp
 
 .vscode/settings.json
 

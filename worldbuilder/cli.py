@@ -1,9 +1,8 @@
-from pathlib import Path
-
 import typer
 from pydantic import ValidationError
 from rich import print
 
+from worldbuilder.config import current_world_data_dir
 from worldbuilder.loaders.yaml_loader import load_world
 
 app = typer.Typer(
@@ -11,7 +10,7 @@ app = typer.Typer(
 )
 
 
-WORLD_PATH = Path("worlds/elligaesia/world.yaml")
+WORLD_PATH = current_world_data_dir() / "world.yaml"
 
 
 @app.command()

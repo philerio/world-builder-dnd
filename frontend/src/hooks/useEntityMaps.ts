@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 
@@ -23,7 +24,7 @@ export function useEntityMaps(entityId: string | null) {
 
       try {
         const response = await fetch(
-          `http://localhost:8000/entities/${entityId}/maps`,
+          `${API_BASE_URL}/entities/${entityId}/maps`,
         );
 
         if (!response.ok) {

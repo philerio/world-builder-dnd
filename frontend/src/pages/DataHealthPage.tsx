@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -11,7 +12,9 @@ import {
   DialogContent,
   DialogTitle,
   Autocomplete,
+  FormControlLabel,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -54,6 +57,14 @@ type YamlBackup = {
   size: number;
 };
 
+type StorageLocation = {
+  default_path: string;
+  override_enabled: boolean;
+  override_path: string;
+  active_path: string;
+  restart_required: boolean;
+};
+
 type DataHealthPageProps = {
   onOpenEntity: (entityId: string) => void;
   onValidationReport: (counts: { errors: number; warnings: number }) => void;
@@ -83,6 +94,48 @@ export default function DataHealthPage({ onOpenEntity, onValidationReport, onDat
   const [replacement, setReplacement] = useState<EntitySummary | null>(null);
   const [repairLoading, setRepairLoading] = useState(false);
   const [repairError, setRepairError] = useState<string | null>(null);
+  const [storageLocation, setStorageLocation] = useState<StorageLocation | null>(null);
+  const [storageLoading, setStorageLoading] = useState(true);
+  const [storageSaving, setStorageSaving] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/settings/storage-location`)
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(typeof result.detail === "string" ? result.detail : "Could not load storage settings.");
+        }
+        setStorageLocation(result as StorageLocation);
+      })
+      .catch((loadError: Error) => setStorageError(loadError.message))
+      .finally(() => setStorageLoading(false));
+  }, []);
+
+  const saveStorageLocation = async () => {
+    if (!storageLocation) return;
+    setStorageSaving(true);
+    setStorageError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/settings/storage-location`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          override_enabled: storageLocation.override_enabled,
+          override_path: storageLocation.override_path,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof result.detail === "string" ? result.detail : "Could not save storage settings.");
+      }
+      setStorageLocation(result as StorageLocation);
+    } catch (saveError) {
+      setStorageError(saveError instanceof Error ? saveError.message : "Could not save storage settings.");
+    } finally {
+      setStorageSaving(false);
+    }
+  };
 
   const repairCandidates = (issue: ValidationIssue) => entities.filter((entity) => {
     switch (issue.reference_type) {
@@ -98,7 +151,7 @@ export default function DataHealthPage({ onOpenEntity, onValidationReport, onDat
     setRepairLoading(true);
     setRepairError(null);
     try {
-      const endpoint = `http://localhost:8000/data-health/yaml/${encodeURIComponent(repairIssue.source_type)}/${encodeURIComponent(repairIssue.file_name)}/replace-reference`;
+      const endpoint = `${API_BASE_URL}/data-health/yaml/${encodeURIComponent(repairIssue.source_type)}/${encodeURIComponent(repairIssue.file_name)}/replace-reference`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,8 +179,8 @@ export default function DataHealthPage({ onOpenEntity, onValidationReport, onDat
   };
 
   const yamlEndpoint = (issue: ValidationIssue) => issue.source_type && issue.file_name
-    ? `http://localhost:8000/data-health/yaml/${encodeURIComponent(issue.source_type)}/${encodeURIComponent(issue.file_name)}`
-    : `http://localhost:8000/entities/${encodeURIComponent(issue.source_id ?? "")}/yaml`;
+    ? `${API_BASE_URL}/data-health/yaml/${encodeURIComponent(issue.source_type)}/${encodeURIComponent(issue.file_name)}`
+    : `${API_BASE_URL}/entities/${encodeURIComponent(issue.source_id ?? "")}/yaml`;
 
   const openYamlEditor = async (issue: ValidationIssue) => {
     if (!issue.file_name && !issue.source_id) return;
@@ -245,7 +298,7 @@ export default function DataHealthPage({ onOpenEntity, onValidationReport, onDat
   useEffect(() => {
     let active = true;
 
-    fetch("http://localhost:8000/validation")
+    fetch(`${API_BASE_URL}/validation`)
       .then((response) => {
         if (!response.ok) throw new Error(`API returned ${response.status}`);
         return response.json() as Promise<ValidationReport>;
@@ -303,6 +356,62 @@ export default function DataHealthPage({ onOpenEntity, onValidationReport, onDat
       </Box>
 
       <Box sx={{ px: { xs: 3, md: 5 }, pb: 5 }}>
+        <Card variant="outlined" sx={{ mb: 3 }}>
+          <CardContent>
+            <Stack spacing={1.5}>
+              <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
+                <Box>
+                  <Typography variant="h2">World data folder</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Choose where this server reads and saves YAML data. Paths are on the server computer.
+                  </Typography>
+                </Box>
+                <FormControlLabel
+                  label="Use an override folder"
+                  control={(
+                    <Switch
+                      checked={storageLocation?.override_enabled ?? false}
+                      disabled={!storageLocation || storageSaving || storageLoading}
+                      onChange={(event) => setStorageLocation((current) => current ? { ...current, override_enabled: event.target.checked } : current)}
+                    />
+                  )}
+                />
+              </Stack>
+              {storageLoading ? (
+                <CircularProgress size={20} />
+              ) : storageLocation ? (
+                <>
+                  <Typography variant="caption" color="text.secondary">
+                    Default: {storageLocation.default_path}
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Override folder path"
+                    value={storageLocation.override_path}
+                    disabled={!storageLocation.override_enabled || storageSaving}
+                    onChange={(event) => setStorageLocation({ ...storageLocation, override_path: event.target.value })}
+                    helperText="Enter an absolute path on the server. The folder must contain world.yaml."
+                  />
+                  <Typography variant="caption" color="text.secondary">
+                    Currently active: {storageLocation.active_path}
+                  </Typography>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" } }}>
+                    <Button variant="outlined" onClick={saveStorageLocation} disabled={storageSaving || (storageLocation.override_enabled && !storageLocation.override_path.trim())}>
+                      {storageSaving ? "Saving…" : "Save storage setting"}
+                    </Button>
+                    {storageLocation.restart_required && (
+                      <Alert severity="warning" sx={{ py: 0 }}>
+                        Restart the backend for the saved location to take effect. No files are moved.
+                      </Alert>
+                    )}
+                  </Stack>
+                </>
+              ) : null}
+              {storageError && <Alert severity="error">{storageError}</Alert>}
+            </Stack>
+          </CardContent>
+        </Card>
         {loading && <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}><CircularProgress size={20} /><Typography color="text.secondary">Checking world data…</Typography></Stack>}
         {error && <Alert severity="error">Could not validate world data: {error}</Alert>}
         {!loading && !error && report && (

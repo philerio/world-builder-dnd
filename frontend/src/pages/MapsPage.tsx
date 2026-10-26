@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -1290,7 +1291,7 @@ function findShapeMarkerIdAtPoint(
 function mapStampImageUrl(imagePath: string) {
   return imagePath.startsWith("http://") || imagePath.startsWith("https://")
     ? imagePath
-    : `http://localhost:8000${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+    : `${API_BASE_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 }
 
 function markerIcon(
@@ -1724,7 +1725,7 @@ function MapsPage() {
 
   useEffect(() => {
     let active = true;
-    void fetch("http://localhost:8000/map-assets")
+    void fetch(`${API_BASE_URL}/map-assets`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`Could not load building images (${response.status}).`);
         const result = await response.json() as { assets: MapStampAsset[] };
@@ -1738,7 +1739,7 @@ function MapsPage() {
       .catch((error: unknown) => {
         if (active) setStampUploadError(error instanceof Error ? error.message : "Could not load building images.");
       });
-    void fetch("http://localhost:8000/map-sprites")
+    void fetch(`${API_BASE_URL}/map-sprites`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`Could not load dungeon sprites (${response.status}).`);
         const result = await response.json() as { assets: MapStampAsset[] };
@@ -1768,7 +1769,7 @@ function MapsPage() {
 
     setStampUploadBusy(true);
     try {
-      const response = await fetch(`http://localhost:8000/map-assets?name=${encodeURIComponent(file.name)}`, {
+      const response = await fetch(`${API_BASE_URL}/map-assets?name=${encodeURIComponent(file.name)}`, {
         method: "POST",
         headers: { "Content-Type": "image/png" },
         body: file,
@@ -1805,7 +1806,7 @@ function MapsPage() {
     const uploaded: MapStampAsset[] = [];
     try {
       for (const file of files) {
-        const response = await fetch(`http://localhost:8000/map-sprites?name=${encodeURIComponent(file.name)}`, {
+        const response = await fetch(`${API_BASE_URL}/map-sprites?name=${encodeURIComponent(file.name)}`, {
           method: "POST",
           headers: { "Content-Type": "image/png" },
           body: file,
@@ -2030,7 +2031,7 @@ function MapsPage() {
     if (!supportedTypes.includes(file.type)) throw new Error("Choose a PNG, JPEG, WebP, or GIF map image.");
     if (file.size > 10 * 1024 * 1024) throw new Error("Map images must be 10 MB or smaller.");
 
-    const response = await fetch(`http://localhost:8000/map-images?name=${encodeURIComponent(file.name)}`, {
+    const response = await fetch(`${API_BASE_URL}/map-images?name=${encodeURIComponent(file.name)}`, {
       method: "POST",
       headers: { "Content-Type": file.type },
       body: file,
@@ -2081,7 +2082,7 @@ function MapsPage() {
         if (!pendingEntry) break;
         const [filename, pendingSize] = pendingEntry;
         const assetRoute = pendingSize.stamp.category === "sprite" ? "map-sprites" : "map-assets";
-        const response = await fetch(`http://localhost:8000/${assetRoute}/${encodeURIComponent(filename)}/settings`, {
+        const response = await fetch(`${API_BASE_URL}/${assetRoute}/${encodeURIComponent(filename)}/settings`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ default_size: pendingSize.size }),

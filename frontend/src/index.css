@@ -28,3 +28,24 @@ body,
 .leaflet-popup.campaign-activity-popup .leaflet-popup-close-button {
   color: #f4f4f5;
 }
+
+@media (max-width: 600px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    overflow-x: clip;
+  }
+
+  .MuiInputBase-root {
+    min-height: 46px;
+  }
+
+  .MuiAutocomplete-popper {
+    max-width: calc(100vw - 24px);
+  }
+
+  .MuiTableContainer-root {
+    overscroll-behavior-x: contain;
+  }
+}

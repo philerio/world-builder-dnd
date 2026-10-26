@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import type { EntityData } from "../types";
@@ -19,7 +20,7 @@ export function useEntityRelated(entityId: string | null) {
 
       try {
         const response = await fetch(
-          `http://localhost:8000/entities/${entityId}/related`,
+          `${API_BASE_URL}/entities/${entityId}/related`,
         );
 
         if (!response.ok) {

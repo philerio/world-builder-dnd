@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import type { Map as WorldMap, MapMarker } from "../types";
 
 const MAX_DIMENSION = 4096;
@@ -6,7 +7,7 @@ const MAX_PIXELS = 16_000_000;
 function imageUrl(path: string): string {
   if (/^(https?:|data:|blob:)/i.test(path)) return path;
   if (path.startsWith("/map-assets/") || path.startsWith("/map-sprites/"))
-    return `http://localhost:8000${path}`;
+    return `${API_BASE_URL}${path}`;
   return new URL(path, window.location.origin).href;
 }
 

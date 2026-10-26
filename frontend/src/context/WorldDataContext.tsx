@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 /* eslint-disable react-hooks/set-state-in-effect */
 import {
   createContext,
@@ -131,7 +132,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
     try {
       setWorldDataLoading(true);
       setWorldDataError(null);
-      const response = await fetch("http://localhost:8000/world");
+      const response = await fetch(`${API_BASE_URL}/world`);
       if (!response.ok) throw new Error(`API returned ${response.status}`);
       const result: WorldData = await response.json();
       setWorldData(sortWorldEntitiesByName(result));
@@ -142,7 +143,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
     }
   }, []);
   const loadEntity = useCallback(async (entityId: string) => {
-    const response = await fetch(`http://localhost:8000/entities/${entityId}`);
+    const response = await fetch(`${API_BASE_URL}/entities/${entityId}`);
 
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -168,7 +169,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
     [loadEntity],
   );
   const loadCampaignReferences = useCallback(async (campaignId: string) => {
-    const response = await fetch(`http://localhost:8000/campaigns/${campaignId}/references`);
+    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}/references`);
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
     }
@@ -179,7 +180,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
       setEntitiesLoading(true);
       setEntitiesError(null);
 
-      const response = await fetch("http://localhost:8000/entities");
+      const response = await fetch(`${API_BASE_URL}/entities`);
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`);
@@ -210,7 +211,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   const updateEntity = useCallback(
     async (entityId: string, entity: Record<string, unknown>) => {
       const response = await fetch(
-        `http://localhost:8000/entities/${entityId}`,
+        `${API_BASE_URL}/entities/${entityId}`,
         {
           method: "PUT",
           headers: {
@@ -262,7 +263,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   const deleteEntity = useCallback(async (entityId: string) => {
     const entityType = entities.find((item) => item.id === entityId)?.entity_type
       ?? entityData[entityId]?.entity_type;
-    const response = await fetch(`http://localhost:8000/entities/${entityId}`, {
+    const response = await fetch(`${API_BASE_URL}/entities/${entityId}`, {
       method: "DELETE",
     });
     const result = await response.json();
@@ -287,7 +288,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   }, [entities, entityData]);
   const createEntity = useCallback(
     async (entityType: string, entity: Record<string, unknown>) => {
-      const response = await fetch("http://localhost:8000/entities", {
+      const response = await fetch(`${API_BASE_URL}/entities`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

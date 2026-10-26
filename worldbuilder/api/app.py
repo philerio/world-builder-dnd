@@ -1,13 +1,24 @@
 import json
-import yaml
 from pathlib import Path
 from uuid import uuid4
 
+import yaml
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
+from worldbuilder.api.combat import (
+    create_combat_router,
+    preserve_combat_history,
+    serialized_world_write,
+)
+from worldbuilder.config import (
+    current_world_data_dir,
+    load_storage_override,
+    save_storage_override,
+    settings,
+)
 from worldbuilder.config.entity_types import get_entity_model
 from worldbuilder.loaders.world_loader import load_world_registry
 from worldbuilder.models.reference import EntityReference
@@ -24,7 +35,6 @@ from worldbuilder.services.data_health_service import (
 from worldbuilder.services.id_generator import generate_entity_id
 from worldbuilder.services.world_service import WorldService
 from worldbuilder.validation.validator import validate_registry
-from worldbuilder.api.combat import create_combat_router, preserve_combat_history, serialized_world_write
 
 app = FastAPI(
     title="D&D World Builder API",
@@ -37,7 +47,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-WORLD_PATH = Path("worlds/elligaesia/world.yaml")
+WORLD_PATH = current_world_data_dir() / "world.yaml"
 app.include_router(create_combat_router(lambda: WORLD_PATH))
 MAP_ASSETS_PATH = WORLD_PATH.parent / "map_assets"
 MAP_SPRITES_PATH = WORLD_PATH.parent / "map_sprites"
@@ -51,6 +61,11 @@ MAP_IMAGE_FORMATS = {
     "image/webp": (".webp", lambda data: data.startswith(b"RIFF") and data[8:12] == b"WEBP"),
     "image/gif": (".gif", lambda data: data.startswith((b"GIF87a", b"GIF89a"))),
 }
+
+
+class StorageLocationUpdate(BaseModel):
+    override_enabled: bool
+    override_path: str = ""
 
 
 def _read_map_asset_default_sizes(asset_path: Path = MAP_ASSETS_PATH) -> dict[str, int]:
@@ -221,6 +236,52 @@ async def upload_map_image(request: Request, name: str = "Map") -> dict[str, str
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/settings/storage-location")
+def get_storage_location() -> dict[str, str | bool]:
+    override = load_storage_override()
+    selected_path = (
+        Path(override.path).expanduser()
+        if override.enabled and override.path
+        else settings.world_data_dir
+    )
+    active_path = WORLD_PATH.parent
+    return {
+        "default_path": str(settings.world_data_dir.expanduser().resolve()),
+        "override_enabled": override.enabled,
+        "override_path": override.path,
+        "active_path": str(active_path.resolve()),
+        "restart_required": selected_path.resolve() != active_path.resolve(),
+    }
+
+
+@app.put("/settings/storage-location")
+def update_storage_location(payload: StorageLocationUpdate) -> dict[str, str | bool]:
+    try:
+        override = save_storage_override(
+            payload.override_enabled, payload.override_path
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500, detail="Could not save the storage location setting."
+        ) from exc
+
+    selected_path = (
+        Path(override.path).expanduser()
+        if override.enabled and override.path
+        else settings.world_data_dir
+    )
+    active_path = WORLD_PATH.parent
+    return {
+        "default_path": str(settings.world_data_dir.expanduser().resolve()),
+        "override_enabled": override.enabled,
+        "override_path": override.path,
+        "active_path": str(active_path.resolve()),
+        "restart_required": selected_path.resolve() != active_path.resolve(),
+    }
 
 
 @app.get("/validation")

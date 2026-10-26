@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -113,7 +114,7 @@ export default function WorldStoryDashboardPage() {
 
   useEffect(() => {
     let active = true;
-    fetch(`http://localhost:8000/entities/${storyId}`)
+    fetch(`${API_BASE_URL}/entities/${storyId}`)
       .then(async (entityResponse) => {
         if (!entityResponse.ok) throw new Error(`Could not load story (${entityResponse.status}).`);
         return await entityResponse.json() as EntityData;

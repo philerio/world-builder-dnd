@@ -1,8 +1,10 @@
+import { API_BASE_URL } from "./api";
 import { useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import {
   Alert,
+  AppBar,
   Autocomplete,
   Badge,
   Box,
@@ -10,6 +12,7 @@ import {
   Card,
   CardContent,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
@@ -18,10 +21,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  IconButton,
   Stack,
   TextField,
   Toolbar,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -40,6 +45,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import NoteAltIcon from "@mui/icons-material/NoteAlt";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import MenuIcon from "@mui/icons-material/Menu";
+import AddIcon from "@mui/icons-material/Add";
+import WifiIcon from "@mui/icons-material/Wifi";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 import type { WorldData } from "./types";
 import WorldPage from "./pages/WorldPage";
@@ -69,7 +78,11 @@ const drawerWidth = 240;
 type SidebarProps = {
   onNewEntity: () => void;
   onSearch: () => void;
+  onNetworkAccess: () => void;
   healthCounts: { errors: number; warnings: number } | null;
+  mobile?: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 };
 const navigation = [
   {
@@ -149,15 +162,18 @@ const navigation = [
   },
 ];
 
-function Sidebar({ onNewEntity, onSearch, healthCounts }: SidebarProps) {
+function Sidebar({ onNewEntity, onSearch, onNetworkAccess, healthCounts, mobile = false, mobileOpen = false, onMobileClose }: SidebarProps) {
   return (
     <Drawer
-      variant="permanent"
+      variant={mobile ? "temporary" : "permanent"}
+      open={mobile ? mobileOpen : undefined}
+      onClose={onMobileClose}
+      ModalProps={{ keepMounted: true }}
       sx={{
         width: drawerWidth,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: mobile ? 288 : drawerWidth,
           boxSizing: "border-box",
         },
       }}
@@ -206,6 +222,7 @@ function Sidebar({ onNewEntity, onSearch, healthCounts }: SidebarProps) {
             key={item.path}
             component={NavLink}
             to={item.path}
+            onClick={onMobileClose}
             end={item.path === "/"}
             sx={{
               mb: 0.5,
@@ -253,6 +270,17 @@ function Sidebar({ onNewEntity, onSearch, healthCounts }: SidebarProps) {
         <Divider sx={{ mb: 2 }} />
         <Button
           fullWidth
+          startIcon={<WifiIcon />}
+          onClick={() => {
+            onNetworkAccess();
+            onMobileClose?.();
+          }}
+          sx={{ justifyContent: "flex-start", color: "text.secondary", textTransform: "none", mb: 1 }}
+        >
+          Phone access
+        </Button>
+        <Button
+          fullWidth
           onClick={onNewEntity}
           sx={{
             mt: 2,
@@ -286,6 +314,102 @@ function Sidebar({ onNewEntity, onSearch, healthCounts }: SidebarProps) {
         </Typography>
       </Box>
     </Drawer>
+  );
+}
+
+function getNetworkUrlKind(url: string): "Wi-Fi / LAN" | "VPN / CGNAT" | "Other network" {
+  const octets = new URL(url).hostname.split(".").map(Number);
+  if (octets.length !== 4 || octets.some(Number.isNaN)) return "Other network";
+  const [first, second] = octets;
+  if (first === 100 && second >= 64 && second <= 127) return "VPN / CGNAT";
+  if (first === 10 || (first === 192 && second === 168) || (first === 172 && second >= 16 && second <= 31)) {
+    return "Wi-Fi / LAN";
+  }
+  return "Other network";
+}
+
+function NetworkAccessDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [networkUrls, setNetworkUrls] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/__world-builder/network")
+      .then((response) => {
+        if (!response.ok) throw new Error(`Dev server returned ${response.status}`);
+        return response.json() as Promise<string[]>;
+      })
+      .then((urls) => {
+        if (active) {
+          setNetworkUrls(urls);
+          setError(null);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (active) setError(cause instanceof Error ? cause.message : "Could not detect network addresses.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const copyAddress = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedAddress(url);
+    } catch {
+      setCopiedAddress(null);
+    }
+  };
+  const hasLanAddress = networkUrls.some((url) => getNetworkUrlKind(url) === "Wi-Fi / LAN");
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Connect from your phone</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          <Alert severity="info">
+            A Wi-Fi / LAN address works when both devices are on the same network. A VPN address works when your phone is connected to the same VPN, such as Tailscale.
+          </Alert>
+          <Typography variant="subtitle2">This computer</Typography>
+          <Typography component="code" sx={{ overflowWrap: "anywhere" }}>{window.location.origin}</Typography>
+          <Typography variant="subtitle2">Phone on your local network</Typography>
+          {loading ? <Typography color="text.secondary">Finding network addresses…</Typography> : null}
+          {error ? <Alert severity="warning">{error}</Alert> : null}
+          {!loading && !error && networkUrls.length === 0 ? (
+            <Typography color="text.secondary">No Wi-Fi address was detected. Make sure the computer is connected to your network.</Typography>
+          ) : null}
+          {networkUrls.map((url) => (
+            <Box key={url}>
+              <Typography variant="overline" color="text.secondary">{getNetworkUrlKind(url)}</Typography>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", minWidth: 0 }}>
+                <Typography component="code" sx={{ flex: 1, overflowWrap: "anywhere" }}>{url}</Typography>
+                <IconButton aria-label={`Copy ${url}`} onClick={() => void copyAddress(url)} size="small">
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Stack>
+            </Box>
+          ))}
+          {!loading && networkUrls.length > 0 && !hasLanAddress ? (
+            <Alert severity="warning">
+              No standard Wi-Fi / LAN address was detected. The listed 100.64–100.127 address is VPN/CGNAT; it will work only if the phone is connected to that same VPN.
+            </Alert>
+          ) : null}
+          {copiedAddress ? <Typography variant="caption" color="success.main">Address copied.</Typography> : null}
+          <Typography variant="caption" color="text.secondary">
+            Only use this on a trusted private network. The development server can edit your world data.
+          </Typography>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -483,6 +607,9 @@ function Dashboard({ data }: { data: WorldData }) {
 function AppContent() {
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [networkDialogOpen, setNetworkDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileLayout = useMediaQuery("(max-width: 899px)");
   const [healthCounts, setHealthCounts] = useState<{ errors: number; warnings: number } | null>(null);
   const {
     entities,
@@ -521,7 +648,7 @@ function AppContent() {
 
   useEffect(() => {
     let active = true;
-    fetch("http://localhost:8000/validation")
+    fetch(`${API_BASE_URL}/validation`)
       .then((response) => {
         if (!response.ok) throw new Error(`API returned ${response.status}`);
         return response.json() as Promise<{ errors?: string[]; warnings?: string[] }>;
@@ -568,7 +695,11 @@ function AppContent() {
       <Sidebar
         onNewEntity={() => setCreateDrawerOpen(true)}
         onSearch={() => setSearchOpen(true)}
+        onNetworkAccess={() => setNetworkDialogOpen(true)}
         healthCounts={healthCounts}
+        mobile={mobileLayout}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
       <CreateEntityDrawer
         open={createDrawerOpen}
@@ -615,6 +746,7 @@ function AppContent() {
           </Typography>
         </DialogContent>
       </Dialog>
+      {networkDialogOpen ? <NetworkAccessDialog open onClose={() => setNetworkDialogOpen(false)} /> : null}
       <EntityDetailDrawer
         entityId={entityId}
         open={isOpen}
@@ -628,9 +760,30 @@ function AppContent() {
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          p: 3,
+          p: { xs: 1.5, sm: 2, md: 3 },
         }}
       >
+        {mobileLayout && (
+          <AppBar position="sticky" color="default" elevation={1} sx={{ mb: 2, mx: -1.5, width: "calc(100% + 24px)" }}>
+            <Toolbar variant="dense" sx={{ minHeight: 56, gap: 1 }}>
+              <IconButton aria-label="Open navigation" onClick={() => setMobileMenuOpen(true)} edge="start">
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700, flex: 1 }}>
+                World Builder
+              </Typography>
+              <IconButton aria-label="Search world" onClick={() => setSearchOpen(true)}>
+                <SearchIcon />
+              </IconButton>
+              <IconButton aria-label="Phone access" onClick={() => setNetworkDialogOpen(true)}>
+                <WifiIcon />
+              </IconButton>
+              <IconButton aria-label="Create entity" color="primary" onClick={() => setCreateDrawerOpen(true)}>
+                <AddIcon />
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+        )}
         <Routes>
           <Route path="/" element={<Dashboard data={data} />} />
           <Route path="/world-map" element={<WorldMapPage />} />
