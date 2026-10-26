@@ -1,21 +1,39 @@
 id: marta-npc
 name: Marta
-description: Elderly woman who lives in the city of Zeffo
+description: Elderly Zeffo widow whose report of a green-eyed visitor is one of the town's first unsettling
+  clues.
 tags: []
 created: '2026-10-18T04:55:45.589114'
-updated: '2026-10-18T04:55:45.589121'
+updated: '2026-10-22T00:24:56Z'
 race: Human
 alignment: Neutral Good
-role: null
+role: Longtime resident and witness
 city: zeffo-city
 region: null
-kingdom: null
-details: null
-motives: []
-goals: []
-fears: []
+kingdom: umbara
+details: 'Backstory: Marta has lived in Zeffo for most of her life. She and her late husband built a quiet
+  routine around their home and the neighbors who relied on them. Since his death, she has kept the house
+  much as they shared it and is used to spending evenings near the front window.
+
+  At the table: Marta is gentle and observant, but she is not confused about what she saw. She may repeat
+  small details about the figure''s posture or the green light in its eyes, then grow quiet when asked
+  whether it was really her husband. She is more afraid of being dismissed than of being questioned kindly.'
+motives:
+- Protect the people living closest to her and make sure the warning she believes she saw is taken seriously.
+goals:
+- Find out whether the figure outside her window will return.
+- Help the party identify where the dead are going without pretending to know why.
+fears:
+- That the dead will come to her home or another resident will be harmed.
+- That grief will make people disregard a real danger.
 secrets: []
-knowledge: []
+knowledge:
+- Saw her deceased husband standing outside her window, his eyes glowing green.
+- Believes he returned to warn her about something, though she does not know what.
 events: []
-relationships: []
+relationships:
+- character: captain-ressa-thorn
+  relationship: resident under her protection
+  notes: Ressa checks on residents after reports of undead reach the town; Marta hopes the captain will
+    take her sighting seriously.
 job: Retired

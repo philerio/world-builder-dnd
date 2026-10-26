@@ -1,13 +1,35 @@
 id: edrin-s-journal-artifact
 name: Edrin's Journal
-description: null
-tags: []
+description: Edrin Vale's private field journal, recording what he learned about the green stone, the undead, and his attempts to help Mira.
+tags:
+- Zeffo
+- Edrin Vale
+- Journal
+- Healer findings
 created: '2026-10-20T12:44:35.533815'
-updated: '2026-10-20T12:44:35.533821'
+updated: '2026-10-22T00:08:02Z'
 item_type: journal
-details: null
-dm_notes: null
-player_text: null
+details: |-
+  A worn, stitched notebook with careful medical observations mixed with increasingly anxious notes about the Dwarmar facility. Edrin records partial tissue repair in undead subjects, the pull of the dead toward the central source, and his untested hope that a living-host golem might keep Mira alive long enough for her illness to be treated.
+dm_notes: |-
+  DISCOVERY GATE: This is Edrin's private journal, separate from the working notes and records the party can find during The Healer's Secret. Keep it secured with his personal effects in the main chamber. Do not reveal or let the party recover it until the confrontation in The Heart of Zeffo is resolved and the chamber is safe.
+
+  Afterward, Edrin can hand it over if he survives and chooses to cooperate; otherwise the party can recover it while searching his effects. If the party leaves without searching or Edrin escapes with it, it remains unrecovered.
+
+  The journal records observations and hypotheses, not a proven treatment. Edrin does not know the living host will lose control, and he does not identify Bane or understand the artifact's divine origin. Its clues can connect this local outbreak to ancient Dwarmar technology without revealing the larger truth.
+player_text: |-
+  Notes from Edrin Vale's field journal
+
+  The old injury is gone. I remember the fall, the pain, and the green light under the northern trees. By morning my leg bore no mark. I cannot call this healing until I understand what was taken or changed.
+
+  The dead turn toward the deeper chamber whenever the light strengthens. They are not following commands. The small stones hold a charge, but the current seems to come from something much larger below.
+
+  The experiments restore damaged tissue in places. They do not restore breath, thought, or life. I must stop using the word cure for a result I have not achieved.
+
+  The old iron frame was built around a living occupant. If its power could sustain a person while the body mends, perhaps Mira could survive long enough for a real treatment. I have never tested this with a living host. I will not make Mira the first.
+
+  Hope keeps turning an uncertain idea into a plan. I need another way to help my daughter, and I need to understand the cost before I ask anyone to trust this machine.
 campaigns:
 - zeffo-undead-campaign
-world_stories: []
+world_stories:
+- northern-elligaesia-s-turmoil-world-story

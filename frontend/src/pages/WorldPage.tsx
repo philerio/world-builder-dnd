@@ -48,6 +48,45 @@ function WorldPage({ data }: WorldPageProps) {
         );
     }
 
+    const kingdoms = data.kingdoms.filter((entity) => (entity.political_level ?? "kingdom") === "kingdom");
+    const nations = data.kingdoms.filter((entity) => entity.political_level === "nation");
+    const renderPoliticalCards = (entities: typeof data.kingdoms) => (
+        <Grid container spacing={2}>
+            {entities.map((entity) => {
+                const continent = data.continents.find((item) => item.id === entity.continent);
+                const parentKingdom = data.kingdoms.find((item) => item.id === entity.parent_kingdom);
+                const capital = data.cities.find((item) => item.id === entity.capital);
+                const ruler = data.npcs.find((item) => item.id === entity.ruler);
+                const cityCount = data.cities.filter((city) => city.kingdom === entity.id).length;
+                const nationCount = data.kingdoms.filter((item) => item.parent_kingdom === entity.id).length;
+                const isNation = entity.political_level === "nation";
+                return (
+                    <Grid key={entity.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Card sx={{ height: "100%" }}>
+                            <CardActionArea sx={{ height: "100%" }} onClick={() => openEntity(entity.id)}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <CastleIcon color="primary" sx={{ fontSize: 30, mb: 2 }} />
+                                    <Typography variant="h3" sx={{ fontSize: "1.3rem" }}>{entity.name}</Typography>
+                                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                                        {isNation
+                                            ? `Kingdom: ${parentKingdom?.name ?? "Not assigned"}`
+                                            : continent?.name ?? "Continent not specified"}
+                                    </Typography>
+                                    {(capital || ruler) && (
+                                        <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                                            {[capital && `Capital: ${capital.name}`, ruler && `Ruler: ${ruler.name}`].filter(Boolean).join(" · ")}
+                                        </Typography>
+                                    )}
+                                    <Chip size="small" label={isNation ? `${cityCount} cities` : `${nationCount} nations`} sx={{ mt: 2 }} />
+                                </CardContent>
+                            </CardActionArea>
+                        </Card>
+                    </Grid>
+                );
+            })}
+        </Grid>
+    );
+
     return (
         <Box>
             <Box
@@ -168,41 +207,22 @@ function WorldPage({ data }: WorldPageProps) {
 
                 <WorldSection
                     title="Kingdoms"
-                    description="Nations and sovereign powers across the world."
+                    description="Larger political areas that contain self-governing nations."
                 >
-                    {data.kingdoms.length === 0 ? (
-                        <Typography color="text.secondary">No kingdoms have been added yet.</Typography>
-                    ) : (
-                        <Grid container spacing={2}>
-                            {data.kingdoms.map((kingdom) => {
-                                const continent = data.continents.find((item) => item.id === kingdom.continent);
-                                const capital = data.cities.find((item) => item.id === kingdom.capital);
-                                const ruler = data.npcs.find((item) => item.id === kingdom.ruler);
-                                const cityCount = data.cities.filter((city) => city.kingdom === kingdom.id).length;
-                                return (
-                                    <Grid key={kingdom.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                        <Card sx={{ height: "100%" }}>
-                                            <CardActionArea sx={{ height: "100%" }} onClick={() => openEntity(kingdom.id)}>
-                                                <CardContent sx={{ p: 3 }}>
-                                                    <CastleIcon color="primary" sx={{ fontSize: 30, mb: 2 }} />
-                                                    <Typography variant="h3" sx={{ fontSize: "1.3rem" }}>{kingdom.name}</Typography>
-                                                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
-                                                        {continent?.name ?? "Continent not specified"}
-                                                    </Typography>
-                                                    {(capital || ruler) && (
-                                                        <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
-                                                            {[capital && `Capital: ${capital.name}`, ruler && `Ruler: ${ruler.name}`].filter(Boolean).join(" · ")}
-                                                        </Typography>
-                                                    )}
-                                                    <Chip size="small" label={`${cityCount} cities`} sx={{ mt: 2 }} />
-                                                </CardContent>
-                                            </CardActionArea>
-                                        </Card>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-                    )}
+                    {kingdoms.length === 0
+                        ? <Typography color="text.secondary">No kingdoms have been added yet.</Typography>
+                        : renderPoliticalCards(kingdoms)}
+                </WorldSection>
+
+                <Divider sx={{ my: 5 }} />
+
+                <WorldSection
+                    title="Nations"
+                    description="Self-governing nations within their larger kingdoms."
+                >
+                    {nations.length === 0
+                        ? <Typography color="text.secondary">No nations have been added yet.</Typography>
+                        : renderPoliticalCards(nations)}
                 </WorldSection>
 
                 <Divider sx={{ my: 5 }} />

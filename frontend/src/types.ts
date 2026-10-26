@@ -45,9 +45,30 @@ export type Kingdom = {
   name: string;
   description?: string;
   tags?: string[];
+  political_level?: "kingdom" | "nation";
+  parent_kingdom?: string;
+  /** Legacy single-ruler reference; leadership is the current structure. */
   ruler?: string;
   capital?: string;
   continent?: string;
+  government_type?: string;
+  government_notes?: string;
+  leadership?: PoliticalOffice[];
+};
+
+export type PoliticalOfficeReference = {
+  entity_id: string;
+  office_id: string;
+};
+
+export type PoliticalOffice = {
+  id: string;
+  title: string;
+  holders: string[];
+  reports_to: PoliticalOfficeReference[];
+  authority?: string;
+  status?: string;
+  notes?: string;
 };
 
 export type Region = {
@@ -69,6 +90,9 @@ export type City = {
   population?: number;
   details?: string;
   dm_notes?: string;
+  government_type?: string;
+  government_notes?: string;
+  leadership?: PoliticalOffice[];
 };
 
 export type Location = {
@@ -393,7 +417,7 @@ export type EntityResponse = {
 export const ENTITY_TYPES = [
   { value: "city", label: "City" },
   { value: "continent", label: "Continent" },
-  { value: "kingdom", label: "Kingdom" },
+  { value: "kingdom", label: "Kingdom or Nation" },
   { value: "region", label: "Region" },
   { value: "location", label: "Location" },
   { value: "npc", label: "NPC" },

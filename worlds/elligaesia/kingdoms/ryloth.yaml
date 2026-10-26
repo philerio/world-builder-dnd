@@ -1,0 +1,20 @@
+id: ryloth
+name: Ryloth
+tags: []
+description: An Elligaesian nation ruled by the Syndulla and Tambor families.
+ruler: null
+capital: ryloth-tipoca
+continent: elligaesia
+government_type: Shared dynastic rule
+government_notes: The Syndulla and Tambor families share ruling authority. The individual family members
+  in office are not named in the source. This nation governs independently and coordinates with the other
+  Elligaesian nations on trade and shared policies.
+leadership:
+- id: ryloth-ruling-families
+  title: Syndulla and Tambor Families
+  holders: []
+  reports_to: []
+  authority: Shared ruling authority over Ryloth.
+  status: Current
+political_level: nation
+parent_kingdom: north-elligaesia

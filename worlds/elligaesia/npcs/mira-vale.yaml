@@ -1,0 +1,52 @@
+id: mira-vale
+name: Mira Vale
+description: Edrin's seriously ill daughter, whose treatment brings brief relief but has not cured her underlying condition.
+tags:
+- Zeffo
+- Campaign NPC
+created: '2026-10-22T00:24:56Z'
+updated: '2026-10-22T00:24:56Z'
+race: null
+alignment: null
+role: Patient and Edrin's daughter
+city: zeffo-city
+region: null
+kingdom: umbara
+details: >-
+  Backstory: Mira grew up in Zeffo around her father's clinic. Before her illness
+  worsened, she liked helping with small tasks such as sorting dried herbs and keeping
+  appointment notes. She misses having an ordinary routine and does not want every
+  conversation to become a discussion of her condition.
+
+  At the table: Mira is alert in short windows and has a dry, observant sense of humor.
+  She can talk about the warmth and strength she feels after treatment, followed by
+  renewed weakness. She worries that her father barely sleeps and notices when he
+  avoids a question. She wants to recover, but also wants honest information and a
+  voice in decisions about her care. She does not know about the artifact, the undead
+  specimens, or Edrin's golem research.
+
+  Give Mira room to disagree with Edrin without turning her into a reason for the
+  party to choose one specific outcome. Her survival, wishes, and future remain open
+  to the party's choices and the campaign's events.
+motives:
+- Find relief and, if possible, recover without being treated as a problem to solve.
+- Protect her father from exhausting himself or taking a risk on her behalf without asking.
+goals:
+- Be included in decisions about her treatment and told what the risks are.
+- Return to some of the everyday tasks and relationships her illness has interrupted.
+fears:
+- Dying before she can recover or say what she wants.
+- Being placed in an untested machine without meaningful choice.
+- Her father sacrificing himself because he believes she is his only responsibility.
+secrets: []
+knowledge:
+- Treatment sometimes brings brief warmth and strength, followed by renewed weakness.
+- Her father is exhausted and guarded about the newest treatment; she does not know its source or his experiments.
+events:
+- description: Began receiving treatment with a charged Dwarmar stone; each treatment offers temporary relief while the underlying illness remains unresolved.
+  campaign: zeffo-undead-campaign
+  location: zeffo-city
+relationships:
+- character: reference-edrin-vale
+  relationship: daughter
+  notes: Mira loves her father and sees how hard he is trying, but she wants to be consulted rather than protected from every truth.

@@ -1,0 +1,16 @@
+id: gnomish-engineering-lore
+name: Gnomish Engineering and Flying Ships
+description: Gnomes are known for unusual magical creations and flying contraptions.
+tags:
+- world-lore
+player_knowledge: null
+common_knowledge: Gnomes are known for unusual magical creations and flying contraptions. Gnomish engineers
+  independently discovered how to activate a Dwarmar power source and use one to power their flying ships.
+common_knowledge_locations:
+- elligaesia
+details: Gnomes are known for unusual magical creations and flying contraptions. Gnomish engineers independently
+  discovered how to activate a Dwarmar power source and use one to power their flying ships.
+dm_notes: The source document compares gnomes to Ewoks as a creative reference; Ewoks are not part of
+  the setting unless separately established. Gnomish power-source use is independent of the elves’ discovery.
+  The sources contain remnants of Bane’s power, but that connection is not public knowledge.
+campaigns: []

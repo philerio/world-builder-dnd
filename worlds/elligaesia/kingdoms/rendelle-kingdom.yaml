@@ -1,8 +1,7 @@
 id: rendelle-kingdom
 name: Kingdom of Rendelle
 description: Kingdom that occupies the continent of Rendelle.
-  
-
 ruler: null
 capital: sakar
 continent: rendelle
+political_level: kingdom

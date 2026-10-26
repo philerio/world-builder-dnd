@@ -1,9 +1,7 @@
 id: north-elligaesia
-name: North Elligaesia
-description: >
-  Southern half of Ellegaesia that 
-  is cut off by the Mountains of Bane.
-
+name: Northern Elligaesia
+description: The northern kingdom of Elligaesia, containing several self-governing nations.
 ruler: null
 capital: null
 continent: elligaesia
+political_level: kingdom

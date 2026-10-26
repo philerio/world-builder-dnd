@@ -1,0 +1,15 @@
+id: elven-reputation-lore
+name: Elven Reputation
+description: Elves are often regarded as arrogant by outsiders.
+tags:
+- world-lore
+player_knowledge: null
+common_knowledge: Elves are often regarded as arrogant by outsiders. This is a broad cultural stereotype
+  and does not describe every elf.
+common_knowledge_locations:
+- elligaesia
+details: Elves are often regarded as arrogant by outsiders. This is a broad cultural stereotype and does
+  not describe every elf.
+dm_notes: The source gives a general characterization, not specific customs or political facts. Treat
+  individual elves as individuals.
+campaigns: []

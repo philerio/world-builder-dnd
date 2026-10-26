@@ -1049,7 +1049,6 @@ function CampaignDashboardPage() {
   const { loadEntity, updateEntity, createEntity, loadCampaignReferences, entities, getEntity, worldData } = useWorldData();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [workspace, setWorkspace] = useState<CampaignWorkspace>("dashboard");
-  const [worldStories, setWorldStories] = useState<WorldStory[]>([]);
   const [campaignLinkedRecords, setCampaignLinkedRecords] = useState<EntitySummary[]>([]);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [selectedReferences, setSelectedReferences] = useState<EntitySummary[]>([]);
@@ -1120,21 +1119,6 @@ function CampaignDashboardPage() {
   } = useEntityDrawer();
 
   useEffect(() => {
-    const storyIds = entities.filter((entity) => entity.entity_type === "world_story").map((entity) => entity.id);
-    let cancelled = false;
-    Promise.all(storyIds.map((id) => loadEntity(id)))
-      .then((results) => {
-        if (!cancelled) {
-          setWorldStories(results
-            .filter((result) => result.entity_type === "world_story")
-            .map((result) => result.entity as unknown as WorldStory));
-        }
-      })
-      .catch(() => { if (!cancelled) setWorldStories([]); });
-    return () => { cancelled = true; };
-  }, [entities, loadEntity]);
-
-  useEffect(() => {
     if (!campaignId) return;
 
     let cancelled = false;
@@ -1182,6 +1166,7 @@ function CampaignDashboardPage() {
   }, [campaignId, loadCampaignReferences]);
 
   const story = campaign?.story;
+  const worldStories: WorldStory[] = worldData?.world_stories ?? [];
   const legacyStory = Boolean(story && !isCampaignStory(story));
   const campaignStory = story && isCampaignStory(story) ? story : EMPTY_STORY;
   const beats = campaignStory.beats;
@@ -2385,7 +2370,9 @@ function CampaignDashboardPage() {
         {workspace === "prep" && <GlobalStyles styles="@media print { .MuiDrawer-root, .MuiAppBar-root { display: none !important; } body { background: white !important; } .MuiCard-root { break-inside: avoid; box-shadow: none !important; } }" />}
         <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} sx={{ alignItems: { lg: "center" }, justifyContent: "space-between", mb: 2 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            <IconButton aria-label="Back to campaigns" onClick={() => navigate("/campaigns")}><ArrowBackIcon /></IconButton>
+            <Button size="small" variant="text" startIcon={<ArrowBackIcon />} onClick={() => setWorkspace("dashboard")}>
+              Back to dashboard
+            </Button>
             <Box>
               <Typography variant="overline" color="text.secondary">CAMPAIGN WORKSPACE</Typography>
               <Typography variant="h2">{campaign.name}</Typography>

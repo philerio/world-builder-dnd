@@ -1,10 +1,13 @@
 id: serenno-city
-name: Serenno
-description: null
+name: Serenio City
+description: >
+  The capital city of Serenno. It is caught in the ongoing civil war following
+  the assassination of the ruling family.
 created: '2026-09-24T15:11:35.179165'
 updated: '2026-09-24T15:11:35.179167'
-kingdom: north-elligaesia
+kingdom: serenno
 region: null
 population: null
-details: null
+details: >
+  This city is marked as Serenno's capital in the world geography notes.
 dm_notes: null

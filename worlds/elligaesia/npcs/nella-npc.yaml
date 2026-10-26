@@ -1,21 +1,37 @@
 id: nella-npc
 name: Nella
-description: Innkeeper in Zeffo
+description: Zeffo innkeeper who gathers road reports and separates firsthand accounts from rumor.
 tags: []
 created: '2026-10-18T04:57:15.179321'
-updated: '2026-10-18T04:57:15.179323'
+updated: '2026-10-22T00:24:56Z'
 race: Gnome
 alignment: Lawful Neutral
-role: null
+role: Keeper of a roadside inn
 city: zeffo-city
 region: null
-kingdom: null
-details: null
-motives: []
-goals: []
-fears: []
+kingdom: umbara
+details: 'Backstory: Before settling in Zeffo, Nella spent years working kitchens and guest rooms along
+  the northern trade road. She learned that travelers often notice useful details while trying to make
+  sense of a frightening journey. Her inn became a familiar stop for merchants, messengers, and people
+  returning from the forest road.
+
+  At the table: Nella is brisk, warm, and difficult to rattle. She asks where a traveler saw something,
+  what time it was, and whether anyone else was present. She shares the reports of figures on the road
+  but calls the forest cursed because that is the explanation guests keep repeating, not because she has
+  proof.'
+motives:
+- Keep her guests safe and the inn a dependable refuge.
+- Learn what is happening on the roads before fear empties the town.
+goals:
+- Gather reliable accounts from travelers and warn people before nightfall.
+- Keep rumors from turning into a dangerous panic.
+fears:
+- That an attack will reach the inn while travelers are sheltering there.
+- That frightened merchants will stop using the road and leave Zeffo isolated.
 secrets: []
-knowledge: []
+knowledge:
+- Several travelers have reported figures wandering the roads at night.
+- Believes the forest is cursed, based on the stories travelers have brought to the inn.
 events: []
 relationships: []
 job: Innkeeper

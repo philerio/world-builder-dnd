@@ -1,21 +1,38 @@
 id: thomas-npc
 name: Tomas
-description: Farmer of grain in city of Zeffo
+description: Grain farmer whose fields hold a trail leading toward the northern forest.
 tags: []
 created: '2026-10-18T04:56:27.426950'
-updated: '2026-10-18T04:56:27.426953'
+updated: '2026-10-22T00:24:56Z'
 race: Human
 alignment: Chaotic Good
-role: null
+role: Local witness
 city: zeffo-city
 region: null
-kingdom: null
-details: null
-motives: []
-goals: []
-fears: []
+kingdom: umbara
+details: 'Backstory: Tomas has worked grain fields outside Zeffo for most of his adult life. He knows
+  the paths through his land by their furrows, drainage, and the marks left by ordinary travelers. He
+  is quick to act when he thinks the settlement is in danger, even when he has not yet proved what happened.
+
+  At the table: Tomas is blunt and impatient with speculation. He can describe exactly where the footprints
+  crossed his fields, but his conclusion that the dead are gathering for an attack is an anxious interpretation,
+  not something the tracks prove.'
+motives:
+- Protect his fields and the nearby homes from whatever is moving toward the forest.
+- Keep frightened neighbors from walking into danger without warning.
+goals:
+- Preserve the coming harvest and find out whether the tracks return.
+- Show the party the crossing point and let them judge the trail for themselves.
+fears:
+- That the dead will reach the farms before anyone is ready.
+- Losing the harvest or being forced to abandon the land he has worked for years.
 secrets: []
-knowledge: []
+knowledge:
+- Found footprints crossing his fields toward the northern forest.
+- Believes the dead are gathering for an attack, but has no proof of their intent.
 events: []
-relationships: []
+relationships:
+- character: captain-ressa-thorn
+  relationship: local witness
+  notes: Ressa asks Tomas to report any new tracks or activity around his fields.
 job: Farmer

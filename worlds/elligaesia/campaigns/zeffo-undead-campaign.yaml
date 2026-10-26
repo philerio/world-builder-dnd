@@ -3,134 +3,261 @@ name: Zeffo Undead
 description: Rumors have spread of undead appearing in the woods of Zeffo.
 tags: []
 created: '2026-10-08T23:58:57.776875'
-updated: '2026-10-08T23:58:57.776880'
-overview: 'The party travels to Zeffo to investigate reports of undead appearing in
-  the surrounding woods. What begins as isolated encounters with the restless dead
-  develops into a mystery involving disturbed graves, frightened villagers, and strange
-  green-glowing eyes.
+updated: '2026-10-22T00:24:56Z'
+overview: 'The party comes to Zeffo after undead sightings multiply along the roads
+  and around the cemetery. Green-eyed corpses seem to rise without an obvious necromancer,
+  and some wander toward the northern forest. Captain Ressa Thorn seeks help; Old
+  Bram''s observations, disturbed graves, and a possible personal meeting with the
+  healer Edrin Vale and his ailing daughter Mira offer several independent investigative
+  leads.
 
 
-  Through conversations with Captain Ressa Thorn, the villagers, and Old Bram the
-  gravedigger, the party can uncover evidence that the undead are rising without any
-  apparent necromancer controlling them. Some appear instinctively drawn toward the
-  northern forest.
+  Beyond the forest lies a forgotten Dwarmar facility: branching halls, workshops,
+  optional rooms, an old golem testing arena turned undead trap, and a powerful green-glowing
+  artifact. Exploring the ruins reveals that Edrin''s attempts to keep his dying daughter
+  Mira alive have grown into secret experiments with rechargeable stones, undead bodies,
+  and an ancient iron golem.
 
 
-  Their investigation eventually leads toward forgotten Dwarmar ruins, where an ancient
-  artifact is releasing unnatural energy. The party must discover how to stop its
-  influence while confronting a local healer whose desperate efforts to save his daughter
-  are making the situation worse.'
-overarching_plot: 'Following the events of The Unforgiven, Bane''s influence has begun
-  spreading across Elligaesia. Although Bane remains imprisoned within a mortal body,
-  his awakening has caused ancient Dwarmar artifacts throughout the world to reactivate.
-  These artifacts contain remnants of his former divine power.
+  When the party confronts Edrin, they must decide what to do about the artifact,
+  the undead outbreak, and the chance of saving Mira. An iron golem may become a dangerous
+  final obstacle if events turn hostile, but it need not be activated at all.'
+overarching_plot: 'After The Unforgiven, Bane''s growing influence has awakened ancient
+  Dwarmar artifacts holding remnants of his former divine power. Bane remains imprisoned
+  in a mortal body; his eventual aim is to recover that power and reach the gods''
+  realm. The number of artifacts and how they are combined remain intentionally undefined.
 
 
-  One such artifact lies hidden beneath the northern forest near Zeffo. Its reactivation
-  has disturbed the boundary between life and death, causing corpses to rise as undead.
-  Creatures affected by the artifact display an unnatural green glow, often in their
-  eyes. Some of the undead instinctively move toward the artifact, although they are
-  not following deliberate orders.
+  The Bane stone in a forgotten Dwarmar facility north of Zeffo awakened independently
+  of Edrin. It continuously radiates necromantic influence through the surrounding
+  land: close to the stone, the energy is concentrated; as far as Zeffo, prolonged
+  weaker exposure can raise buried corpses. Its influence spreads unevenly and grows
+  over time. The dead sometimes drift toward stronger energy, not because anyone is
+  issuing commands. A green glow marks its influence; that glow alone does not mean
+  a creature is deliberately serving Bane.
 
 
-  Edrin Vale, a respected healer in Zeffo, discovered the artifact after it had already
-  awakened. Desperate to save his dying daughter, Mira, he began drawing on its power
-  to sustain her life. Although Edrin is not responsible for the original outbreak,
-  his repeated use of the artifact amplifies its necromantic influence and causes
-  more undead to rise.
+  Searching deep in the northern forest for medicine for his dying daughter Mira,
+  healer Edrin Vale encounters undead and flees. The ground collapses beneath him
+  into a buried Dwarmar tunnel, breaking his leg. Unable to climb out, he drags himself
+  toward green light at the end of the passage and reaches the already-awake Bane
+  stone. Its concentrated energy automatically restores his leg as he approaches.
+  He later finds an old surface access route and begins returning secretly, convinced
+  that the same power might cure Mira.
 
 
-  Captain Ressa Thorn attempts to protect the settlement and investigate the disturbances,
-  unaware of the artifact''s existence. Old Bram, the village gravedigger, notices
-  that graves are opening from within and that some undead wander toward the northern
-  forest. His discoveries may eventually lead him into danger.
+  The Bane stone contains the only major remnant in this dungeon. Several smaller
+  Dwarmar stones are rechargeable components, not additional Bane remnants. Near the
+  main artifact, a stone absorbs energy; once removed it slowly runs down. Edrin uses
+  one at his clinic to sustain Mira, another as an undead lure, and replacements while
+  he cycles stones to recharge. The energy can force damaged or dead tissue to function
+  or partially regenerate. A broken leg can appear healed at close range, but suppressing
+  symptoms or sustaining organs does not establish a cure for Mira''s illness.
 
 
-  As the party investigates, two threats develop: the growing undead outbreak and
-  Edrin''s increasing desperation. The Rising Dead clock tracks the expansion of the
-  artifact''s influence, while Edrin''s Desperation tracks his willingness to take
-  greater risks to save Mira.
+  The deep open pit was a Dwarmar testing arena for iron golems, not a creature pen.
+  From an upper observation and loading level, golems and equipment could be lowered
+  through a large floor hatch into the lower arena. Edrin repurposed this hatch into
+  an automatically resetting drop trap: undead following a charged lure stone enter
+  the upper loading chamber and fall through into the arena below. They remain trapped
+  there. The lure stone is mounted high in a wall, visible from their entrance, but
+  serviced only from behind through a separate maintenance passage reached from the
+  safe route toward the artifact. The route does not lead the undead straight to the
+  socket. An old secured hoist or cage allows Edrin to retrieve one undead for experiments
+  without releasing the others.
 
 
-  The party may eventually discover the forgotten Dwarmar facility and confront Edrin''s
-  actions. They must decide how to deal with the artifact and whether Mira can be
-  saved without allowing the outbreak to continue. Possible outcomes include containing,
-  disabling, destroying, or attempting to preserve the artifact, with consequences
-  determined by the party''s choices.
+  Edrin finds a dormant iron golem beside the main power source. A smaller stone is
+  installed in its chest, and skeletal remains lie inside its occupant compartment.
+  From this he deduces that the construct was designed to house a body. He removes
+  the ancient remains to examine and reuse the compartment, leaving the skeleton nearby
+  as evidence. He traps undead in the arena and repeatedly inserts captured specimens
+  into the golem using existing restraints and a loading cage. Energy partly restores
+  their tissue, but they remain undead and cannot fully activate it. Edrin infers,
+  without proof, that a living occupant is required. He hopes the golem could temporarily
+  keep Mira alive and, while channeling energy, heal her sufficiently for her to leave
+  it. He does not intend to keep her inside permanently and will not risk her before
+  testing his theory. He does not know a living host will lose control.
 
 
-  The artifact''s connection to Bane is part of the larger story of Elligaesia and
-  should not be fully revealed during this adventure. Bane seeks to reclaim the remnants
-  of his power from multiple Dwarmar artifacts and ultimately open a portal to the
-  realm of the gods to take revenge on those who banished him. The exact method and
-  number of remnants required remain undefined.
+  Captain Ressa Thorn is trying to protect Zeffo and suspects a necromancer, but knows
+  nothing of the artifact or Edrin''s involvement. Old Bram finds graves opened from
+  within and notices undead moving generally north. His investigations can lead him
+  into the forest and danger. Villagers report green-eyed dead and Edrin''s puzzling
+  cures, without understanding the common cause.
 
 
-  Edrin has figured out how to power the iron golems found in the facility. He knows
-  that the golems require a living body to power/control them. So he puts himself
-  inside one in order to defeat the party. Unfortunately once inside the person loses
-  all autonomy, and only seeks to destroy those who are not aligned with Bane or controls
-  a crystal.'
+  The Rising Dead tracks necromantic spread; Edrin''s Desperation tracks worsening
+  risks as Mira deteriorates, treatments intensify, and Edrin escalates his golem
+  research. Drawing energy from the artifact can send stronger pulses into the surrounding
+  area and accelerate reanimation. Clocks follow meaningful time and events, not automatic
+  results of every combat. Edrin did not begin the outbreak.
+
+
+  The party can investigate the town and forest in several orders, explore the facility
+  through its main entrance, uncover Edrin''s experiments, and choose whether to bargain
+  with him, restrain him, intervene in Mira''s treatment, or disable, contain, preserve,
+  or destroy the Bane stone. The golem confrontation is conditional, not inevitable.
+  Mira''s survival and Edrin''s fate should respond to their choices; nothing guarantees
+  that necromantic tissue repair actually cures her underlying disease.
+
+
+  Clues in the forest direct the party toward the main facility entrance, preserving
+  a playable dungeon crawl. The original collapse where Edrin fell is a dangerous,
+  obstructed connection, not the obvious route; a concealed surface service access
+  helps explain his visits. Edrin uses a familiar, screened forest route, travels
+  cautiously at quiet hours, and can distract lone undead with a charged stone in
+  an emergency; the trips are still risky. The facility has branching corridors, dormitories,
+  stores, workshops, records rooms, guard posts, and empty chambers to populate with
+  optional undead, lore, supplies, or hazards. The testing pit has a genuine lower
+  level; it is not a same-level room that tokens can simply walk into. Any player-facing
+  battle map should remain unnumbered, with a separate DM room key.
+
+
+  The golem machinery and green energy echo Dwarmar technology from The Unforgiven.
+  The local story should reveal evidence of old Dwarmar experiments without fully
+  revealing Bane''s ultimate plan. The precise number of remnants and method of recovering
+  them remain undefined.
+
+
+  A dormant iron golem stands in or near the Bane stone''s chamber. Edrin has tried
+  using undead hosts, with partial tissue repair but no successful activation. He
+  suspects that an actual living host is required but has not tested it and does not
+  know the cost. If cornered or convinced the party will destroy Mira''s only hope,
+  he may enter the golem himself both to stop them and to prove his theory. A living
+  host activates it, but Bane''s influence progressively overrides the host''s will
+  and drives the golem to defend the stone. Edrin did not know this would happen.
+  The party may instead negotiate, withdraw, disable machinery, or rescue him; do
+  not mandate a boss fight.'
 overarching_plot_sections:
 - id: legacy-arc-1
-  title: Arc Section 1
-  content: Following the events of The Unforgiven, Bane's influence has begun spreading
-    across Elligaesia. Although Bane remains imprisoned within a mortal body, his
-    awakening has caused ancient Dwarmar artifacts throughout the world to reactivate.
-    These artifacts contain remnants of his former divine power.
+  title: Bane and the Dwarmar remnants
+  content: After The Unforgiven, Bane's growing influence has awakened ancient Dwarmar
+    artifacts holding remnants of his former divine power. Bane remains imprisoned
+    in a mortal body; his eventual aim is to recover that power and reach the gods'
+    realm. The number of artifacts and how they are combined remain intentionally
+    undefined.
 - id: legacy-arc-2
-  title: Arc Section 2
-  content: One such artifact lies hidden beneath the northern forest near Zeffo. Its
-    reactivation has disturbed the boundary between life and death, causing corpses
-    to rise as undead. Creatures affected by the artifact display an unnatural green
-    glow, often in their eyes. Some of the undead instinctively move toward the artifact,
-    although they are not following deliberate orders.
+  title: The source beneath Zeffo
+  content: 'The Bane stone in a forgotten Dwarmar facility north of Zeffo awakened
+    independently of Edrin. It continuously radiates necromantic influence through
+    the surrounding land: close to the stone, the energy is concentrated; as far as
+    Zeffo, prolonged weaker exposure can raise buried corpses. Its influence spreads
+    unevenly and grows over time. The dead sometimes drift toward stronger energy,
+    not because anyone is issuing commands. A green glow marks its influence; that
+    glow alone does not mean a creature is deliberately serving Bane.'
 - id: legacy-arc-3
-  title: Arc Section 3
-  content: Edrin Vale, a respected healer in Zeffo, discovered the artifact after
-    it had already awakened. Desperate to save his dying daughter, Mira, he began
-    drawing on its power to sustain her life. Although Edrin is not responsible for
-    the original outbreak, his repeated use of the artifact amplifies its necromantic
-    influence and causes more undead to rise.
+  title: Edrin discovers the ruins
+  content: Searching deep in the northern forest for medicine for his dying daughter
+    Mira, healer Edrin Vale encounters undead and flees. The ground collapses beneath
+    him into a buried Dwarmar tunnel, breaking his leg. Unable to climb out, he drags
+    himself toward green light at the end of the passage and reaches the already-awake
+    Bane stone. Its concentrated energy automatically restores his leg as he approaches.
+    He later finds an old surface access route and begins returning secretly, convinced
+    that the same power might cure Mira.
+- id: zeffo-arc-energy-stones
+  title: Rechargeable stones and false healing
+  content: The Bane stone contains the only major remnant in this dungeon. Several
+    smaller Dwarmar stones are rechargeable components, not additional Bane remnants.
+    Near the main artifact, a stone absorbs energy; once removed it slowly runs down.
+    Edrin uses one at his clinic to sustain Mira, another as an undead lure, and replacements
+    while he cycles stones to recharge. The energy can force damaged or dead tissue
+    to function or partially regenerate. A broken leg can appear healed at close range,
+    but suppressing symptoms or sustaining organs does not establish a cure for Mira's
+    illness.
+- id: zeffo-arc-arena
+  title: The old golem testing arena
+  content: 'The deep open pit was a Dwarmar testing arena for iron golems, not a creature
+    pen. From an upper observation and loading level, golems and equipment could be
+    lowered through a large floor hatch into the lower arena. Edrin repurposed this
+    hatch into an automatically resetting drop trap: undead following a charged lure
+    stone enter the upper loading chamber and fall through into the arena below. They
+    remain trapped there. The lure stone is mounted high in a wall, visible from their
+    entrance, but serviced only from behind through a separate maintenance passage
+    reached from the safe route toward the artifact. The route does not lead the undead
+    straight to the socket. An old secured hoist or cage allows Edrin to retrieve
+    one undead for experiments without releasing the others.'
+- id: zeffo-arc-golem-research
+  title: Edrin researches the living-host golems
+  content: Edrin finds a dormant iron golem beside the main power source. A smaller
+    stone is installed in its chest, and skeletal remains lie inside its occupant
+    compartment. From this he deduces that the construct was designed to house a body.
+    He removes the ancient remains to examine and reuse the compartment, leaving the
+    skeleton nearby as evidence. He traps undead in the arena and repeatedly inserts
+    captured specimens into the golem using existing restraints and a loading cage.
+    Energy partly restores their tissue, but they remain undead and cannot fully activate
+    it. Edrin infers, without proof, that a living occupant is required. He hopes
+    the golem could temporarily keep Mira alive and, while channeling energy, heal
+    her sufficiently for her to leave it. He does not intend to keep her inside permanently
+    and will not risk her before testing his theory. He does not know a living host
+    will lose control.
 - id: legacy-arc-4
-  title: Arc Section 4
-  content: Captain Ressa Thorn attempts to protect the settlement and investigate
-    the disturbances, unaware of the artifact's existence. Old Bram, the village gravedigger,
-    notices that graves are opening from within and that some undead wander toward
-    the northern forest. His discoveries may eventually lead him into danger.
+  title: Ressa, Bram, and village suspicions
+  content: Captain Ressa Thorn is trying to protect Zeffo and suspects a necromancer,
+    but knows nothing of the artifact or Edrin's involvement. Old Bram finds graves
+    opened from within and notices undead moving generally north. His investigations
+    can lead him into the forest and danger. Villagers report green-eyed dead and
+    Edrin's puzzling cures, without understanding the common cause.
 - id: legacy-arc-5
-  title: Arc Section 5
-  content: 'As the party investigates, two threats develop: the growing undead outbreak
-    and Edrin''s increasing desperation. The Rising Dead clock tracks the expansion
-    of the artifact''s influence, while Edrin''s Desperation tracks his willingness
-    to take greater risks to save Mira.'
+  title: Escalation and clocks
+  content: The Rising Dead tracks necromantic spread; Edrin's Desperation tracks worsening
+    risks as Mira deteriorates, treatments intensify, and Edrin escalates his golem
+    research. Drawing energy from the artifact can send stronger pulses into the surrounding
+    area and accelerate reanimation. Clocks follow meaningful time and events, not
+    automatic results of every combat. Edrin did not begin the outbreak.
 - id: legacy-arc-6
-  title: Arc Section 6
-  content: The party may eventually discover the forgotten Dwarmar facility and confront
-    Edrin's actions. They must decide how to deal with the artifact and whether Mira
-    can be saved without allowing the outbreak to continue. Possible outcomes include
-    containing, disabling, destroying, or attempting to preserve the artifact, with
-    consequences determined by the party's choices.
+  title: Player choices and stakes
+  content: The party can investigate the town and forest in several orders, explore
+    the facility through its main entrance, uncover Edrin's experiments, and choose
+    whether to bargain with him, restrain him, intervene in Mira's treatment, or disable,
+    contain, preserve, or destroy the Bane stone. The golem confrontation is conditional,
+    not inevitable. Mira's survival and Edrin's fate should respond to their choices;
+    nothing guarantees that necromantic tissue repair actually cures her underlying
+    disease.
+- id: zeffo-arc-dungeon
+  title: Dungeon exploration and optional chambers
+  content: Clues in the forest direct the party toward the main facility entrance,
+    preserving a playable dungeon crawl. The original collapse where Edrin fell is
+    a dangerous, obstructed connection, not the obvious route; a concealed surface
+    service access helps explain his visits. Edrin uses a familiar, screened forest
+    route, travels cautiously at quiet hours, and can distract lone undead with a
+    charged stone in an emergency; the trips are still risky. The facility has branching
+    corridors, dormitories, stores, workshops, records rooms, guard posts, and empty
+    chambers to populate with optional undead, lore, supplies, or hazards. The testing
+    pit has a genuine lower level; it is not a same-level room that tokens can simply
+    walk into. Any player-facing battle map should remain unnumbered, with a separate
+    DM room key.
 - id: legacy-arc-7
-  title: Arc Section 7
-  content: The artifact's connection to Bane is part of the larger story of Elligaesia
-    and should not be fully revealed during this adventure. Bane seeks to reclaim
-    the remnants of his power from multiple Dwarmar artifacts and ultimately open
-    a portal to the realm of the gods to take revenge on those who banished him. The
-    exact method and number of remnants required remain undefined.
+  title: The wider mystery
+  content: The golem machinery and green energy echo Dwarmar technology from The Unforgiven.
+    The local story should reveal evidence of old Dwarmar experiments without fully
+    revealing Bane's ultimate plan. The precise number of remnants and method of recovering
+    them remain undefined.
 - id: 2fc75f15-d1d4-4cb1-9561-20a4239d3b21
-  title: Final Battle
-  content: Edrin has figured out how to power the iron golems found in the facility.
-    He knows that the golems require a living body to power/control them. So he puts
-    himself inside one in order to defeat the party. Unfortunately once inside the
-    person loses all autonomy, and only seeks to destroy those who are not aligned
-    with Bane or controls a crystal.
+  title: Conditional final confrontation
+  content: A dormant iron golem stands in or near the Bane stone's chamber. Edrin
+    has tried using undead hosts, with partial tissue repair but no successful activation.
+    He suspects that an actual living host is required but has not tested it and does
+    not know the cost. If cornered or convinced the party will destroy Mira's only
+    hope, he may enter the golem himself both to stop them and to prove his theory.
+    A living host activates it, but Bane's influence progressively overrides the host's
+    will and drives the golem to defend the stone. Edrin did not know this would happen.
+    The party may instead negotiate, withdraw, disable machinery, or rescue him; do
+    not mandate a boss fight.
 world_stories:
 - bane-overarching-story
 - northern-elligaesia-s-turmoil-world-story
 status: planned
 locations: []
-npcs: []
+npcs:
+- reference-venn-calder
+- marta-npc
+- thomas-npc
+- nella-npc
+- old-bram-npc
+- reference-edrin-vale
+- captain-ressa-thorn
+- mira-vale
 player_characters: []
 outcome: null
 consequences: null
@@ -164,7 +291,9 @@ story:
     possible_approaches: []
     checks: []
     npc_knowledge: []
-    leads_to: []
+    leads_to:
+    - c1dcbe0b-8394-4fd7-8375-c80f784e43f9
+    - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
     locations:
     - the-woods-of-zeffo-location
     npcs: []
@@ -211,7 +340,6 @@ story:
 
           The merchant recognizes the undead as his deceased brother.
 
-          The zombie carries an unfamiliar metal token.
 
           The merchant asks the party to escort him to '
       - type: entity_link
@@ -221,6 +349,12 @@ story:
         text: '.
 
           If the party delays, the merchant may be injured or killed.'
+      - type: text
+        text: '
+
+
+          If Venn or a party member is injured, villagers may recommend the healer
+          Edrin Vale; the party can choose to visit him and meet Mira.'
     triggers_content: null
     possible_approaches_content: null
     status: planned
@@ -236,16 +370,18 @@ story:
 
       The merchant recognizes the undead as his deceased brother.
 
-      The zombie carries an unfamiliar metal token.
 
       The merchant asks the party to escort him to Zeffo.
 
-      If the party delays, the merchant may be injured or killed.'
+      If the party delays, the merchant may be injured or killed.
+
+
+      If Venn or a party member is injured, villagers may recommend Edrin Vale as
+      Zeffo''s healer; this provides an optional introduction to Edrin and Mira.'
     secrets:
     - The corpse rose because of the Dwarmar artifact beneath Zeffo.
     - The artifact awakened due to Bane's growing influence after The Unforgiven.
     - The undead is being drawn toward the northern forest.
-    - The metal token bears an ancient Dwarmar symbol.
     - The merchant knows nothing about the artifact or Bane.
     - The merchant's brother died two years ago and was buried in Zeffo.
     possible_approaches:
@@ -288,8 +424,8 @@ story:
       skill: Athletics
       dc: 10
       success: Successfully frees merchant
-      failure: he rescue takes longer or requires another approach; the merchant isn't
-        automatically killed.
+      failure: The rescue takes longer or requires another approach; the merchant
+        isn't automatically killed.
     - id: 94d4d65a-2635-4c3d-b3d8-28cf24e71eb9
       name: Party sees the undead creature
       category: notice
@@ -303,12 +439,17 @@ story:
     npc_knowledge:
     - id: dcb30e6b-46eb-4d24-9890-effcd2a5e95c
       npc_id: reference-venn-calder
-      information: Undead have been rising  Isn't in the city enough to know much.
-        Does know that the cptain might have information.
-      belief: null
-      shares_if: null
+      information: Venn recognizes the undead as his brother, who was buried in Zeffo
+        two years ago. He knows nothing about why his brother rose, but can direct
+        the party to Captain Ressa for reliable local information.
+      belief: Someone may have disturbed the grave or caused the dead to rise, but
+        Venn has no evidence of a cause.
+      shares_if: Once the party gets him out of danger and has a chance to speak privately.
       check: null
-    leads_to: []
+    leads_to:
+    - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
+    - b78d97e5-e377-4334-8f6b-a756758bdc58
+    - c5f4520e-970e-4c0d-a821-3164bf4e5f90
     locations:
     - zeffo-city
     npcs:
@@ -325,7 +466,7 @@ story:
         upon arriving in Zeffo.
       status: pending
       leads_to:
-      - zeffo-undead-sightings
+      - opening-zeffo-undead-sightings
       - 31e601bf-e0b5-4dfb-8800-6325b337cb5e
       world_stories: []
       world_story_threads: []
@@ -363,9 +504,60 @@ story:
       villagers disagree about the cause of the disturbances. The party can speak
       with residents, investigate recent incidents, or offer to help protect the settlement.
     description_content: null
-    events_content: null
+    events_content:
+      nodes:
+      - type: text
+        text: 'The party arrives to find villagers preparing to barricade their homes
+          before sunset.
+
+          If the '
+      - type: entity_link
+        text: merchant
+        entity_id: reference-venn-calder
+      - type: text
+        text: ' survived, he introduces the party to Captain Ressa Thorn.
+
+          Captain Ressa questions the party about their journey and any undead they
+          encountered.
+
+          Villagers share conflicting rumors about the undead sightings.
+
+          A resident reports seeing a deceased relative near the cemetery.
+
+          The village healer, Edrin Vale, is mentioned as someone who has recently
+          performed unusual cures.
+
+          A bell rings unexpectedly from the cemetery after dark.
+
+
+          Ressa may direct injured visitors to Edrin Vale, and townsfolk may mention
+          that his daughter Mira has been gravely ill; visiting the clinic is optional,
+          but allows the party to meet them both.'
     triggers_content: null
-    possible_approaches_content: null
+    possible_approaches_content:
+      nodes:
+      - type: text
+        text: 'Speak with '
+      - type: entity_link
+        text: Captain Ressa
+        entity_id: captain-ressa-thorn
+      - type: text
+        text: ' and offer assistance.
+
+          Question villagers about recent undead sightings.
+
+          Investigate the cemetery or reports of missing bodies.
+
+          Visit Edrin Vale''s clinic to ask about unusual illnesses or injuries.
+
+          Look for lodging and gather rumors at the local inn.
+
+          Examine the village''s defenses and offer to help prepare for another attack.
+
+          Ignore the local troubles and pursue another objective.
+
+          Visit Edrin and Mira together at the clinic, either out of concern or to
+          seek treatment.'
     status: planned
     act: null
     order: 2
@@ -387,7 +579,12 @@ story:
       The village healer, Edrin Vale, is mentioned as someone who has recently performed
       unusual cures.
 
-      A bell rings unexpectedly from the cemetery after dark.'
+      A bell rings unexpectedly from the cemetery after dark.
+
+
+      Ressa may direct injured visitors to Edrin Vale, and townsfolk may mention that
+      his daughter Mira has been gravely ill; visiting the clinic is optional, but
+      allows the party to meet them both.'
     secrets:
     - The undead outbreak is caused by an ancient Dwarmar artifact beneath the northern
       forest.
@@ -400,6 +597,10 @@ story:
     - Captain Ressa does not know about the artifact or Edrin's involvement.
     - Old Bram, the gravedigger, has noticed that some undead seem to travel toward
       the northern forest.
+    - 'Edrin''s trips north are for more than charging Mira''s stone: he is testing
+      old Dwarmar machinery on undead recovered from a hidden arena.'
+    - The artifact radiates through the land; weaker sustained influence can raise
+      buried bodies in Zeffo, while close exposure can quickly restore damaged tissue.
     possible_approaches:
     - Speak with Captain Ressa and offer assistance.
     - Question villagers about recent undead sightings.
@@ -408,6 +609,8 @@ story:
     - Look for lodging and gather rumors at the local inn.
     - Examine the village's defenses and offer to help prepare for another attack.
     - Ignore the local troubles and pursue another objective.
+    - Visit Edrin and Mira together at the clinic, either out of concern or to seek
+      treatment.
     checks:
     - id: 0aef538e-b665-4b1e-8ac0-5914fd25b3d4
       name: Question the villagers
@@ -473,15 +676,36 @@ story:
       belief: Something is calling the dead away from their resting places.
       shares_if: null
       check: null
+    - id: zeffo-arrival-ressa-knowledge
+      npc_id: captain-ressa-thorn
+      information: She is organizing barricades and patrols after reports of green-eyed
+        undead near the cemetery and northern approach. The watch is short-staffed.
+      belief: A necromancer may be directing the dead, but she has no proof and does
+        not know the source.
+      shares_if: She shares confirmed reports and asks the party for help; she admits
+        how few guards she has only after the party earns her trust.
+      check: null
     - id: zeffo-arrival-edrin-knowledge
       npc_id: reference-edrin-vale
       information: Has discovered the ancient artifact and used its power to sustain
         Mira.
       belief: The artifact's power might save his daughter.
-      shares_if: null
+      shares_if: This is DM-only at first. Edrin does not volunteer the artifact's
+        source; reveal it through investigation or a later confession after trust
+        is earned.
+      check: null
+    - id: zeffo-knowledge-arrival-clinic
+      npc_id: reference-edrin-vale
+      information: Mira remains very ill, and Edrin treats her privately while continuing
+        to care for some villagers.
+      belief: His new treatment may offer Mira time to recover.
+      shares_if: The party visits the clinic or asks about the local healer. Edrin
+        is open about caring for patients, but guarded about Mira's treatment.
       check: null
     leads_to:
     - b78d97e5-e377-4334-8f6b-a756758bdc58
+    - c5f4520e-970e-4c0d-a821-3164bf4e5f90
+    - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
     locations:
     - zeffo-city
     npcs:
@@ -490,6 +714,9 @@ story:
     - nella-npc
     - old-bram-npc
     - reference-edrin-vale
+    - reference-venn-calder
+    - captain-ressa-thorn
+    - mira-vale
     player_characters: []
     consequences:
     - id: 5984e994-94b6-4388-a880-342e30f1ddb1
@@ -505,7 +732,7 @@ story:
       status: pending
       leads_to:
       - b78d97e5-e377-4334-8f6b-a756758bdc58
-      - zeffo-undead-sightings
+      - opening-zeffo-undead-sightings
       world_stories: []
       world_story_threads: []
     - id: 5164a614-7082-42cd-9149-2b77c1b296f2
@@ -521,7 +748,7 @@ story:
       status: pending
       leads_to:
       - b78d97e5-e377-4334-8f6b-a756758bdc58
-      - zeffo-undead-sightings
+      - opening-zeffo-undead-sightings
       world_stories: []
       world_story_threads: []
     - id: a824eb65-fb3a-432a-9d95-4900befce80f
@@ -539,7 +766,7 @@ story:
       leads_to:
       - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
       - b78d97e5-e377-4334-8f6b-a756758bdc58
-      - zeffo-undead-sightings
+      - opening-zeffo-undead-sightings
       world_stories: []
       world_story_threads: []
     world_events: []
@@ -624,6 +851,9 @@ story:
     - Old Bram has begun noticing a pattern in the undead's movements.
     - The cemetery does not contain the source of the outbreak.
     - Bram's investigation will eventually lead him toward the forgotten forest ruins.
+    - Concentrated energy from the buried Bane stone attracts many undead north, while
+      a charged lure stone redirects those reaching the facility into its old testing
+      arena.
     possible_approaches:
     - Inspect disturbed graves and examine the surrounding soil.
     - Question Old Bram about recent burials and unusual activity.
@@ -709,9 +939,15 @@ story:
       success: Notices a creature repeatedly turning toward the northern forest
       failure: Sees erratic movements without recognizing a pattern
     npc_knowledge: []
-    leads_to: []
+    leads_to:
+    - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+    - b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
+    - zeffo-dwarmar-entrance
     locations: []
-    npcs: []
+    npcs:
+    - captain-ressa-thorn
+    - reference-venn-calder
+    - old-bram-npc
     player_characters: []
     consequences:
     - id: ae095d4f-decc-48a8-8d69-f7a94c703a92
@@ -724,7 +960,7 @@ story:
       status: pending
       leads_to:
       - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
-      - zeffo-undead-sightings
+      - opening-zeffo-undead-sightings
       world_stories: []
       world_story_threads: []
     - id: 438e9777-70fe-43e1-8513-5c69bc32c1d3
@@ -787,9 +1023,13 @@ story:
     world_stories: []
     world_story_threads: []
   - encounter: null
-    id: f430cc5f-a371-4eb6-8f70-d1e05386b8eb
-    name: The Missing Gravedigger
-    description: null
+    id: c5f4520e-970e-4c0d-a821-3164bf4e5f90
+    name: The Healer's Miracles
+    description: 'Optional roleplay encounter: the party may meet healer Edrin Vale
+      and his ill daughter Mira in Zeffo before ever discovering the ruins. Mira is
+      alive because a rechargeable green Dwarmar stone is temporarily sustaining her.
+      Edrin hopes an ancient golem could provide temporary life support and gradually
+      heal her enough to live outside it; he does not want to imprison her permanently.'
     description_content: null
     events_content: null
     triggers_content: null
@@ -797,24 +1037,189 @@ story:
     status: planned
     act: null
     order: 4
-    triggers: []
-    events: null
-    secrets: []
-    possible_approaches: []
-    checks: []
-    npc_knowledge: []
-    leads_to: []
-    locations: []
-    npcs: []
+    triggers:
+    - Ressa or the rescued merchant recommends Edrin to an injured party member.
+    - The party hears rumors of Edrin's unusual cures or of Mira's serious illness.
+    - The party offers to help Mira or seeks treatment.
+    - Evidence of green energy leads the party to the clinic.
+    events: 'When the party visits, Edrin may invite them into the front treatment
+      room and, if they are respectful, introduce Mira; if he is away, Mira or a caretaker
+      can talk to them and Edrin can be met later.
+
+
+      Mira is alert at intervals and has her own concerns: she wants to recover and
+      worries about how little her father sleeps, but does not know his secret experiments.
+      She may describe brief warmth or strength after treatments followed by renewed
+      weakness, without explaining the cause.
+
+
+      Edrin is exhausted, caring, and protective of Mira. He can explain conventional
+      medicine but avoids discussing the source of his newest treatments.
+
+
+      A concealed or guarded apparatus holds a removable stone that intermittently
+      glows green during Mira''s treatment.
+
+
+      Medical journals record an unusually rapid recovery from Edrin''s own broken
+      leg, repeated trips into the forest, and trials described in guarded language.
+
+
+      Mira''s condition improves briefly with treatment, then slips again as the stone''s
+      charge fades.
+
+
+      As trust grows or evidence mounts, the party may learn Edrin thinks the golem
+      is a temporary life-support device rather than a permanent prison.'
+    secrets:
+    - Edrin fell through a collapse into an ancient tunnel while fleeing undead in
+      the forest, broke his leg, and was automatically healed near the already-active
+      Bane stone.
+    - He found another way out and returns to the ruins to recharge several small
+      stones, maintain his undead trap, and run golem experiments.
+    - 'He has used captive undead as specimens: necromantic energy partly repairs
+      tissue but has not restored life or activated the iron golem.'
+    - He suspects that a living host may power the golem but has never tested that
+      theory. He does not know it can override the host's autonomy.
+    - Edrin believes he can sustain Mira inside the golem until she is healthy enough
+      to leave. Whether this would truly cure her is unproven.
+    - Mira is not aware that Edrin has been capturing undead or considering an ancient
+      golem; she can recognize her symptoms and voice her own wishes if the party
+      earns her trust.
+    - Green necromantic energy sustains tissue and masks symptoms; the Bane stone's
+      wider pulses also intensify the outbreak.
+    possible_approaches:
+    - Meet Edrin and Mira, talk with Mira directly, and ask what she wants rather
+      than only listening to her father.
+    - Offer Mira mundane care or companionship without promising a miraculous cure.
+    - Speak gently to Edrin about Mira and offer help.
+    - Observe a treatment or examine his apparatus with permission.
+    - Investigate green light, forest excursions, and odd medical records.
+    - Confront him with evidence and attempt to negotiate.
+    - Leave the clinic and search the forest independently.
+    checks:
+    - id: zeffo-check-clinic-stone
+      name: Notice the treatment stone
+      category: notice
+      description: Near Edrin's treatment apparatus while it is active.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 12
+      success: See a removable green-glowing stone connected to Mira's treatment.
+      failure: Notice Mira's condition improves briefly, without identifying the component.
+    - id: zeffo-check-clinic-treatment
+      name: Assess the medical effect
+      category: notice
+      description: Examine Mira or Edrin's observations with permission.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Medicine
+      dc: 13
+      success: The symptoms are being suppressed or function sustained, but there
+        is no evidence the original illness is cured.
+      failure: The improvement is real but its lasting effect is uncertain.
+    - id: zeffo-check-clinic-mira
+      name: Listen to Mira's experience
+      category: notice
+      description: Speak privately with Mira while she is alert and comfortable.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Insight
+      dc: 11
+      success: Mira feels genuine brief relief after treatment, but also worries that
+        her father is hiding something and exhausting himself.
+      failure: Mira describes her symptoms and concerns in her own words; no essential
+        lead is lost.
+    - id: zeffo-check-clinic-motive
+      name: Understand Edrin's motivation
+      category: notice
+      description: Discuss Mira, his experiments, or the possibility of losing the
+        stone.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Insight
+      dc: 12
+      success: Edrin is hiding dangerous work but is primarily afraid his daughter
+        will die.
+      failure: He appears defensive and desperate; his motives can still emerge through
+        conversation.
+    npc_knowledge:
+    - id: zeffo-knowledge-edrin-goal
+      npc_id: reference-edrin-vale
+      information: The stone sustains Mira. Undead golem experiments partially repair
+        tissue but have not activated the machine; Edrin suspects a living host might.
+      belief: The golem might temporarily sustain Mira and give her time for a real
+        treatment, though Edrin hopes it may do more.
+      shares_if: Edrin shares fragments of his research only after trust is earned
+        or convincing evidence is presented.
+      check: null
+    - id: zeffo-knowledge-mira-wishes
+      npc_id: mira-vale
+      information: Treatment brings Mira short periods of warmth and strength, followed
+        by renewed weakness. She notices her father is exhausted and hiding something,
+        but does not know about the artifact or his experiments.
+      belief: She hopes she can recover, but wants to understand the risks and be
+        included in decisions about her care.
+      shares_if: The party speaks with Mira while she is alert, gives her room to
+        answer for herself, and does not make promises about a cure.
+      check: null
+    leads_to:
+    - f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+    - zeffo-dwarmar-entrance
+    - zeffo-healers-secret
+    locations:
+    - zeffo-city
+    npcs:
+    - reference-edrin-vale
+    - mira-vale
     player_characters: []
-    consequences: []
+    consequences:
+    - id: zeffo-consequence-edrin-trust
+      description: Edrin opens some notes and may cooperate on a safer alternative
+        for Mira.
+      trigger: The party responds to his fears without threatening Mira.
+      player_action: The party offers help and approaches his discoveries cautiously.
+      timing: During talks at the clinic or in the ruins.
+      status: pending
+      leads_to:
+      - zeffo-healers-secret
+      world_stories: []
+      world_story_threads: []
+    - id: zeffo-consequence-mira-voice
+      description: Mira trusts the visitors and may speak for herself when her treatment
+        and the golem are discussed, even if Edrin is defensive.
+      trigger: The party treats Mira as a participant rather than a passive subject.
+      player_action: The party listens to her wishes and offers appropriate care.
+      timing: During the clinic meeting or before the final decision.
+      status: pending
+      leads_to:
+      - zeffo-healers-secret
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
+    - id: zeffo-consequence-edrin-alarmed
+      description: Edrin hides or relocates notes and speeds up his next experiment.
+      trigger: Edrin believes the party will seize the stones or deny Mira treatment.
+      player_action: The party threatens him or destroys his treatment supplies.
+      timing: Following the clinic confrontation.
+      status: pending
+      leads_to:
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
     world_events: []
-    world_stories: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
     world_story_threads: []
   - encounter: null
-    id: c5f4520e-970e-4c0d-a821-3164bf4e5f90
-    name: The Healer's Miracles
-    description: null
+    id: f430cc5f-a371-4eb6-8f70-d1e05386b8eb
+    name: The Missing Gravedigger
+    description: Old Bram follows the pattern of disturbed graves and green-eyed undead
+      toward the northern forest. When he fails to return, the party can track his
+      route, find evidence of a concealed ancient complex, and decide whether to rescue
+      him before continuing.
     description_content: null
     events_content: null
     triggers_content: null
@@ -822,24 +1227,106 @@ story:
     status: planned
     act: null
     order: 5
-    triggers: []
-    events: null
-    secrets: []
-    possible_approaches: []
-    checks: []
-    npc_knowledge: []
-    leads_to: []
-    locations: []
-    npcs: []
+    triggers:
+    - Bram shares his suspicions and later goes to investigate alone.
+    - Captain Ressa or a villager reports Bram missing.
+    - The party follows northbound undead tracks into the forest.
+    events: 'At Bram''s work area, the party finds his notes on northbound tracks
+      and a sketch of oddly worked stone.
+
+
+      Along the forest route they discover signs of hurried movement, broken branches,
+      and a dropped gravedigger''s tool.
+
+
+      They encounter signs of the hidden ruins'' main approach; Bram''s exact fate
+      remains flexible until the party chooses how to respond.'
+    secrets:
+    - Bram is tracing the same necromantic pull that draws undead toward the artifact;
+      he has no knowledge of golem experiments or Bane.
+    - Do not make Bram's survival or discovery of the entrance depend on a single
+      check.
+    possible_approaches:
+    - Search Bram's home or cemetery for his notes.
+    - Track Bram into the woods.
+    - Ask Ressa to organize a search party.
+    - Follow undead rather than following Bram's route.
+    checks:
+    - id: zeffo-check-bram-trail
+      name: Trace Bram into the forest
+      category: notice
+      description: Search along Bram's last known route.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Survival
+      dc: 12
+      success: Identify Bram's passage and reach an old stone approach to the main
+        entrance.
+      failure: Lose the trail briefly; recent undead tracks or an old path still lead
+        to the same area.
+    - id: zeffo-check-bram-stone
+      name: Examine worked stone
+      category: notice
+      description: Examine exposed masonry near the forest path.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 11
+      success: The masonry belongs to a deliberately built underground complex, partly
+        overgrown.
+      failure: The ancient stonework remains evident, but its purpose is unclear.
+    npc_knowledge:
+    - id: zeffo-knowledge-bram-north
+      npc_id: old-bram-npc
+      information: Graves open from within; multiple undead drift into the northern
+        forest.
+      belief: Something is attracting the dead to the north.
+      shares_if: null
+      check: null
+    leads_to:
+    - b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
+    - zeffo-dwarmar-entrance
+    locations:
+    - the-woods-of-zeffo-location
+    npcs:
+    - old-bram-npc
+    - captain-ressa-thorn
     player_characters: []
-    consequences: []
+    consequences:
+    - id: zeffo-consequence-bram-rescued
+      description: Bram survives and can describe the forest route and evidence of
+        ancient construction.
+      trigger: The party reaches Bram before the local danger overwhelms him.
+      player_action: The party searches for and protects Bram.
+      timing: During or after the forest search.
+      status: pending
+      leads_to:
+      - zeffo-dwarmar-entrance
+      world_stories: []
+      world_story_threads: []
+    - id: zeffo-consequence-bram-missing
+      description: Bram remains missing or is found too late; his observations survive
+        in notes and physical traces.
+      trigger: The party delays or an encounter goes badly.
+      player_action: The party leaves the search unfinished.
+      timing: When the investigation returns to the forest.
+      status: pending
+      leads_to:
+      - zeffo-dwarmar-entrance
+      world_stories: []
+      world_story_threads: []
     world_events: []
-    world_stories: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
     world_story_threads: []
   - encounter: null
     id: b7c7cb08-4bd2-403b-85b8-50dc1ae1f7e2
     name: The Forgotten Soldier
-    description: null
+    description: On an old stone crossing near the deeper forest, the party encounters
+      an ancient undead soldier whose armor and fittings resemble Dwarmar work. The
+      site provides a physical route toward the ruins without making the soldier a
+      deliberate guard or messenger.
     description_content: null
     events_content: null
     triggers_content: null
@@ -847,21 +1334,1017 @@ story:
     status: planned
     act: null
     order: 6
-    triggers: []
-    events: null
-    secrets: []
-    possible_approaches: []
+    triggers:
+    - The party follows Bram's trail north.
+    - Undead tracks converge near an old crossing.
+    - The party scouts an alternate approach toward worked stone.
+    events: 'An armored undead soldier loiters near the crossing and occasionally
+      turns toward the distant ruins.
+
+
+      Weathered stone markings match architecture nearer the facility entrance.
+
+
+      Signs of Bram''s passage may be found nearby.
+
+
+      The party can bypass, distract, follow, or confront the soldier.'
+    secrets:
+    - The soldier rose under ambient artifact influence, not because Edrin ordered
+      it to guard the crossing.
+    - Its age and gear suggest the buried facility predates the current outbreak.
+    possible_approaches:
+    - Study the stone markers.
+    - Observe the soldier before approaching.
+    - Slip past or draw it away.
+    - Fight if required.
+    - Continue following Bram's trail.
+    checks:
+    - id: zeffo-check-soldier-markers
+      name: Read the old route markers
+      category: notice
+      description: Study the worked stone at the crossing.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Identify recurring shapes pointing toward an old road or the facility's
+        main entrance.
+      failure: The roadbed and visible ruins of stonework still offer a clear direction.
+    - id: zeffo-check-soldier-motion
+      name: Watch the forgotten soldier
+      category: notice
+      description: Observe the undead without engaging it.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Perception
+      dc: 11
+      success: See it orient toward the forest complex and then wander, as if drawn
+        rather than ordered.
+      failure: It seems to move unpredictably.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-dwarmar-entrance
+    locations:
+    - the-woods-of-zeffo-location
+    npcs: []
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-soldier-bypassed
+      description: The party passes without alerting nearby undead and retains a useful
+        escape route.
+      trigger: The party avoids a noisy fight.
+      player_action: The party sneaks, distracts, or follows the soldier.
+      timing: On the way to the ruins.
+      status: pending
+      leads_to:
+      - zeffo-dwarmar-entrance
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-dwarmar-entrance
+    name: The Dwarmar Entrance
+    description: A weathered, partially buried Dwarmar entrance lies beyond an old
+      forest approach. This is the clearest, most accessible way into the facility
+      and leads to an explorable network of halls, optional chambers, and machinery.
+      Edrin's original collapsed tunnel and concealed surface service route exist
+      but do not bypass the intended initial dungeon exploration.
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 7
+    triggers:
+    - The party follows northbound undead tracks or Bram's discoveries.
+    - They find the markers beyond the forgotten soldier.
+    - They independently survey ancient stonework in the forest.
+    events: 'An ancient stone doorway and worn passage descend into the facility.
+
+
+      Recent signs of movement, cleared rubble, and irregular scuffs suggest somebody
+      continues to use portions of the ruins.
+
+
+      The main passage branches into smaller side rooms, including accessible mundane
+      spaces that may be empty or contain undead or records.
+
+
+      A blocked shaft elsewhere bears evidence of a comparatively recent collapse;
+      it is not the obvious, safe way in.'
+    secrets:
+    - Edrin fell through an unrelated collapse in a roofed tunnel while running from
+      undead; it broke his leg and led him toward the artifact's concentrated energy.
+    - After healing, he found an old route to the surface. He now maintains access
+      but does not necessarily follow the same path adventurers will find.
+    - Do not make discovering the main doorway conditional on a successful roll.
+    possible_approaches:
+    - Enter by the main doorway.
+    - Scout the threshold for tracks and hazards.
+    - Check side rooms before descending further.
+    - Inspect blocked passages but avoid or clear unsafe rubble.
+    - Retreat to report the discovery to Ressa.
+    checks:
+    - id: zeffo-check-entry-traffic
+      name: Inspect recent traffic
+      category: notice
+      description: Examine dirt and rubble inside the main entrance.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Survival
+      dc: 12
+      success: Separate shuffling undead tracks from more deliberate, repeated human
+        bootprints.
+      failure: Notice that someone or something has used the old entrance recently.
+    - id: zeffo-check-entry-stone
+      name: Recognize Dwarmar construction
+      category: notice
+      description: Examine distinctive stonework and metal fittings.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Identify specialized workmanship and an unusually sophisticated old
+        facility.
+      failure: The construction is clearly ancient and deliberately engineered.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-forgotten-facility
+    - zeffo-golem-testing-arena
+    locations:
+    - the-woods-of-zeffo-location
+    - zeffo-dwarmar-ruins-location
+    npcs: []
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-dungeon-access
+      description: The party gains a reliable entry point for repeated exploration
+        of the ruins.
+      trigger: They locate and secure the main door.
+      player_action: The party marks or clears the path.
+      timing: After scouting the entrance.
+      status: pending
+      leads_to:
+      - zeffo-forgotten-facility
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-forgotten-facility
+    name: The Forgotten Facility
+    description: 'Explore a branching Dwarmar underground complex: entry hall, old
+      guard rooms, supply closets, barracks, workshop, records archive, service corridors,
+      broken equipment, and connecting passages leading toward the testing arena and
+      Bane stone. Optional rooms can hold solitary undead, environmental clues, debris,
+      resources, or nothing at all.'
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 8
+    triggers:
+    - The party enters through the main Dwarmar entrance.
+    - They pursue tracks, energy conduits, or signs of Edrin's passage.
+    events: 'MAP CLUE TRAIL (north is the top of the uploaded map)
+
+
+      1. Entrance and upper corridor: Tool marks, fresh bootprints, and disturbed
+      rubble show that a person clears and reuses the old facility. They point inward
+      but do not identify Edrin yet.
+
+
+      2. Northern side rooms and records/workshop spaces: Dwarmar diagrams show an
+      iron construct with a chest stone and a body-sized occupant compartment. This
+      establishes the golem''s purpose before the party learns Edrin''s plan. Searching
+      drawers can also turn up notes about rechargeable stones.
+
+
+      3. Central conduit junction: Glowing seams and small removable stones feed toward
+      the deeper source. A successful examination shows that these stones store charge;
+      they are not separate Bane artifacts. The strongest conduit continues toward
+      the large southeast chamber.
+
+
+      4. Large round western chamber: This is the lower golem testing arena, beneath
+      an upper loading/observation space. From a safe edge, the party can see the
+      reset hatch and undead trapped below. The lure stone draws them away from the
+      central source. A rear maintenance branch reaches the back of its socket without
+      crossing the drop trap.
+
+
+      5. Large southeast chamber at the artifact platform: The main Bane stone is
+      the source feeding the conduits. The dormant golem and Edrin''s records connect
+      the facility, the undead experiments, and Mira''s treatment. Reveal the Bane
+      connection only as campaign context permits; the local evidence does not explain
+      Bane''s full plan.
+
+
+      Let the party explore these spaces in a different order. Each clue should still
+      be findable from another source or through closer investigation; a failed check
+      gives partial information rather than stopping the trail. Keep optional rooms
+      empty or lightly populated when the group needs breathing room.'
+    secrets:
+    - The complex once serviced and tested living-host iron golems. Dwarmar records
+      may show body-shaped host cavities and experiments but need not explain Bane.
+    - Not every green-glowing component is a separate artifact; smaller stones store
+      charge taken from the primary Bane stone.
+    - The pit is a lower arena level. Characters cannot walk straight from an upper
+      corridor onto its floor.
+    possible_approaches:
+    - Explore optional rooms in any order.
+    - Read old engineering notes or inspect diagrams.
+    - Study glowing conduits and sockets.
+    - Avoid, trap, or fight scattered undead.
+    - Find the service access or continue to the arena.
+    checks:
+    - id: zeffo-check-facility-records
+      name: Interpret Dwarmar technical diagrams
+      category: notice
+      description: Read records or examine parts in a workshop.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Discover diagrams of an armored construct with an occupant compartment
+        and chest-mounted power stone.
+      failure: See that the machinery once interacted with bodies but cannot yet explain
+        how.
+    - id: zeffo-check-facility-conduits
+      name: Trace the energy conduits
+      category: notice
+      description: Inspect glowing stone seams and charged sockets.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Arcana
+      dc: 13
+      success: Determine that removable stones store and slowly release energy drawn
+        from the central source.
+      failure: Recognize an energy network leading deeper without understanding its
+        purpose.
+    - id: zeffo-check-facility-service
+      name: Find the safe maintenance route
+      category: notice
+      description: Search behind equipment bays near the arena.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Find the narrow passage approaching the back of the lure stone's wall
+        socket.
+      failure: Notice an old service hatch or worn wall; a second exploration route
+        still reveals access.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-golem-testing-arena
+    - zeffo-healers-secret
+    - zeffo-heart-of-zeffo
+    locations:
+    - zeffo-dwarmar-ruins-location
+    npcs: []
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-facility-lore
+      description: The party identifies the facility as a place that tested stone-powered
+        golems with occupants.
+      trigger: The party recovers or interprets engineering records.
+      player_action: The party explores workshop or records rooms.
+      timing: While searching the facility.
+      status: pending
+      leads_to:
+      - zeffo-golem-testing-arena
+      - zeffo-healers-secret
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-golem-testing-arena
+    name: The Golem Testing Arena
+    description: 'A towering, open-topped lower testing arena lies below an upper
+      observation and loading chamber. The Dwarmar once lowered golems and equipment
+      through a large hatch for trials. Edrin has turned the upper loading hatch into
+      a resetting drop trap: undead approach a green lure stone, fall into the arena,
+      and remain alive below. A separate rear maintenance passage allows Edrin to
+      recharge and replace the lure stone without entering the trap.'
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 9
+    triggers:
+    - The party follows corridors or green light to the former testing arena.
+    - They hear undead and iron scraping far below the upper level.
+    - They follow the rear maintenance route from the workshop.
+    events: 'A green stone glows in a high wall socket beyond a broad hatch in the
+      upper floor.
+
+
+      An undead shambles into the upper loading chamber toward the stone; the hatch
+      opens underfoot and drops it into the lower arena, then closes.
+
+
+      From observation walkways, characters can see multiple  undead trapped on the
+      arena floor far below, some with partially repaired tissue or medical marks.
+
+
+      From the rear service passage, a narrow hatch exposes the back of the stone
+      socket, enabling a safe swap.
+
+
+      A secured test cage or hoist provides a dangerous but controlled way to retrieve
+      one captive; opening it carelessly could release the undead.
+
+
+      Damaged construct limbs, heavily reinforced gates, and observation galleries
+      reveal the pit''s former purpose.'
+    secrets:
+    - The arena tested iron golems, not a captive animal; its hatch originally loaded
+      golems or experimental apparatus onto the floor below.
+    - Undead are drawn to concentrated energy, so the charged lure redirects their
+      path from the main source.
+    - Edrin has been collecting undead here as test subjects. He has no absolute control
+      over their instincts.
+    - The lure stone can run down; removing it redirects attention toward the main
+      artifact, but does not automatically release those already trapped.
+    - The undead in the pit are still active. Do not put the whole crowd into direct
+      combat unless characters enter or open the containment route.
+    possible_approaches:
+    - Observe the hatch in operation from a safe distance.
+    - Investigate observation records or damaged golem parts.
+    - Reach the stone by the separate maintenance passage.
+    - Use a charged stone to redirect undead deliberately.
+    - Open the lower arena or test cage, risking escape.
+    - Leave the trapped undead contained and continue deeper.
+    checks:
+    - id: zeffo-check-arena-mechanism
+      name: Understand the arena drop mechanism
+      category: notice
+      description: Study the upper hatch and its automatic reset.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Understand how the floor opens over the lower testing arena and then
+        resets.
+      failure: See it function in real time or find visible hinges and catches; full
+        workings remain unclear.
+    - id: zeffo-check-arena-host
+      name: Study experimental remains
+      category: notice
+      description: Examine modified undead, golem pieces, or observations from above.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Medicine
+      dc: 13
+      success: Identify partial tissue restoration and signs of repeated procedures,
+        but no restoration of normal life.
+      failure: Notice that some corpses look disturbingly less decayed than others.
+    - id: zeffo-check-arena-hatch
+      name: Find the lure socket service hatch
+      category: notice
+      description: Explore the rear corridor rather than the upper feeding/loading
+        route.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 11
+      success: Locate the socket access and see how Edrin replaces stones without
+        crossing the trapdoor.
+      failure: The safe corridor remains traversable; the precise hatch is found with
+        closer examination.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-healers-secret
+    - zeffo-heart-of-zeffo
+    locations:
+    - zeffo-dwarmar-ruins-location
+    npcs: []
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-arena-stable
+      description: The arena keeps containing the undead, giving the party a secure
+        route through the facility.
+      trigger: The trap remains active and lower gates remain shut.
+      player_action: The party leaves, repairs, or safely maintains the lure.
+      timing: During exploration.
+      status: pending
+      leads_to:
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
+    - id: zeffo-consequence-arena-breach
+      description: Trapped undead spill into accessible corridors; local danger increases,
+        but their release alone does not automatically advance the regional outbreak
+        clock.
+      trigger: The party opens the lower containment access or breaks the gates.
+      player_action: The party tampers with containment or chooses to release captives.
+      timing: Immediately in the arena.
+      status: pending
+      leads_to:
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-healers-secret
+    name: The Healer's Secret
+    description: 'The party uncovers why Edrin keeps returning: he believes a Dwarmar
+      iron golem can support Mira''s failing body while the artifact gradually repairs
+      her illness, allowing her to leave the machine once cured. His trials on trapped
+      undead restore some tissue but neither revive them nor fully power the golem.'
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 10
+    triggers:
+    - The party investigates Edrin's clinic or research notes.
+    - They explore the golem workshop and arena.
+    - They catch Edrin inspecting or preparing the golem near the artifact.
+    events: 'An old golem bears a chest-mounted rechargeable stone and an internal
+      occupant compartment. The ancient skeleton Edrin originally discovered inside
+      now lies beside the opened harness, moved so he could test undead occupants.
+
+
+      Edrin''s notes compare several undead subjects and document partial physical
+      restoration without true resurrection or golem activation.
+
+
+      He suspects a living host would complete the process but has never tested it;
+      he is not willing to use Mira as an unproven subject.
+
+
+      Evidence of his fall in the forest, broken leg, and unexpected healing explains
+      why he believed the artifact could save her.
+
+
+      If the party confronts him, Edrin defends his intent to use the golem temporarily
+      as life support and asks them not to take away Mira''s last hope.
+
+
+      If the party met Mira, her expressed hopes and concerns can inform their appeal
+      to Edrin; if not, Edrin can describe her condition without the meeting becoming
+      mandatory.'
+    secrets:
+    - Edrin has not successfully operated the golem and does not know a living host
+      can lose autonomy.
+    - The original skeleton might show that past occupants died inside; it does not
+      prove that the device safely cures disease.
+    - A living host powers the construct; the strong Bane stone influence can compel
+      the host-powered golem to protect the source.
+    - Edrin is responsible for dangerous experiments and greater pulses of energy,
+      not the initial undead outbreak.
+    - Do not decide that the golem either definitely cures Mira or definitely cannot
+      help; its medical promise and lasting costs are unresolved until play.
+    - The records found here are working notes, not Edrin's private journal. Keep
+      the journal secured until the party resolves the final chamber confrontation.
+    possible_approaches:
+    - Talk to Edrin and offer alternative treatment or containment.
+    - Compare the notes with the skeleton and machine.
+    - Attempt to disable the harness or stone rather than threatening Edrin.
+    - Warn Ressa, return to Mira, or secure the arena first.
+    - Threaten or attack Edrin, risking escalation.
+    checks:
+    - id: zeffo-check-secret-notes
+      name: Read Edrin's experiment records
+      category: notice
+      description: Examine Edrin's lab notes or marked undead specimens.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 12
+      success: Identify the sequence of failed undead-host trials and his hypothesis
+        that a living host is required.
+      failure: See the failures and partial repairs; Edrin can still explain the hypothesis.
+    - id: zeffo-check-secret-cause
+      name: Assess the golem treatment theory
+      category: notice
+      description: Compare Edrin's notes with the clinical condition of Mira.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Medicine
+      dc: 14
+      success: Understand that maintaining bodily function is not proof the underlying
+        illness will be cured.
+      failure: The long-term outcome remains uncertain, even though the energy does
+        repair some tissue.
+    - id: zeffo-check-secret-parley
+      name: Appeal to Edrin's concern for Mira
+      category: notice
+      description: Speak with Edrin before threatening the stone or his daughter.
+      roll_type: skill_check
+      ability: charisma
+      skill: Persuasion
+      dc: 13
+      success: Edrin agrees to discuss alternatives and may step back from activating
+        the golem.
+      failure: Edrin remains afraid and guarded; additional evidence or a concrete
+        plan may still change his mind.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-heart-of-zeffo
+    - c5f4520e-970e-4c0d-a821-3164bf4e5f90
+    locations:
+    - zeffo-dwarmar-ruins-location
+    npcs:
+    - reference-edrin-vale
+    - mira-vale
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-edrin-cooperates
+      description: Edrin considers a less dangerous treatment and the party can study
+        the machinery without immediate combat.
+      trigger: The party finds a credible way to protect Mira while suspending risky
+        experiments.
+      player_action: The party reasons with Edrin and secures his trust.
+      timing: Before or during the final chamber confrontation.
+      status: pending
+      leads_to:
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
+    - id: zeffo-consequence-edrin-cornered
+      description: Edrin may attempt an untested activation by entering the golem
+        himself, endangering everyone and trapping his own will.
+      trigger: He believes the party will destroy the stone, the treatment, or Mira's
+        chance to survive.
+      player_action: The party corners Edrin or attacks his only available treatment
+        without offering an alternative.
+      timing: During the confrontation.
+      status: pending
+      leads_to:
+      - zeffo-heart-of-zeffo
+      world_stories: []
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-heart-of-zeffo
+    name: The Heart of Zeffo
+    description: Deep within the Dwarmar facility, the glowing Bane stone sustains
+      the region-wide necromantic influence. A dormant living-host iron golem stands
+      nearby with an internal host compartment and chest power stone. Edrin may be
+      conducting a desperate treatment experiment when the party reaches him. Negotiation,
+      containment, and withdrawal remain possible; if pushed beyond his limits he
+      may enter the golem as an untested living host.
+    description_content:
+      nodes:
+      - type: text
+        text: Deep within the Dwarmar facility, the glowing Bane stone sustains the
+          region-wide necromantic influence. A dormant living-host
+      - type: entity_link
+        text: ' iron golem '
+        entity_id: dwarmar-iron-golem-artifact
+      - type: text
+        text: stands nearby with an internal host compartment and chest power stone.
+          Edrin may be conducting a desperate treatment experiment when the party
+          reaches him. Negotiation, containment, and withdrawal remain possible; if
+          pushed beyond his limits he may enter the golem as an untested living host.
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 11
+    triggers:
+    - The party follows energy conduits or Edrin's trail to the main chamber.
+    - They confront Edrin over the undead experiments.
+    - The desperation clock reaches a critical stage or Edrin decides he has no safer
+      choice.
+    events: 'The Bane stone shines green, with nearby conduits and sockets holding
+
+      rechargeable components.
+
+
+
+      Make the source and its machinery visibly distinct: the central stone emits
+
+      the ambient field; conduits draw energy to the golem and smaller stones; a
+
+      cracked Dwarmar control ring around the source was designed to contain and
+
+      regulate it. The broken segment leaves the ambient field exposed, while the
+
+      secondary conduits still draw power.
+
+
+
+      Edrin insists the golem might sustain and eventually cure Mira; he wants her
+
+      out of it once it is no longer needed.
+
+
+
+      If Edrin is reassured or offered a credible alternative, he may cooperate without
+
+      entering the golem.
+
+
+
+      If driven to desperation and the golem remains operable, he enters it and its
+
+      chest stone activates for the first time with a living host.
+
+
+
+      At first he seems able to command it. Soon it moves to interpose itself between
+
+      the party and the Bane stone, attacking perceived threats even as he tries to
+
+      stop.
+
+
+
+      The party can disable the golem''s power link, restrain or evade it, attempt
+      to
+
+      free Edrin, or negotiate if he retains some voice. Disabling the link stops
+      the
+
+      golem and further energy draws, but the stone''s ambient influence continues.
+
+
+
+      The source can be recontained by restoring the control ring, destroyed, left
+
+      active, or removed in an attempt to secure it elsewhere. Extraction is not
+
+      automatically safe: until the source is contained, it remains active wherever
+
+      it is taken.
+
+
+
+      The artifact''s eventual containment, destruction, preservation, or continued
+
+      operation determines the outbreak''s direction and Mira''s prospects.'
+    secrets:
+    - Edrin knew entering could power the golem only as a hypothesis derived from
+      failed undead experiments. He did NOT know he would lose control.
+    - Bane's influence drives the host-powered machine to guard the stone, rather
+      than indiscriminately attacking everyone who is not aligned with Bane.
+    - The golem should use a custom weakened or incomplete encounter appropriate to
+      the party's level, not standard iron golem statistics; allow nonlethal disabling
+      or escape.
+    - Destroying the Bane stone is not automatically a cure for Mira. Continued use
+      may keep her alive temporarily but amplifies the outbreak.
+    - Keep three outcomes distinct. Cutting the secondary conduits stops the golem
+      and further energy draws, but not the stone's natural field. Restoring the original
+      control ring contains the intact source and ends its local emissions while containment
+      holds. Destroying the source ends future emissions, but a forceful or poorly
+      controlled attempt may cause one surge; already-risen undead remain.
+    - The source's reawakening overwhelmed and cracked the ancient control ring; Edrin
+      did not cause the original damage or the outbreak. His later energy draws can
+      create additional pulses while the ring is broken.
+    - The control ring is a challenge the party can solve through investigation, Arcana,
+      tools, magic, or a plausible combination of actions. Do not make one successful
+      roll switch it off; a failed roll should cost time, expose someone to a pulse,
+      or damage equipment rather than make containment impossible. Accept an equivalent
+      solution if the party proposes a sound way to contain the source; the ring is
+      the clearest known method, not the only imaginable one.
+    - If the party extracts the stone, treat it as an active source until they devise
+      containment. Moving it changes where the danger is centered; it does not neutralize
+      the remnant.
+    - Destroying the stone ends its local emissions. Whether that also destroys the
+      divine remnant, disperses it, or leaves it recoverable is not yet known; do
+      not promise a result for Bane's wider plan before that part of the lore is decided.
+    - Bane remains a distant threat and the remnant collection mechanism remains undefined.
+    - Edrin's private journal is separate from the working notes found earlier. Keep
+      it secured with his personal effects until the final chamber is safe; reveal
+      or recover it only after this confrontation is resolved.
+    possible_approaches:
+    - Present a plan to keep Mira stable while suspending Edrin's research.
+    - Negotiate with Edrin and examine the stone without activating the golem.
+    - Sabotage or disconnect the golem before anyone enters.
+    - Use a charged lure stone to distract or redirect undead near the chamber.
+    - Fight or evade the golem if it activates.
+    - Disable the golem and treatment conduits to stop direct energy draws, knowing
+      the source will continue radiating.
+    - Restore the Dwarmar control ring to contain the source without destroying it.
+    - Destroy the source, prepare for a possible surge, or attempt to remove it for
+      containment elsewhere.
+    - Retreat to seek help, leaving the consequences to the clocks.
+    checks:
+    - id: zeffo-check-heart-compulsion
+      name: Recognize the golem's changed behavior
+      category: notice
+      description: Watch Edrin operating an activated golem.
+      roll_type: skill_check
+      ability: wisdom
+      skill: Insight
+      dc: 12
+      success: See that the construct is overriding Edrin's attempts to stop and prioritizing
+        defense of the stone.
+      failure: Its movements seem hostile, but Edrin's cries or actions soon reveal
+        the loss of control.
+    - id: zeffo-check-heart-disconnect
+      name: Locate a power shutoff
+      category: notice
+      description: Inspect the golem's chest stone, conduit, and accessible machinery
+        during the encounter.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 13
+      success: Identify a reachable power coupling that might be disabled with a plan
+        and actions.
+      failure: Notice the chest stone and conduit are important, but alternative tactics
+        or research are needed.
+    - id: zeffo-check-heart-stone
+      name: Understand the artifact's energetic reach
+      category: notice
+      description: Observe conduits and fluctuations in the Bane stone.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Arcana
+      dc: 14
+      success: Connect surges to the wider undead outbreak and distinguish the artifact
+        from its rechargeable components; recognize that the conduits draw from the
+        stone but do not account for its ambient field.
+      failure: See that the source is much stronger than the small stones and that
+        the conduits carry only part of its energy; exact controls remain uncertain.
+    - id: zeffo-check-heart-containment
+      name: Read the control ring
+      category: notice
+      description: Study the damaged Dwarmar ring and its connections to the main
+        stone.
+      roll_type: skill_check
+      ability: intelligence
+      skill: Investigation
+      dc: 13
+      success: Identify how the ring can be restored to contain the stone; the party
+        still needs to carry out the repair under pressure.
+      failure: Recognize that the ring is containment machinery and that severing
+        conduits alone will not stop the ambient field; experimentation can still
+        reveal how to restore it.
+    npc_knowledge: []
+    leads_to:
+    - zeffo-aftermath
+    locations:
+    - zeffo-dwarmar-ruins-location
+    npcs:
+    - reference-edrin-vale
+    - mira-vale
+    player_characters: []
+    consequences:
+    - id: zeffo-consequence-artifact-contained
+      description: The intact source is secured in the Dwarmar control ring. Its local
+        emissions stop while containment holds; undead already raised remain dangerous.
+      trigger: The party restores the control ring or establishes another sustained
+        way to contain the source.
+      player_action: The party secures the source using the ring or a credible plan
+        of their own.
+      timing: After the final chamber resolution.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - bane-overarching-story
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-artifact-circuits-isolated
+      description: The party disconnects the golem and treatment circuits, stopping
+        direct energy draws while the central stone's ambient influence continues.
+        This prevents further use of the machinery but does not end the undead threat.
+        The clinic stone keeps its stored charge and fades over time; it cannot be
+        replenished through the severed conduits.
+      trigger: The party severs or disables the secondary conduits without restoring
+        the source's control ring or destroying the stone.
+      player_action: The party isolates the golem and treatment systems from the source.
+      timing: During the final chamber resolution.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - bane-overarching-story
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-edrin-freed
+      description: Edrin survives and is removed from the golem; he must face his
+        experiments and Mira's still-uncertain prognosis.
+      trigger: The golem is disabled without killing its host.
+      player_action: The party extracts Edrin or interrupts the golem without fatal
+        damage.
+      timing: During or after the confrontation.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-artifact-surges
+      description: An uncontrolled surge intensifies the undead outbreak. Advance
+        The Rising Dead by two steps only if a high-energy transfer or failed operation
+        actually releases that surge.
+      trigger: The source is overloaded, forcibly extracted, or damaged in a way that
+        actually releases an uncontrolled high-energy pulse.
+      player_action: The party or Edrin destabilizes the source while attempting an
+        operation; choosing to destroy it does not automatically cause a surge.
+      timing: Immediately and through subsequent days.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - bane-overarching-story
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-artifact-destroyed
+      description: The Bane stone is destroyed, ending further emission from this
+        source; already risen undead remain. Mira's treatment stone is no longer replenished,
+        and its stored charge fades unless the party secures another way to care for
+        her.
+      trigger: The party actually destroys the main source rather than merely disabling
+        a conduit.
+      player_action: The party chooses destruction and responds to the resulting dangers.
+      timing: At the final chamber and during the return to Zeffo.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - bane-overarching-story
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-mira-plan
+      description: Mira receives a plan shaped by what the party learned and, if they
+        met her, her own wishes; success is not guaranteed and no single check automatically
+        cures her.
+      trigger: The party discusses her condition and chooses next steps.
+      player_action: The party considers available support, Edrin's notes, and Mira's
+        preferences.
+      timing: During resolution and follow-up at the clinic.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-artifact-preserved
+      description: The party leaves the source active or removes it without containing
+        it. Its influence continues and the undead outbreak remains a threat.
+      trigger: The party leaves the source active or removes it without first containing
+        it.
+      player_action: The party preserves access to the power, withdraws, or carries
+        the uncontained source elsewhere.
+      timing: Following the encounter.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - bane-overarching-story
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    - id: zeffo-consequence-edrin-journal-recovered
+      description: After the chamber is safe, the party recovers Edrin's journal.
+        It records how he connected his injury, the undead experiments, the charged
+        stones, and his hope for Mira, while making clear that his treatment was unproven.
+      trigger: The final confrontation is resolved, and Edrin chooses to share the
+        journal or the party searches his secured effects after the danger has passed.
+      player_action: The party secures the chamber and asks Edrin to share his research,
+        or searches his belongings once immediate danger has ended.
+      timing: Only after The Heart of Zeffo is resolved; use during What Remains in
+        Zeffo.
+      status: pending
+      leads_to:
+      - zeffo-aftermath
+      world_stories:
+      - northern-elligaesia-s-turmoil-world-story
+      world_story_threads: []
+    world_events: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
+    world_story_threads: []
+  - encounter: null
+    id: zeffo-aftermath
+    name: What Remains in Zeffo
+    description: The party returns to Zeffo after the confrontation and sees how the
+      condition of the Bane stone, the remaining undead, and Edrin's fate affect the
+      town. This is a short wrap-up scene, not a required new adventure.
+    description_content: null
+    events_content: null
+    triggers_content: null
+    possible_approaches_content: null
+    status: planned
+    act: null
+    order: 12
+    triggers:
+    - The party leaves the Dwarmar facility after resolving or postponing the confrontation.
+    - Captain Ressa or the villagers learn whether the artifact is contained, destroyed,
+      or still active.
+    events: 'Return to Zeffo and let the party report what happened to Captain Ressa.
+      The town responds to the source''s condition, but the already-risen undead and
+      immediate safety needs remain real in every outcome.
+
+
+      IF THE SOURCE IS CONTAINED: No new reanimations are observed while the containment
+      holds. Mira''s charged treatment stone is no longer replenished, but its stored
+      power fades over time rather than vanishing at once. That gives the party time
+      to plan her care. Existing undead still need to be found, restrained, or laid
+      to rest. Ressa organizes patrols and asks the party to help secure the cemetery
+      and forest road.
+
+
+      IF THE SOURCE IS DESTROYED: The stone stops emitting power, but the undead it
+      already raised do not vanish. Mira''s charged treatment stone is no longer replenished,
+      and its remaining power fades over time. The party and Edrin must arrange care
+      without assuming that she is cured or that her outcome is settled immediately.
+
+
+      IF THE SOURCE IS LEFT ACTIVE OR PRESERVED: The threat remains unresolved. Ressa
+      strengthens the watch and asks what the party intends to do next. Advance The
+      Rising Dead only when the campaign clock''s stated conditions occur; do not
+      make the town fall immediately just because the source remains active.
+
+
+      IF ONLY THE CONDUITS ARE SEVERED: The golem and treatment apparatus can no longer
+      draw power, but the central stone''s ambient field still reaches the region.
+      The party has prevented further direct use without resolving the outbreak.
+
+
+      IF THE SOURCE IS REMOVED WITHOUT CONTAINMENT: Do not treat transport as a solution.
+      The source remains active, and the party must find a way to contain it before
+      it endangers another place.
+
+
+      IF THE SOURCE SURGES: Show a specific consequence the party can respond to,
+      such as fresh graves opening or a dangerous group of undead approaching the
+      road. Apply the clock change from the final chamber and give Ressa time to organize
+      a response.
+
+
+      IF THE JOURNAL IS RECOVERED: Let the party read Edrin''s account of the green
+      stone, the undead trials, and his hopes for Mira. The journal gives context
+      for his choices, but it does not prove the golem would have cured her or explain
+      the stone''s true origin.
+
+
+      If Edrin survives, he may provide a truthful account and face the town''s response;
+      cooperation does not erase the harm from his experiments. If the party met Mira,
+      include her in decisions about her care. If they have not met her, this is a
+      natural chance to speak with her directly rather than learning her wishes only
+      through Edrin.
+
+
+      Close on the party''s chosen next step: help the survivors, plan Mira''s care,
+      report the Dwarmar discovery, leave Zeffo, or continue investigating the larger
+      story. Keep the Bane revelation limited to what the party actually learned.'
+    secrets:
+    - Containing or destroying the source prevents or reduces further emissions; it
+      does not undo deaths, cure the risen, or automatically heal Mira.
+    - The village may not know the source is connected to Bane unless the party chooses
+      to share that information and has evidence.
+    - Edrin's accountability and Mira's future are separate questions; neither is
+      settled solely by whether he survives.
+    possible_approaches:
+    - Tell Ressa what happened and help plan patrols or a cemetery cleanup.
+    - Check on Mira and ask what kind of help she wants.
+    - Decide what to do with Edrin's notes and the surviving Dwarmar components.
+    - Help remaining villagers or travelers affected by the undead.
+    - Leave Zeffo to pursue another lead.
     checks: []
     npc_knowledge: []
     leads_to: []
-    locations: []
-    npcs: []
+    locations:
+    - zeffo-city
+    - zeffo-dwarmar-ruins-location
+    npcs:
+    - reference-edrin-vale
+    - captain-ressa-thorn
+    - mira-vale
     player_characters: []
     consequences: []
     world_events: []
-    world_stories: []
+    world_stories:
+    - bane-overarching-story
+    - northern-elligaesia-s-turmoil-world-story
     world_story_threads: []
-  current_beat: b78d97e5-e377-4334-8f6b-a756758bdc58
+  current_beat: c1dcbe0b-8394-4fd7-8375-c80f784e43f9
   player_actions: []
   session_recaps: []
   session_preps: []
@@ -869,16 +2352,18 @@ story:
   - id: cc78bb5c-7f31-4731-96d6-20cce75045b8
     name: The Rising Dead
     plot_point_id: null
-    description: An ancient Dwarmar artifact beneath the forests of Zeffo has awakened
-      following the spread of Bane's influence across Elligaesia. Its necromantic
-      energy is causing the dead to rise, their eyes glowing an unnatural green. As
-      the artifact's influence grows, more undead awaken and begin threatening the
-      surrounding settlements. The undead sometimes appear instinctively drawn toward
-      the northern forest, where the artifact lies hidden.
-    current: 0
+    description: The already-awake Bane stone radiates necromantic influence through
+      the soil and across the forest toward Zeffo. Low-level prolonged exposure raises
+      graves in the village; concentration is strongest near the ruins. Fresh surges,
+      including those caused by Edrin's treatments or golem experiments, can amplify
+      the outbreak. Green-eyed undead may drift toward the main stone or charged lures;
+      they are not obeying a necromancer. Advance for meaningful developments and
+      elapsed time, not automatically after each encounter.
+    current: 1
     maximum: 6
     stages:
-    - Reports of undead sightings become more frequent in the northern forest.
+    - Undead sightings have become common on the northern roads, and travelers now
+      warn one another before crossing the forest.
     - Graves begin opening throughout Zeffo, and recently buried villagers are seen
       wandering at night.
     - Travelers disappear along forest roads, and merchants begin avoiding Zeffo.
@@ -897,39 +2382,51 @@ story:
   - id: d7ec951c-400e-420a-9cce-086b7c7c7b77
     name: Edrin's Desperation
     plot_point_id: null
-    description: Edrin Vale, a respected healer in Zeffo, has discovered an ancient
-      Dwarmar artifact and believes its power can save his dying daughter, Mira. Although
-      he did not cause the artifact to awaken, his experiments are intensifying its
-      necromantic effects. As Mira's condition worsens, Edrin becomes increasingly
-      desperate and willing to take dangerous risks.
+    description: At the campaign's start, Edrin already sustains Mira with charged
+      stones, traps undead with the arena lure, and has tested undead subjects in
+      the dormant golem. They show partial tissue restoration but do not activate
+      it. He suspects a living host might work, has never tested one, and does not
+      know the host will lose control. This clock tracks what he does next; it can
+      be paused or redirected by credible help.
     current: 0
     maximum: 4
     stages:
-    - Edrin secretly begins drawing small amounts of energy from the artifact to sustain
-      Mira.
-    - Mira's condition worsens, and Edrin increases his use of the artifact, unintentionally
-      accelerating the undead outbreak.
-    - Edrin realizes his experiments are contributing to the undead activity but refuses
-      to stop, fearing Mira will die.
-    - Edrin attempts a dangerous ritual to permanently restore Mira's health, risking
-      an uncontrolled surge of necromantic energy.
-    completion: Edrin performs the ritual, causing the Dwarmar artifact to release
-      a powerful surge of necromantic energy. Advance The Rising Dead clock by 2 steps,
-      up to its maximum. Mira's fate remains uncertain and depends on the party's
-      intervention. Edrin may be injured, corrupted, or forced to confront the consequences
-      of his actions.
+    - Mira's condition worsens between treatments, so Edrin draws energy more often.
+      A fresh pulse causes a noticeable increase in undead activity near Zeffo.
+    - Edrin connects his stronger draws to the pulses but believes he can control
+      them. He hides evidence and prepares a more powerful test rather than stopping.
+    - An especially powerful undead trial still fails to activate the golem. Edrin
+      treats this as confirmation of his living-host theory and prepares the harness
+      and a direct transfer, while still hoping the procedure will save Mira.
+    - Edrin begins the untested procedure unless the party intervenes. If the golem
+      remains operable, he may enter it himself; a high-energy transfer can overload
+      the source, but entering the golem alone does not guarantee a surge.
+    completion: Edrin attempts his dangerous final procedure unless the party persuades
+      him or prevents it. Entering the golem activates it with a living host, then
+      the artifact's influence may compel it to defend the Bane stone; this alone
+      does not necessarily cause an energy surge. If a high-energy transfer or overloaded
+      machinery actually releases an uncontrolled necromantic surge, advance The Rising
+      Dead by 2 steps (maximum 6). Mira's survival, Edrin's rescue, and the artifact's
+      condition depend on the party's actions.
     status: active
   - id: 788a62b2-a056-460f-8934-66d2792b921b
     name: More Undead Rise
     plot_point_id: b78d97e5-e377-4334-8f6b-a756758bdc58
-    description: This occurs if the players defeat the undead in the cemetery too
-      quickly
+    description: Optional two-step scene clock for a nighttime cemetery encounter,
+      separate from the regional Rising Dead clock. Use it only if other disturbed
+      graves are nearby. If the party defeats the first undead quickly or makes a
+      loud disturbance, advance once to telegraph another corpse stirring. Advance
+      again only if the party stays in the graveyard without quieting, securing, or
+      investigating the grave. A quick victory does not automatically cause another
+      undead to appear.
     current: 0
     maximum: 2
     stages:
-    - Undead are defeated/or close to death. Party might start hearing movement under
-      one of the graves
-    - If Undead are defeated, the  Party might start hearing movement under one of
-      the graves
-    completion: If Undead are still active after round 2, the undead no longer stir
+    - Soil shifts and scratching comes from a nearby grave. The party has time to
+      react, investigate, or secure it.
+    - One additional corpse begins to emerge if the party leaves the grave undisturbed;
+      it is a local encounter complication, not a new outbreak wave.
+    completion: Resolve at most one additional undead from this clock. If the party
+      quiets the area or secures the grave before the clock fills, pause it; this
+      scene alone does not advance The Rising Dead.
     status: active

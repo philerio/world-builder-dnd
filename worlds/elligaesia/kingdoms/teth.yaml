@@ -1,8 +1,24 @@
 id: teth
 name: Teth
-description: >
-  A country-state in Elligaesia currently in conflict with Umbara over a
-  mysterious island that appeared in the ocean.
-ruler: null
-capital: null
+description: 'An independent Elligaesian nation currently in conflict with Umbara over a mysterious island
+  that appeared in the ocean.
+
+  '
+ruler: crumb
+capital: teth-romar
 continent: elligaesia
+government_type: Monarchy
+government_notes: 'Teth is governed independently and coordinates with the other Elligaesian nations on
+  trade and shared policies.
+
+  '
+leadership:
+- id: teth-king
+  title: King
+  holders:
+  - crumb
+  reports_to: []
+  authority: Leads the government of Teth.
+  status: Current
+political_level: nation
+parent_kingdom: north-elligaesia

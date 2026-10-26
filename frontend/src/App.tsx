@@ -325,7 +325,11 @@ function Dashboard({ data }: { data: WorldData }) {
     },
     {
       name: "Kingdoms",
-      count: data.kingdoms.length,
+      count: data.kingdoms.filter((entity) => (entity.political_level ?? "kingdom") === "kingdom").length,
+    },
+    {
+      name: "Nations",
+      count: data.kingdoms.filter((entity) => entity.political_level === "nation").length,
     },
     {
       name: "Regions",

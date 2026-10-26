@@ -1,0 +1,20 @@
+id: karga
+name: Karga
+description: Queen of Umbara.
+tags:
+- ruler
+race: null
+alignment: null
+role: Queen
+city: null
+region: null
+kingdom: umbara
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Queen

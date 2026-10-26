@@ -42,7 +42,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       ...COMMON_FIELDS,
       {
         name: "kingdom",
-        label: "Kingdom",
+        label: "Political territory",
         type: "reference",
         referenceType: "kingdom",
       },
@@ -86,16 +86,25 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
     kingdom: [
       ...COMMON_FIELDS,
       {
+        name: "political_level",
+        label: "Political level",
+        type: "autocomplete",
+        options: [
+          { value: "kingdom", label: "Kingdom" },
+          { value: "nation", label: "Nation" },
+        ],
+      },
+      {
+        name: "parent_kingdom",
+        label: "Parent kingdom",
+        type: "reference",
+        referenceType: "kingdom",
+      },
+      {
         name: "continent",
         label: "Continent",
         type: "reference",
         referenceType: "continent",
-      },
-      {
-        name: "ruler",
-        label: "Ruler",
-        type: "reference",
-        referenceType: "npc",
       },
       {
         name: "capital",
@@ -109,7 +118,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       ...COMMON_FIELDS,
       {
         name: "kingdom",
-        label: "Kingdom",
+        label: "Political territory",
         type: "reference",
         referenceType: "kingdom",
       },
@@ -136,7 +145,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
       {
         name: "kingdom",
-        label: "Kingdom",
+        label: "Political territory",
         type: "reference",
         referenceType: "kingdom",
       },
@@ -190,7 +199,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
       {
         name: "kingdom",
-        label: "Kingdom",
+        label: "Political territory",
         type: "reference",
         referenceType: "kingdom",
       },
@@ -300,7 +309,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
       {
         name: "kingdom",
-        label: "Kingdom",
+        label: "Political territory",
         type: "reference",
         referenceType: "kingdom",
       },
@@ -612,7 +621,7 @@ export const ENTITY_FIELD_DEFINITIONS: Record<string, EntityFieldDefinition[]> =
       },
       {
         name: "kingdoms",
-        label: "Kingdoms",
+        label: "Nations",
         type: "referenceArray",
         referenceType: "kingdom",
       },

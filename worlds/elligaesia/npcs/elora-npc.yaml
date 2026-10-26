@@ -1,0 +1,20 @@
+id: elora
+name: Elora
+description: Elf member of the ruling triumvirate of Mortis.
+tags:
+- ruler
+race: Elf
+alignment: null
+role: Triumvir
+city: null
+region: null
+kingdom: mortis
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Triumvir

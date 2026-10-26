@@ -12,7 +12,8 @@ date: null
 chronology_order: 400
 locations:
 - serenno-city
-kingdoms: []
+kingdoms:
+- serenno
 characters: []
 campaigns:
 - the-unforgiven

@@ -45,6 +45,7 @@ import { useWorldData } from "../context/WorldDataContext";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import PoliticalLeadershipDetails from "./PoliticalLeadershipDetails";
 
 type EntityDetailDrawerProps = {
   entityId: string | null;
@@ -98,7 +99,24 @@ function EntityDetailDrawer({
       return;
     }
 
-    setEditFormData({ ...currentData.entity });
+    const nextFormData = { ...currentData.entity };
+    const hasLeadership = Array.isArray(nextFormData.leadership) && nextFormData.leadership.length > 0;
+    if (
+      currentData.entity_type === "kingdom" &&
+      !hasLeadership &&
+      typeof nextFormData.ruler === "string" &&
+      nextFormData.ruler
+    ) {
+      nextFormData.leadership = [{
+        id: `legacy-ruler-${String(nextFormData.id)}`,
+        title: "Ruler",
+        holders: [nextFormData.ruler],
+        reports_to: [],
+      }];
+      delete nextFormData.ruler;
+    }
+
+    setEditFormData(nextFormData);
     setIsEditing(true);
     setError(null);
   };
@@ -426,7 +444,11 @@ function EntityContent({
             letterSpacing: "0.1em",
           }}
         >
-          {formatEntityType(data.entity_type)}
+          {data.entity_type === "kingdom" && data.entity.political_level === "nation"
+            ? "Nation"
+            : data.entity_type === "kingdom"
+              ? "Kingdom"
+              : formatEntityType(data.entity_type)}
         </Typography>
 
         <Typography variant="h2" sx={{ mt: 0.5 }}>
@@ -965,7 +987,7 @@ function ContinentDetails({
       />
 
       <EntityReferenceListField
-        label="Kingdoms"
+        label="Nations"
         entityIds={kingdoms}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
@@ -995,7 +1017,7 @@ function RegionDetails({
       />
 
       <EntityReferenceField
-        label="Kingdom"
+        label="Political territory"
         value={entity.kingdom}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
@@ -1015,57 +1037,83 @@ function KingdomDetails({
   onOpenEntity,
   getEntity,
 }: KingdomDetailsProps) {
+  const { worldData } = useWorldData();
   const { entities: relatedEntities, loading } = useRelatedEntities(
     typeof entity.id === "string" ? entity.id : null,
   );
+  const isNation = entity.political_level === "nation";
+  const childNationIds = (worldData?.kingdoms ?? [])
+    .filter((item) => item.parent_kingdom === entity.id)
+    .map((item) => item.id);
 
   const cities = relatedEntities
     .filter((relatedEntity) => relatedEntity.entity_type === "city")
     .map((relatedEntity) => relatedEntity.id);
 
   return (
-    <DetailSection title="Kingdom" icon={<PublicIcon />}>
-      <TextField
-        value={entity.description}
-        fallback="No description available."
-      />
+    <>
+      <DetailSection title={isNation ? "Nation" : "Kingdom"} icon={<PublicIcon />}>
+        <TextField
+          value={entity.description}
+          fallback="No description available."
+        />
 
-      <Divider />
+        <Divider />
 
-      <EntityReferenceField
-        label="Continent"
-        value={entity.continent}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
+        {isNation ? (
+          <EntityReferenceField
+            label="Kingdom"
+            value={entity.parent_kingdom}
+            onOpenEntity={onOpenEntity}
+            getEntity={getEntity}
+          />
+        ) : (
+          <EntityReferenceListField
+            label="Nations"
+            entityIds={childNationIds}
+            onOpenEntity={onOpenEntity}
+            getEntity={getEntity}
+          />
+        )}
 
-      <EntityReferenceField
-        label="Capital"
-        value={entity.capital}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
-
-      <EntityReferenceField
-        label="Ruler"
-        value={entity.ruler}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
-
-      {loading ? (
-        <Typography variant="body2" color="text.secondary">
-          Loading cities…
-        </Typography>
-      ) : (
-        <EntityReferenceListField
-          label="Cities"
-          entityIds={cities}
+        <EntityReferenceField
+          label="Continent"
+          value={entity.continent}
           onOpenEntity={onOpenEntity}
           getEntity={getEntity}
         />
-      )}
-    </DetailSection>
+
+        <EntityReferenceField
+          label="Capital"
+          value={entity.capital}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+
+        {(!Array.isArray(entity.leadership) || entity.leadership.length === 0) && (
+          <EntityReferenceField
+            label="Ruler"
+            value={entity.ruler}
+            onOpenEntity={onOpenEntity}
+            getEntity={getEntity}
+          />
+        )}
+
+        {loading ? (
+          <Typography variant="body2" color="text.secondary">
+            Loading cities…
+          </Typography>
+        ) : (
+          <EntityReferenceListField
+            label="Cities"
+            entityIds={cities}
+            onOpenEntity={onOpenEntity}
+            getEntity={getEntity}
+          />
+        )}
+      </DetailSection>
+      <PoliticalLeadershipDetails entity={entity} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+    </>
   );
 }
 
@@ -1095,7 +1143,7 @@ function WorldLocationDetails({
         getEntity={getEntity}
       />
       <EntityReferenceField
-        label="Kingdom"
+        label="Political territory"
         value={entity.kingdom}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
@@ -1118,33 +1166,36 @@ type CityDetailsProps = {
 };
 function CityDetails({ entity, onOpenEntity, getEntity }: CityDetailsProps) {
   return (
-    <DetailSection title="Location" icon={<LocationCityIcon />}>
-      <ReferenceField
-        label="Population"
-        value={
-          typeof entity.population === "number"
-            ? entity.population.toLocaleString()
-            : entity.population
-        }
-      />
-      <EntityReferenceField
-        label="Region"
-        value={entity.region}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
-      <EntityReferenceField
-        label="Kingdom"
-        value={entity.kingdom}
-        onOpenEntity={onOpenEntity}
-        getEntity={getEntity}
-      />
+    <>
+      <DetailSection title="Location" icon={<LocationCityIcon />}>
+        <ReferenceField
+          label="Population"
+          value={
+            typeof entity.population === "number"
+              ? entity.population.toLocaleString()
+              : entity.population
+          }
+        />
+        <EntityReferenceField
+          label="Region"
+          value={entity.region}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
+        <EntityReferenceField
+          label="Political territory"
+          value={entity.kingdom}
+          onOpenEntity={onOpenEntity}
+          getEntity={getEntity}
+        />
 
-      <TextField
-        value={entity.details}
-        fallback="No additional details available."
-      />
-    </DetailSection>
+        <TextField
+          value={entity.details}
+          fallback="No additional details available."
+        />
+      </DetailSection>
+      <PoliticalLeadershipDetails entity={entity} onOpenEntity={onOpenEntity} getEntity={getEntity} />
+    </>
   );
 }
 function EntityReferenceLink({
@@ -1383,7 +1434,7 @@ function CharacterDetails({
       />
 
       <EntityReferenceField
-        label="Kingdom"
+        label="Political territory"
         value={entity.kingdom}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
@@ -1608,7 +1659,7 @@ function EventDetails({ entity, onOpenEntity, getEntity }: EventDetailsProps) {
       />
 
       <EntityReferenceListField
-        label="Kingdoms"
+        label="Nations"
         entityIds={kingdoms}
         onOpenEntity={onOpenEntity}
         getEntity={getEntity}
@@ -1949,7 +2000,7 @@ function formatValue(value: unknown): string {
 }
 
 function formatEntityType(type: string): string {
-  return type.replaceAll("_", " ");
+  return type === "kingdom" ? "Kingdom or Nation" : type.replaceAll("_", " ");
 }
 function getStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {

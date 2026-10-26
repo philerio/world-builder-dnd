@@ -1,0 +1,22 @@
+id: mortis
+name: Mortis
+tags: []
+description: An Elligaesian nation governed by a triumvirate.
+ruler: null
+capital: null
+continent: elligaesia
+government_type: Triumvirate
+government_notes: This nation governs independently and coordinates with the other Elligaesian nations
+  on trade and shared policies.
+leadership:
+- id: mortis-triumvirate
+  title: Triumvirate
+  holders:
+  - elora
+  - rarber
+  - roran
+  reports_to: []
+  authority: Joint leadership of Mortis.
+  status: Current
+political_level: nation
+parent_kingdom: north-elligaesia

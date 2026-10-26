@@ -1,0 +1,15 @@
+id: orc-tribes-and-settlements-lore
+name: Orc Tribes and Settlements
+description: Orcs live in small settlements and are often in conflict with other tribes.
+tags:
+- world-lore
+player_knowledge: null
+common_knowledge: Orcs live in small settlements and are often in conflict with other tribes. Outsiders
+  commonly regard orcs as evil.
+common_knowledge_locations:
+- elligaesia
+details: Orcs live in small settlements and are often in conflict with other tribes. Outsiders commonly
+  regard orcs as evil.
+dm_notes: The source does not establish that orcs are inherently evil. The reputation may reflect prejudice
+  and should not be treated as a universal truth.
+campaigns: []

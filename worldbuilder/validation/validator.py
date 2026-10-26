@@ -5,16 +5,16 @@ from worldbuilder.models.campaign import Campaign
 from worldbuilder.models.character import Character
 from worldbuilder.models.city import City
 from worldbuilder.models.kingdom import Kingdom
-from worldbuilder.models.lore import Lore
 from worldbuilder.models.location import Location
+from worldbuilder.models.lore import Lore
 from worldbuilder.models.map import Map
+from worldbuilder.models.political_structure import PoliticalOffice
 from worldbuilder.models.region import Region
 from worldbuilder.models.story import CampaignStory, StoryContent, WorldStoryThreadLink
 from worldbuilder.models.timeline_event import TimelineEvent
 from worldbuilder.models.world import World
 from worldbuilder.models.world_event import WorldEvent
 from worldbuilder.models.world_story import WorldStory
-from worldbuilder.models.dm_scratchpad import DmScratchpadEntry
 from worldbuilder.registry import WorldRegistry
 
 
@@ -47,7 +47,11 @@ class ValidationResult:
             entity_type, entity_id = self._entity_context
             issue["source_type"] = entity_type
             issue["source_id"] = entity_id
-        if reference_id is not None and reference_type is not None and reference_path is not None:
+        if (
+            reference_id is not None
+            and reference_type is not None
+            and reference_path is not None
+        ):
             issue["reference_id"] = reference_id
             issue["reference_type"] = reference_type
             issue["reference_path"] = reference_path
@@ -87,7 +91,9 @@ def validate_reference(
     if referenced_id not in collection:
         result.add_error(
             f"Unknown {entity_type} ID: {referenced_id}",
-            reference_id=referenced_id if reference_type and reference_path is not None else None,
+            reference_id=referenced_id
+            if reference_type and reference_path is not None
+            else None,
             reference_type=reference_type,
             reference_path=reference_path,
         )
@@ -100,17 +106,17 @@ def validate_registry(registry: WorldRegistry) -> ValidationResult:
     for world in registry.worlds.values():
         with result.entity_context("world", world.id):
             if not isinstance(world, World):
-                result.add_error(
-                    f"Invalid world object: {world!r}"
-                )
+                result.add_error(f"Invalid world object: {world!r}")
 
     for city in registry.cities.values():
         with result.entity_context("city", city.id):
             validate_city_references(result, city, registry)
+            validate_political_offices(result, city.id, city.leadership, registry)
 
     for kingdom in registry.kingdoms.values():
         with result.entity_context("kingdom", kingdom.id):
             validate_kingdom_references(result, kingdom, registry)
+            validate_political_offices(result, kingdom.id, kingdom.leadership, registry)
 
     for region in registry.regions.values():
         with result.entity_context("region", region.id):
@@ -180,7 +186,10 @@ def validate_registry(registry: WorldRegistry) -> ValidationResult:
 
     for entry in registry.dm_scratchpad_entries.values():
         with result.entity_context("dm_scratchpad_entry", entry.id):
-            if entry.promoted_entity_id and registry.get_entity(entry.promoted_entity_id) is None:
+            if (
+                entry.promoted_entity_id
+                and registry.get_entity(entry.promoted_entity_id) is None
+            ):
                 result.add_error(
                     f"Unknown promoted entity ID: {entry.promoted_entity_id}",
                     reference_id=entry.promoted_entity_id,
@@ -268,18 +277,114 @@ def validate_city_references(
         )
 
 
+def validate_political_offices(
+    result: ValidationResult,
+    entity_id: str,
+    offices: list[PoliticalOffice],
+    registry: WorldRegistry,
+) -> None:
+    """Validate office holders and reporting links for a city or kingdom."""
+    seen_office_ids: set[str] = set()
+
+    for office_index, office in enumerate(offices):
+        office_path = ["leadership", office_index]
+        if office.id in seen_office_ids:
+            result.add_error(f"Duplicate political office ID: {office.id}")
+        seen_office_ids.add(office.id)
+
+        for holder_index, holder_id in enumerate(office.holders):
+            if holder_id in registry.npcs:
+                continue
+            if holder_id in registry.player_characters:
+                continue
+            result.add_error(
+                f"Unknown political office holder ID: {holder_id}",
+                reference_id=holder_id,
+                reference_type="character",
+                reference_path=[*office_path, "holders", holder_index],
+            )
+
+        for report_index, target in enumerate(office.reports_to):
+            target_path = [*office_path, "reports_to", report_index]
+            if target.entity_id == entity_id and target.office_id == office.id:
+                result.add_error("A political office cannot report to itself.")
+                continue
+
+            target_entity = registry.kingdoms.get(target.entity_id)
+            if target_entity is None:
+                target_entity = registry.cities.get(target.entity_id)
+            if target_entity is None:
+                result.add_error(
+                    f"Unknown political reporting entity ID: {target.entity_id}",
+                    reference_id=target.entity_id,
+                    reference_type="political_entity",
+                    reference_path=[*target_path, "entity_id"],
+                )
+                continue
+
+            if target.office_id not in {item.id for item in target_entity.leadership}:
+                result.add_error(
+                    f"Unknown reporting office ID: {target.office_id} on {target.entity_id}.",
+                    reference_id=target.office_id,
+                    reference_type="political_office",
+                    reference_path=[*target_path, "office_id"],
+                )
+
+
 def validate_kingdom_references(
     result: ValidationResult,
     kingdom: Kingdom,
     registry: WorldRegistry,
 ) -> None:
-    """Validate a kingdom's continent, ruler, and capital references."""
+    """Validate a kingdom or nation's geographic and parent references."""
     if kingdom.continent is not None:
-        validate_reference(result, registry.continents, kingdom.continent, "continent", reference_type="continent", reference_path=["continent"])
+        validate_reference(
+            result,
+            registry.continents,
+            kingdom.continent,
+            "continent",
+            reference_type="continent",
+            reference_path=["continent"],
+        )
     if kingdom.ruler is not None:
-        validate_reference(result, registry.npcs, kingdom.ruler, "NPC", reference_type="npc", reference_path=["ruler"])
+        validate_reference(
+            result,
+            registry.npcs,
+            kingdom.ruler,
+            "NPC",
+            reference_type="npc",
+            reference_path=["ruler"],
+        )
     if kingdom.capital is not None:
-        validate_reference(result, registry.cities, kingdom.capital, "city", reference_type="city", reference_path=["capital"])
+        validate_reference(
+            result,
+            registry.cities,
+            kingdom.capital,
+            "city",
+            reference_type="city",
+            reference_path=["capital"],
+        )
+    if kingdom.parent_kingdom is not None:
+        validate_reference(
+            result,
+            registry.kingdoms,
+            kingdom.parent_kingdom,
+            "parent kingdom",
+            reference_type="kingdom",
+            reference_path=["parent_kingdom"],
+        )
+        parent = registry.kingdoms.get(kingdom.parent_kingdom)
+        if parent is not None and parent.political_level != "kingdom":
+            result.add_error(
+                f"Parent of {kingdom.political_level} {kingdom.id} must be a kingdom, not a nation.",
+                reference_id=kingdom.parent_kingdom,
+                reference_type="kingdom",
+                reference_path=["parent_kingdom"],
+            )
+        if kingdom.parent_kingdom == kingdom.id:
+            result.add_error("A kingdom or nation cannot be its own parent.")
+    if kingdom.political_level == "kingdom" and kingdom.parent_kingdom is not None:
+        result.add_error("A kingdom cannot have a parent kingdom.")
 
 
 def validate_region_references(
@@ -289,9 +394,23 @@ def validate_region_references(
 ) -> None:
     """Validate a region's kingdom and continent references."""
     if region.kingdom is not None:
-        validate_reference(result, registry.kingdoms, region.kingdom, "kingdom", reference_type="kingdom", reference_path=["kingdom"])
+        validate_reference(
+            result,
+            registry.kingdoms,
+            region.kingdom,
+            "kingdom",
+            reference_type="kingdom",
+            reference_path=["kingdom"],
+        )
     if region.continent is not None:
-        validate_reference(result, registry.continents, region.continent, "continent", reference_type="continent", reference_path=["continent"])
+        validate_reference(
+            result,
+            registry.continents,
+            region.continent,
+            "continent",
+            reference_type="continent",
+            reference_path=["continent"],
+        )
 
 
 def validate_location_references(
@@ -301,11 +420,33 @@ def validate_location_references(
 ) -> None:
     """Validate a location's geographic hierarchy references."""
     if location.continent is not None:
-        validate_reference(result, registry.continents, location.continent, "continent", reference_type="continent", reference_path=["continent"])
+        validate_reference(
+            result,
+            registry.continents,
+            location.continent,
+            "continent",
+            reference_type="continent",
+            reference_path=["continent"],
+        )
     if location.kingdom is not None:
-        validate_reference(result, registry.kingdoms, location.kingdom, "kingdom", reference_type="kingdom", reference_path=["kingdom"])
+        validate_reference(
+            result,
+            registry.kingdoms,
+            location.kingdom,
+            "kingdom",
+            reference_type="kingdom",
+            reference_path=["kingdom"],
+        )
     if location.region is not None:
-        validate_reference(result, registry.regions, location.region, "region", reference_type="region", reference_path=["region"])
+        validate_reference(
+            result,
+            registry.regions,
+            location.region,
+            "region",
+            reference_type="region",
+            reference_path=["region"],
+        )
+
 
 def validate_campaign_references(
     result: ValidationResult,
@@ -358,7 +499,13 @@ def validate_campaign_references(
                     story_id,
                     "world story",
                     reference_type="world_story",
-                    reference_path=["story", "player_actions", action_index, "world_stories", story_index],
+                    reference_path=[
+                        "story",
+                        "player_actions",
+                        action_index,
+                        "world_stories",
+                        story_index,
+                    ],
                 )
             validate_world_story_thread_links(
                 result,
@@ -374,7 +521,13 @@ def validate_campaign_references(
                     story_id,
                     "world story",
                     reference_type="world_story",
-                    reference_path=["story", "beats", beat_index, "world_stories", story_index],
+                    reference_path=[
+                        "story",
+                        "beats",
+                        beat_index,
+                        "world_stories",
+                        story_index,
+                    ],
                 )
             validate_world_story_thread_links(
                 result,
@@ -390,13 +543,28 @@ def validate_campaign_references(
                         story_id,
                         "world story",
                         reference_type="world_story",
-                        reference_path=["story", "beats", beat_index, "consequences", consequence_index, "world_stories", story_index],
+                        reference_path=[
+                            "story",
+                            "beats",
+                            beat_index,
+                            "consequences",
+                            consequence_index,
+                            "world_stories",
+                            story_index,
+                        ],
                     )
                 validate_world_story_thread_links(
                     result,
                     consequence.world_story_threads,
                     registry,
-                    ["story", "beats", beat_index, "consequences", consequence_index, "world_story_threads"],
+                    [
+                        "story",
+                        "beats",
+                        beat_index,
+                        "consequences",
+                        consequence_index,
+                        "world_story_threads",
+                    ],
                 )
             for field_name, content in (
                 ("description_content", beat.description_content),
@@ -437,7 +605,9 @@ def validate_world_event_references(
             reference_type="world_story",
             reference_path=["world_stories", index],
         )
-    validate_world_story_thread_links(result, event.world_story_threads, registry, ["world_story_threads"])
+    validate_world_story_thread_links(
+        result, event.world_story_threads, registry, ["world_story_threads"]
+    )
     if event.timeline_event_id:
         validate_reference(
             result,
@@ -448,12 +618,15 @@ def validate_world_event_references(
             reference_path=["timeline_event_id"],
         )
     for index, location_id in enumerate(event.locations):
-        if all(location_id not in collection for collection in (
-            registry.cities,
-            registry.locations,
-            registry.regions,
-            registry.kingdoms,
-        )):
+        if all(
+            location_id not in collection
+            for collection in (
+                registry.cities,
+                registry.locations,
+                registry.regions,
+                registry.kingdoms,
+            )
+        ):
             result.add_error(
                 f"Unknown location ID in world event: {location_id}",
                 reference_id=location_id,
@@ -461,7 +634,10 @@ def validate_world_event_references(
                 reference_path=["locations", index],
             )
     for index, character_id in enumerate(event.characters):
-        if character_id not in registry.npcs and character_id not in registry.player_characters:
+        if (
+            character_id not in registry.npcs
+            and character_id not in registry.player_characters
+        ):
             result.add_error(
                 f"Unknown character ID in world event: {character_id}",
                 reference_id=character_id,
@@ -538,7 +714,9 @@ def validate_world_story_references(
         )
         for thread_id in contribution.thread_ids:
             if all(thread.id != thread_id for thread in story.threads):
-                result.add_error(f"Unknown thread ID in world story contribution: {thread_id}")
+                result.add_error(
+                    f"Unknown thread ID in world story contribution: {thread_id}"
+                )
 
 
 def validate_world_story_thread_links(
@@ -553,9 +731,13 @@ def validate_world_story_thread_links(
         if world_story is None:
             result.add_error(
                 f"Unknown world story ID: {link.world_story_id}",
-                reference_id=link.world_story_id if reference_path is not None else None,
+                reference_id=link.world_story_id
+                if reference_path is not None
+                else None,
                 reference_type="world_story" if reference_path is not None else None,
-                reference_path=[*reference_path, index, "world_story_id"] if reference_path is not None else None,
+                reference_path=[*reference_path, index, "world_story_id"]
+                if reference_path is not None
+                else None,
             )
         elif all(thread.id != link.thread_id for thread in world_story.threads):
             result.add_error(
@@ -587,7 +769,9 @@ def validate_timeline_event_references(
         validate_reference(result, registry.world_stories, story_id, "world story")
     validate_world_story_thread_links(result, event.world_story_threads, registry)
     if event.source_world_event_id:
-        validate_reference(result, registry.world_events, event.source_world_event_id, "world event")
+        validate_reference(
+            result, registry.world_events, event.source_world_event_id, "world event"
+        )
 
     for index, link in enumerate(event.event_links):
         if link.event_id == event.id:
@@ -597,7 +781,10 @@ def validate_timeline_event_references(
                 reference_type="event",
                 reference_path=["event_links", index, "event_id"],
             )
-        elif link.event_id not in registry.timeline_events and link.event_id not in registry.world_events:
+        elif (
+            link.event_id not in registry.timeline_events
+            and link.event_id not in registry.world_events
+        ):
             result.add_error(
                 f"Unknown event ID: {link.event_id}",
                 reference_id=link.event_id,
@@ -622,6 +809,8 @@ def validate_timeline_event_references(
             kingdom_id,
             "kingdom",
         )
+
+
 def validate_character_reference(
     result: ValidationResult,
     registry: WorldRegistry,
@@ -640,6 +829,7 @@ def validate_character_reference(
             reference_path=reference_path,
         )
 
+
 def validate_story_content(
     result: ValidationResult,
     story: StoryContent,
@@ -653,7 +843,9 @@ def validate_story_content(
                 f"Unknown entity ID in story: {node.entity_id}",
                 reference_id=node.entity_id if reference_path is not None else None,
                 reference_type="entity" if reference_path is not None else None,
-                reference_path=[*reference_path, "nodes", index, "entity_id"] if reference_path is not None else None,
+                reference_path=[*reference_path, "nodes", index, "entity_id"]
+                if reference_path is not None
+                else None,
             )
 
 
@@ -673,6 +865,4 @@ def validate_map_references(
 
     for marker in map_object.markers:
         if marker.entity_id and registry.get_entity(marker.entity_id) is None:
-            result.add_error(
-                f"Unknown entity ID in map marker: {marker.entity_id}"
-            )
+            result.add_error(f"Unknown entity ID in map marker: {marker.entity_id}")

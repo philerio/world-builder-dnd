@@ -1,0 +1,20 @@
+id: crumb
+name: Crumb
+description: King of Teth.
+tags:
+- ruler
+race: null
+alignment: null
+role: King
+city: null
+region: null
+kingdom: teth
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: King

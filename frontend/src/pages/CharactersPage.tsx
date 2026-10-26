@@ -89,7 +89,7 @@ function CharactersPage({ data }: CharactersPageProps) {
     },
     {
       key: "kingdom",
-      label: "Kingdom",
+      label: "Political territory",
       options: getUniqueValues(
         characters.map((character) => character.kingdom),
       ).map((value) => ({ value, label: getEntityName(value) })),

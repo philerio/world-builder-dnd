@@ -1,30 +1,52 @@
 id: reference-venn-calder
 name: Venn Calder
-description: Sociable and shrewd about fair value. One crate in his latest shipment
-  is addressed to a town that does not appear on any map.
+description: Sociable, shrewd merchant who survived an attack by his dead brother on the road to Zeffo.
 tags:
 - Reference NPC
+- Zeffo
 created: '2026-10-18T03:05:52.952114'
-updated: '2026-10-18T03:05:52.952118'
+updated: '2026-10-22T00:24:56Z'
 race: Human
 alignment: True Neutral
 role: null
 city: zeffo-city
 region: null
-kingdom: north-elligaesia
-details: 'Venn Calder works as a general merchant. Sociable and shrewd about fair
-  value. Current complication: One crate in his latest shipment is addressed to a
-  town that does not appear on any map. Personal goal: Expand his route without taking
-  on dangerous debt.'
-motives: []
+kingdom: umbara
+details: 'Backstory: Venn built his trade route by being easy to talk to and careful about what a deal
+  will cost after the sale. His brother settled in Zeffo and died there two years ago. Venn kept traveling,
+  but the burial made the town a personal stop rather than just another market. The recent attack by his
+  brother has shaken his confidence in the familiar roads and made him more attentive to what he owes
+  the people who trust him.
+
+  At the table: Venn is sociable, quick with fair estimates, and unusually observant about people under
+  pressure. He tries to bargain without exploiting anyone and becomes quiet when his brother is mentioned.
+  He can give the party a reliable introduction to Captain Ressa once he is safe.
+
+  Separate complication: One crate in his latest shipment is addressed to a town that does not appear
+  on any map. Venn sometimes carries letters for clients without reading them; neither fact explains why
+  his brother rose.'
+motives:
+- Make a living through fair trade without placing his crew or customers in needless danger.
+- Honor his brother's memory without letting grief make every decision for him.
 goals:
 - Expand his route without taking on dangerous debt.
-fears: []
+fears:
+- That another familiar face will return as one of the dead.
+- Taking on debts or promises he cannot keep when business turns bad.
 secrets:
 - He sometimes carries letters for clients without reading them.
 knowledge:
-- 'Venn Calder can speak to the current situation: One crate in his latest shipment
-  is addressed to a town that does not appear on any map.'
-events: []
-relationships: []
+- 'Venn Calder can speak to the current situation: One crate in his latest shipment is addressed to a
+  town that does not appear on any map.'
+- His deceased brother was buried in Zeffo two years ago; Venn recognizes him among the risen but knows
+  nothing about the cause.
+events:
+- description: Was trapped beneath an overturned wagon during an attack by his deceased brother, then
+    escorted toward Zeffo if rescued.
+  campaign: zeffo-undead-campaign
+  location: the-woods-of-zeffo-location
+relationships:
+- character: captain-ressa-thorn
+  relationship: local contact
+  notes: Venn trusts Ressa to give reliable information about Zeffo and can introduce the party to her.
 job: General Merchant

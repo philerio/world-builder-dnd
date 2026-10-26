@@ -7,11 +7,14 @@ updated: '2026-09-24T13:15:27.608395'
 map_type: continent
 parent_map: elligaesia-world-map
 image_path: maps/elligaesia.png
+fog_of_war:
+  enabled: false
+  color: '#17191f'
 canvas_width: null
 canvas_height: null
 details: '
 
-  The continent of Elligaesia, including North Elligaesia
+  The continent of Elligaesia, including Northern Elligaesia
 
   and the Kingdom of Batik.
 
@@ -40,6 +43,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: west-town-map-marker
   entity_id: west-town
   layer_id: null
@@ -62,6 +67,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: baldons-map-marker
   entity_id: baldon
   layer_id: null
@@ -84,6 +91,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: colkirk-map-marker
   entity_id: colkirk
   layer_id: null
@@ -106,6 +115,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: ole-hythe-map-marker
   entity_id: ole-hythe
   layer_id: null
@@ -128,6 +139,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: larton-map-marker
   entity_id: larton
   layer_id: null
@@ -150,6 +163,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: halfington-map-marker
   entity_id: halfington
   layer_id: null
@@ -172,6 +187,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: f90d3c7c-06a5-436d-8deb-1e6cdc7bc0dd
   entity_id: serenno-city
   layer_id: null
@@ -180,11 +197,11 @@ markers:
   points: []
   x: 20.502458691669208
   y: 42.51477978711489
-  label: Serenno
+  label: Serenio City
   linked_map: null
   visible: true
   dm_only: false
-  tooltip: null
+  tooltip: City of Serenio
   hide_label: false
   icon: city
   icon_image: null
@@ -194,6 +211,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 19d3e480-3489-4ac5-b752-02ebcbaf683e
   entity_id: umbara
   layer_id: null
@@ -216,6 +235,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 9f31b1e9-d5c0-405f-9ec4-46c9de1162c8
   entity_id: teth
   layer_id: null
@@ -238,8 +259,10 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: f0f38475-1527-4789-9320-c6bd1c269ac6
-  entity_id: null
+  entity_id: nevarro
   layer_id: null
   z_index: 13
   type: point
@@ -260,6 +283,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 3b4019dd-eedc-46ab-8376-cbe882772423
   entity_id: ''
   layer_id: null
@@ -282,6 +307,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: easton-map-marker
   entity_id: easton
   layer_id: null
@@ -304,6 +331,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: a1a1aea7-578c-4a03-b3c8-7c35ab535437
   entity_id: null
   layer_id: null
@@ -326,6 +355,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: sho-dar-map-marker
   entity_id: shodar
   layer_id: null
@@ -348,6 +379,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 8187c2a9-abeb-463a-823f-17f791371aa7
   entity_id: ''
   layer_id: null
@@ -400,6 +433,8 @@ markers:
   mirror_y: false
   fill_color: '#e1c560'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 705efc50-6e2f-4bb5-99f6-8d1363436d00
   entity_id: northern-road
   layer_id: null
@@ -478,6 +513,8 @@ markers:
   mirror_y: false
   fill_color: '#352114'
   fill_opacity: 0.1
+  player_view_mask: false
+  fog_reveal: false
 - id: ba2a2831-b9eb-410c-8114-84e7242a2ded
   entity_id: ''
   layer_id: null
@@ -530,8 +567,10 @@ markers:
   mirror_y: false
   fill_color: '#dd9e55'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 0521f3e7-fe6f-4a87-a4e2-1c19be3a3544
-  entity_id: null
+  entity_id: ryloth
   layer_id: null
   z_index: 20
   type: point
@@ -552,8 +591,10 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 4f90f313-8e5c-4f84-9ac8-0e109c720bdb
-  entity_id: null
+  entity_id: scarif
   layer_id: null
   z_index: 21
   type: point
@@ -574,6 +615,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 1f82cf44-9819-4b5e-b0c2-7eb4e3de72a8
   entity_id: the-woods-of-zeffo-location
   layer_id: null
@@ -624,6 +667,8 @@ markers:
   mirror_y: false
   fill_color: '#38d219'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 99377d13-0703-4086-9d8d-e7f0ba1f9ba7
   entity_id: null
   layer_id: null
@@ -646,8 +691,10 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: d895ba41-1353-43dd-b585-4f0bdd549f5d
-  entity_id: null
+  entity_id: mortis
   layer_id: null
   z_index: 24
   type: area
@@ -678,12 +725,12 @@ markers:
     - 39.55697028573111
   x: 47.67242247920491
   y: 33.9571220332908
-  label: New area
+  label: Mortis
   linked_map: null
   visible: true
   dm_only: false
-  tooltip: null
-  hide_label: false
+  tooltip: Mortis
+  hide_label: true
   icon: null
   icon_image: null
   icon_size: 72
@@ -692,6 +739,8 @@ markers:
   mirror_y: false
   fill_color: '#1976d2'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 05a4a66d-4952-49c5-a9a6-f06413ee0fb2
   entity_id: null
   layer_id: null
@@ -734,6 +783,8 @@ markers:
   mirror_y: false
   fill_color: '#19cfd2'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 9ee58fb7-9ad7-40d9-82df-1fd00a6511bb
   entity_id: null
   layer_id: null
@@ -786,6 +837,8 @@ markers:
   mirror_y: false
   fill_color: '#19d238'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 04f8d9aa-b4a8-47b4-99e0-c91696ef2faf
   entity_id: null
   layer_id: null
@@ -828,6 +881,8 @@ markers:
   mirror_y: false
   fill_color: '#8819d2'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 03c93a29-9e2c-448e-8fba-afe7d4a61aeb
   entity_id: null
   layer_id: null
@@ -896,6 +951,8 @@ markers:
   mirror_y: false
   fill_color: '#1976d2'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 23746cdb-fbce-44b6-8b88-9b1062df812a
   entity_id: null
   layer_id: null
@@ -958,6 +1015,8 @@ markers:
   mirror_y: false
   fill_color: '#d2cc19'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: b4a70469-0dba-48d7-a9f5-d637c8bb8292
   entity_id: null
   layer_id: null
@@ -1034,6 +1093,8 @@ markers:
   mirror_y: false
   fill_color: '#1976d2'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 1abb9c61-623b-44f2-8db6-537297d14a7f
   entity_id: null
   layer_id: null
@@ -1110,6 +1171,8 @@ markers:
   mirror_y: false
   fill_color: '#d28519'
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 30d2c2a0-c2bf-4aac-986f-37e9f19fb6c5
   entity_id: zeffo-city
   layer_id: null
@@ -1132,6 +1195,8 @@ markers:
   mirror_y: false
   fill_color: null
   fill_opacity: 0.2
+  player_view_mask: false
+  fog_reveal: false
 - id: 17db1137-968f-4ed5-942f-049b1515590d
   entity_id: the-mountains-of-bane-lore
   layer_id: null
@@ -1240,6 +1305,8 @@ markers:
   mirror_y: false
   fill_color: '#e5c37b'
   fill_opacity: 0.0
+  player_view_mask: false
+  fog_reveal: false
 layers: []
 linked_map: null
 entity_id: null

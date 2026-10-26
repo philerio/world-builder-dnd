@@ -1,21 +1,37 @@
 id: old-bram-npc
 name: Old Bram
-description: Care taker to cemetery in Zeffo
+description: Zeffo's longtime gravedigger, whose careful records reveal that graves have opened from within.
 tags: []
 created: '2026-10-18T04:58:15.481338'
-updated: '2026-10-18T04:58:15.481340'
+updated: '2026-10-22T00:24:56Z'
 race: Half-Elf
 alignment: Lawful Neutral
-role: null
+role: Cemetery caretaker and witness
 city: zeffo-city
 region: null
-kingdom: north-elligaesia
-details: null
-motives: []
-goals: []
-fears: []
+kingdom: umbara
+details: 'Backstory: Bram has tended Zeffo''s cemetery for decades, first learning the work from the previous
+  caretaker and later taking responsibility for the burial ledger. He knows which plots have settled,
+  which stones have shifted in ordinary weather, and which families are still waiting for a grave to be
+  tended.
+
+  At the table: Bram is reserved, methodical, and respectful of the dead. He records what he sees before
+  drawing conclusions. The opened graves and northbound movement have pushed him beyond his usual caution;
+  he would rather investigate alone than let another family wait for answers.'
+motives:
+- Give the dead proper rest and spare families the uncertainty of missing graves.
+- Find out what is drawing the risen toward the northern forest.
+goals:
+- Keep an accurate record of disturbed graves and missing bodies.
+- Trace the northbound movement and return with evidence before anyone else is harmed.
+fears:
+- That he will be too slow or too frail to recover someone who has gone missing.
+- That the cemetery will be treated as a source of the outbreak instead of a place being affected by it.
 secrets: []
-knowledge: []
+knowledge:
+- Graves have opened from within, and some bodies are missing.
+- Some undead wander generally toward the northern forest; he believes something is calling them away
+  from their resting places.
 events: []
 relationships: []
 job: Gravedigger

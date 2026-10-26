@@ -19,7 +19,7 @@ import formatStatusLabel from "../utils/formatStatusLabel";
 import { useWorldData } from "../context/WorldDataContext";
 import { matchesEntityTag, sortEntitiesByName } from "../utils/entityTags";
 
-type LocationCategory = "Continent" | "Kingdom" | "Region" | "City" | "Location";
+type LocationCategory = "Continent" | "Kingdom" | "Nation" | "Region" | "City" | "Location";
 
 type LocationEntry = {
   id: string;
@@ -27,6 +27,7 @@ type LocationEntry = {
   category: LocationCategory;
   description?: string;
   context?: string;
+  leadershipSummary?: string;
   tags?: string[];
 };
 
@@ -73,7 +74,30 @@ function LocationsPage() {
       (entity) => [entity.id, entity.name] as const,
     ),
   );
+  const characterNameById = new Map(
+    [...(worldData?.npcs ?? []), ...(worldData?.player_characters ?? [])].map(
+      (character) => [character.id, character.name] as const,
+    ),
+  );
   const nameOf = (id?: string) => (id ? nameById.get(id) ?? id : undefined);
+  const leadershipSummary = (
+    offices: { title: string; holders: string[]; reports_to: { entity_id: string; office_id: string }[] }[] | undefined,
+    legacyRuler?: string,
+  ) => {
+    const roots = offices?.filter((office) => office.reports_to.length === 0) ?? [];
+    const principalOffices = roots.length > 0 ? roots : offices ?? [];
+    const office = principalOffices[0];
+    if (!office) {
+      const rulerName = legacyRuler ? characterNameById.get(legacyRuler) ?? legacyRuler : undefined;
+      return rulerName ? `Ruler: ${rulerName}` : undefined;
+    }
+    const holderNames = office.holders.map((id) => characterNameById.get(id) ?? id);
+    const holders = holderNames.length > 0
+      ? holderNames.slice(0, 2).join(" & ") + (holderNames.length > 2 ? ` +${holderNames.length - 2}` : "")
+      : `${office.holders.length || "No"} holder${office.holders.length === 1 ? "" : "s"}`;
+    const additionalOffices = principalOffices.length > 1 ? ` · +${principalOffices.length - 1} offices` : "";
+    return `${office.title}: ${holders}${additionalOffices}`;
+  };
   const allEntries: LocationEntry[] = sortEntitiesByName([
     ...continents.map((continent) => ({
       id: continent.id,
@@ -81,18 +105,22 @@ function LocationsPage() {
       category: "Continent" as const,
       description: continent.description,
       tags: continent.tags,
-      context: `${kingdoms.filter((kingdom) => kingdom.continent === continent.id).length} kingdoms · ${regions.filter((region) => region.continent === continent.id).length} regions`,
+      context: `${kingdoms.filter((item) => item.continent === continent.id && (item.political_level ?? "kingdom") === "kingdom").length} kingdoms · ${kingdoms.filter((item) => item.continent === continent.id && item.political_level === "nation").length} nations · ${regions.filter((region) => region.continent === continent.id).length} regions`,
     })),
     ...kingdoms.map((kingdom) => ({
       id: kingdom.id,
       name: kingdom.name,
-      category: "Kingdom" as const,
+      category: kingdom.political_level === "nation" ? "Nation" as const : "Kingdom" as const,
       description: kingdom.description,
       tags: kingdom.tags,
+      leadershipSummary: leadershipSummary(kingdom.leadership, kingdom.ruler),
       context: [
+        kingdom.parent_kingdom ? `Kingdom: ${nameOf(kingdom.parent_kingdom)}` : undefined,
         kingdom.continent ? `Continent: ${nameOf(kingdom.continent)}` : undefined,
         kingdom.capital ? `Capital: ${nameOf(kingdom.capital)}` : undefined,
-        `${cities.filter((city) => city.kingdom === kingdom.id).length} cities`,
+        kingdom.political_level === "nation"
+          ? `${cities.filter((city) => city.kingdom === kingdom.id).length} cities`
+          : `${kingdoms.filter((item) => item.parent_kingdom === kingdom.id).length} nations`,
       ].filter(Boolean).join(" · "),
     })),
     ...regions.map((region) => ({
@@ -103,7 +131,7 @@ function LocationsPage() {
       tags: region.tags,
       context: [
         region.continent ? `Continent: ${nameOf(region.continent)}` : undefined,
-        region.kingdom ? `Kingdom: ${nameOf(region.kingdom)}` : undefined,
+        region.kingdom ? `Political territory: ${nameOf(region.kingdom)}` : undefined,
         `${cities.filter((city) => city.region === region.id).length} cities`,
       ].filter(Boolean).join(" · "),
     })),
@@ -113,9 +141,10 @@ function LocationsPage() {
       category: "City" as const,
       description: city.description,
       tags: city.tags,
+      leadershipSummary: leadershipSummary(city.leadership),
       context: [
         city.region ? `Region: ${nameOf(city.region)}` : undefined,
-        city.kingdom ? `Kingdom: ${nameOf(city.kingdom)}` : undefined,
+        city.kingdom ? `Political territory: ${nameOf(city.kingdom)}` : undefined,
       ].filter(Boolean).join(" · "),
     })),
     ...places.map((place) => ({
@@ -127,15 +156,16 @@ function LocationsPage() {
       context: [
         place.location_type ? formatStatusLabel(place.location_type) : undefined,
         place.region ? `Region: ${nameOf(place.region)}` : undefined,
-        place.kingdom ? `Kingdom: ${nameOf(place.kingdom)}` : undefined,
+        place.kingdom ? `Political territory: ${nameOf(place.kingdom)}` : undefined,
         place.continent ? `Continent: ${nameOf(place.continent)}` : undefined,
       ].filter(Boolean).join(" · "),
     })),
   ]);
-  const categories: LocationCategory[] = ["Continent", "Kingdom", "Region", "City", "Location"];
+  const categories: LocationCategory[] = ["Continent", "Kingdom", "Nation", "Region", "City", "Location"];
   const sectionTitles: Record<LocationCategory, string> = {
     Continent: "Continents",
     Kingdom: "Kingdoms",
+    Nation: "Nations",
     Region: "Regions",
     City: "Cities",
     Location: "Points of Interest",
@@ -148,7 +178,7 @@ function LocationsPage() {
   const search = filters.search?.toLowerCase() ?? "";
   const filteredEntries = allEntries.filter((entry) => {
     const matchesCategory = !filters.category || entry.category === filters.category;
-    const matchesSearch = !search || `${entry.name} ${entry.description ?? ""} ${entry.context ?? ""}`.toLowerCase().includes(search);
+    const matchesSearch = !search || `${entry.name} ${entry.description ?? ""} ${entry.context ?? ""} ${entry.leadershipSummary ?? ""}`.toLowerCase().includes(search);
     return matchesCategory && matchesSearch && matchesEntityTag(entry, filters.tag);
   });
   const hasActiveFilter = Boolean(search || filters.category || filters.tag);
@@ -180,13 +210,13 @@ function LocationsPage() {
         </Typography>
 
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Continents, kingdoms, regions, cities, and points of interest.
+          Continents, kingdoms, nations, regions, cities, and points of interest.
         </Typography>
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
         <DashboardFilters
-          search={{ label: "Search locations", placeholder: "Name, region, kingdom…" }}
+          search={{ label: "Search locations", placeholder: "Name, kingdom, nation…" }}
           filters={locationFilters}
           taggedEntities={allEntries}
           onChange={setFilters}
@@ -270,6 +300,13 @@ function LocationCard({ location, onOpen }: LocationCardProps) {
             {location.context && (
               <Typography variant="body2" color="text.secondary">
                 {location.context}
+              </Typography>
+            )}
+
+            {location.leadershipSummary && (
+              <Typography variant="body2" color="text.secondary" title={location.leadershipSummary}>
+                <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>Leadership: </Box>
+                {location.leadershipSummary}
               </Typography>
             )}
 

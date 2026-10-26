@@ -1,0 +1,20 @@
+id: roran
+name: Roran
+description: Human member of the ruling triumvirate of Mortis.
+tags:
+- ruler
+race: Human
+alignment: null
+role: Triumvir
+city: null
+region: null
+kingdom: mortis
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Triumvir

@@ -733,6 +733,19 @@ def create_entity(payload: dict) -> dict:
         registry=registry,
     )
 
+    if entity_type in {"city", "kingdom"}:
+        offices = entity_data.get("leadership")
+        if isinstance(offices, list):
+            for office in offices:
+                if not isinstance(office, dict):
+                    continue
+                reports_to = office.get("reports_to")
+                if not isinstance(reports_to, list):
+                    continue
+                for report in reports_to:
+                    if isinstance(report, dict) and report.get("entity_id") == "__self__":
+                        report["entity_id"] = entity_id
+
     entity_data["id"] = entity_id
 
     try:

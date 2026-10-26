@@ -1,31 +1,73 @@
 id: reference-edrin-vale
 name: Edrin Vale
-description: Village healer in Zeffo. He discovered an ancient artifact and is using its power to sustain his daughter Mira.
+description: Zeffo's respected healer, whose effort to keep his daughter alive has led him into dangerous Dwarmar experiments.
 details: >-
-  Edrin believes the artifact's power may save Mira, but his repeated use of it
-  is worsening the undead outbreak.
+  Backstory: Edrin built his life around practical medicine and patient privacy. He
+  is known for treating injuries from the road and helping villagers even when they
+  cannot pay. Before Mira became gravely ill, he was careful about the limits of what
+  medicine could promise. Her worsening condition has worn down those boundaries:
+  he now treats every brief improvement as a reason to keep searching for more.
 
-  Roleplaying Edrin: Avoid making him obviously suspicious. At first, he is
-  genuinely helpful: he treats injured villagers, offers the party medical
-  assistance, and expresses concern about the undead. He may help Captain Ressa
-  care for people wounded in attacks.
+  At the table: Edrin is genuinely helpful at first. He treats injured villagers,
+  offers the party medical assistance, and may help Captain Ressa care for people
+  hurt in attacks. He is tired but organized, and tends to answer medical questions
+  precisely while redirecting questions about his newest treatments.
 
-  Watch for inconsistencies that suggest he is protecting a secret, not
-  necessarily acting with evil intent:
-  - He becomes uncomfortable when asked where he obtains certain treatments.
-  - He is exhausted from traveling into the forest at night.
-  - He refuses to let strangers examine Mira's treatment.
-  - He reacts with unusual concern when the party mentions investigating the
-    northern ruins.
+  Signs of strain: He becomes uncomfortable when asked where he obtains certain
+  treatments; he is exhausted from traveling into the forest at night; he refuses
+  to let strangers examine Mira without her consent; and he reacts with unusual
+  concern when the party mentions the northern ruins. These signs point to a fearful
+  father protecting a secret, not someone who began the outbreak or set out to harm
+  Zeffo.
+
+  His central conflict is that the same power giving Mira temporary relief is
+  worsening the danger around Zeffo. Edrin can accept help if the party gives him a
+  credible way to protect Mira while suspending the experiments. If he believes they
+  will take away her only chance, he may become defensive or attempt the untested
+  golem plan. He does not know that a living host would lose control.
+updated: '2026-10-22T00:24:56Z'
 job: Healer
 race: Elf
 alignment: Lawful Neutral
+role: Village healer and father
 city: zeffo-city
 region: null
-kingdom: null
-tags: []
+kingdom: umbara
+tags:
+- Zeffo
+- Campaign NPC
+motives:
+- Ease Mira's suffering and give her a chance to recover.
+- Keep the people of Zeffo safe, even as his own secrecy puts them at risk.
 goals:
 - Save his daughter Mira.
+- Find a way to keep her stable that does not depend on increasingly dangerous experiments.
+fears:
+- That Mira will die if he stops the treatment before finding another option.
+- That he has made the undead danger worse and will lose the trust of the town he serves.
 secrets:
-- Edrin discovered the artifact and is using its power to sustain Mira.
-knowledge: []
+- He found an already-active Dwarmar artifact after falling into a buried tunnel in the northern forest; its energy restored his broken leg.
+- He uses rechargeable stones from the facility to sustain Mira and has tested the energy on captured undead.
+- He suspects a living occupant may activate the ancient iron golem, but has never tested the theory and does not know the risk to the occupant.
+knowledge:
+- The Dwarmar artifact was active before he reached it; he did not cause the initial outbreak.
+- Smaller stones can absorb energy near the artifact and slowly lose their charge after being removed.
+- The energy can briefly sustain tissue and restore some damage, but his observations do not prove that Mira's underlying illness can be cured.
+- Undead specimens showed partial tissue repair but did not activate the golem.
+events:
+- description: Fell through a collapsed tunnel while fleeing undead, broke his leg, and reached an already-active artifact that restored it.
+  campaign: zeffo-undead-campaign
+  location: the-woods-of-zeffo-location
+- description: Began using charged Dwarmar stones to sustain Mira and later tested the energy on undead specimens.
+  campaign: zeffo-undead-campaign
+  location: zeffo-city
+relationships:
+- character: mira-vale
+  relationship: father
+  notes: He loves her deeply, but his fear for her can lead him to withhold information and make decisions for her.
+- character: captain-ressa-thorn
+  relationship: trusted town healer
+  notes: Ressa sends injured residents to Edrin and trusts his medical judgment; she does not know about his artifact or experiments.
+- character: old-bram-npc
+  relationship: fellow Zeffo resident
+  notes: Edrin has treated Bram and knows his cemetery observations, but does not know the artifact is drawing the dead north.

@@ -45,7 +45,7 @@ const PROMOTION_TARGETS: { value: PromotionTarget; label: string }[] = [
   { value: "location", label: "Location" },
   { value: "city", label: "City" },
   { value: "region", label: "Region" },
-  { value: "kingdom", label: "Kingdom" },
+  { value: "kingdom", label: "Kingdom or Nation" },
   { value: "continent", label: "Continent" },
   { value: "map", label: "Map" },
   { value: "world_event", label: "World Event" },

@@ -1,0 +1,67 @@
+id: captain-ressa-thorn
+name: Captain Ressa Thorn
+description: Zeffo's watch captain, trying to protect the settlement with too few guards and too little reliable information.
+tags:
+- Zeffo
+- Campaign NPC
+created: '2026-10-22T00:24:56Z'
+updated: '2026-10-22T00:24:56Z'
+race: null
+alignment: null
+role: Captain of Zeffo's watch
+city: zeffo-city
+region: null
+kingdom: umbara
+details: >-
+  Backstory: Ressa grew up in Zeffo and joined the watch as a young adult. After years
+  of ordinary patrols and road duty, she was promoted to captain when the previous
+  captain stepped down. She earned the post by being dependable rather than dramatic:
+  she knows the lanes, the shift routines, and which residents will need help before
+  they ask for it.
+
+  At the table: Ressa asks direct questions and turns answers into practical plans.
+  She is not cold, but she is careful with promises she cannot guarantee. The outbreak
+  has stretched the watch thin; she quietly counts patrols, moves guards toward the
+  northern approach, and tries to keep residents from panicking. If the party helps,
+  she treats them as allies and shares what she can verify. She suspects a necromancer
+  may be involved but has no evidence and knows nothing about the artifact or Edrin's
+  role.
+
+  Ressa's burden is not that she lacks courage; it is that every guard sent to one
+  place leaves another street less protected. She respects people who bring useful
+  observations and dislikes anyone who treats frightened residents as foolish.
+motives:
+- Protect Zeffo's residents and keep the watch functioning without spreading panic.
+- Find a cause she can act on instead of chasing rumors.
+goals:
+- Coordinate safe patrols, barricades, and a response to the missing residents.
+- Learn whether the undead are being directed by someone or moving on their own.
+fears:
+- That the watch will be unable to respond when two places need help at once.
+- That one of her decisions will leave a resident or guard exposed.
+secrets:
+- She has fewer guards available than she admits publicly and is holding back that detail to prevent panic.
+knowledge:
+- Reports describe green-eyed undead near the cemetery, forest road, and northern approach.
+- She suspects a necromancer but has no proof of one and does not know the artifact or Edrin's involvement.
+- Old Bram has reported opened graves and northbound movement; she is worried he will investigate alone.
+events:
+- description: Organized barricades and questioned the party after the undead sightings reached Zeffo.
+  campaign: zeffo-undead-campaign
+  location: zeffo-city
+- description: Requested help investigating disturbed graves and later organized patrols based on the party's findings.
+  campaign: zeffo-undead-campaign
+  location: zeffo-city
+relationships:
+- character: reference-edrin-vale
+  relationship: trusted healer
+  notes: She sends injured residents to him and may ask him to treat guards; she does not know about his secret research.
+- character: old-bram-npc
+  relationship: trusted witness
+  notes: She takes his cemetery records seriously but tries to keep him from searching the forest alone.
+- character: nella-npc
+  relationship: information source
+  notes: Nella passes along road reports from travelers, which Ressa uses as leads rather than confirmed facts.
+- character: reference-venn-calder
+  relationship: local merchant
+  notes: Venn can direct visitors to Ressa and has firsthand knowledge of the roadside attack.

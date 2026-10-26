@@ -1,0 +1,20 @@
+id: krennic
+name: Krennic
+description: Elected official of Scarif.
+tags:
+- ruler
+race: null
+alignment: null
+role: Elected official
+city: null
+region: null
+kingdom: scarif
+details: null
+motives: []
+goals: []
+fears: []
+secrets: []
+knowledge: []
+events: []
+relationships: []
+job: Elected official

@@ -1,8 +1,24 @@
 id: umbara
 name: Umbara
-description: >
-  A country-state in Elligaesia currently in conflict with Teth over a
-  mysterious island that appeared in the ocean.
-ruler: null
-capital: null
+description: 'An independent Elligaesian nation currently in conflict with Teth over a mysterious island
+  that appeared in the ocean.
+
+  '
+ruler: karga
+capital: umbara-maborn
 continent: elligaesia
+government_type: Monarchy
+government_notes: 'Umbara is governed independently and coordinates with the other Elligaesian nations
+  on trade and shared policies.
+
+  '
+leadership:
+- id: umbara-queen
+  title: Queen
+  holders:
+  - karga
+  reports_to: []
+  authority: Leads the government of Umbara.
+  status: Current
+political_level: nation
+parent_kingdom: north-elligaesia

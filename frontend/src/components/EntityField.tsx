@@ -581,6 +581,7 @@ function EntityField({
           options={options}
           value={selectedOption}
           onChange={(_, selected) => onChange(selected?.value ?? null)}
+          disableClearable={field.name === "political_level"}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, selected) =>
             option.value === selected.value

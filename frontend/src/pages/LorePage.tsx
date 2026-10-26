@@ -47,7 +47,10 @@ function LorePage() {
   const campaigns = sortEntitiesByName(worldData?.campaigns ?? []);
   const places = sortEntitiesByName([
     ...(worldData?.continents ?? []).map((place) => ({ ...place, type: "Continent" })),
-    ...(worldData?.kingdoms ?? []).map((place) => ({ ...place, type: "Kingdom" })),
+    ...(worldData?.kingdoms ?? []).map((place) => ({
+      ...place,
+      type: place.political_level === "nation" ? "Nation" : "Kingdom",
+    })),
     ...(worldData?.regions ?? []).map((place) => ({ ...place, type: "Region" })),
     ...(worldData?.cities ?? []).map((place) => ({ ...place, type: "City" })),
     ...(worldData?.locations ?? []).map((place) => ({ ...place, type: place.location_type || "Location" })),

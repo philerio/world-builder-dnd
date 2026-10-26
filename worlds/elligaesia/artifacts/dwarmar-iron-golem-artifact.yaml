@@ -1,0 +1,22 @@
+id: dwarmar-iron-golem-artifact
+name: Dwarmar Iron Golem
+description: 'Ancient Dwarmar technology powered by power sources provided by Bane.
+  These Iron Golems require a living host to power them. Once inside the host is no
+  longer in control of their own body. The golem takes over, and does the bidding
+  of those who control the power source. Iron Golems are powerful constructs. Some
+  Dwarmar cities used them for war, while other used them primarily for entertainment. '
+tags: []
+created: '2026-10-22T01:16:57.382611'
+updated: '2026-10-22T01:16:57.382617'
+item_type: other
+details: null
+dm_notes: 'Different Dwarmars developed their own version of these constructs. The
+  ones created in what is now known as Zeffo used them in fighting arenas. Where criminals
+  would fight to the death. On the more western regions, they were used more for defense
+  or warfare. '
+player_text: null
+campaigns:
+- zeffo-undead-campaign
+- welcome-home-sanitarium
+world_stories:
+- bane-overarching-story

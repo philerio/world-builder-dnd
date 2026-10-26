@@ -1,0 +1,20 @@
+id: nevarro
+name: Nevarro
+tags: []
+description: An Elligaesian nation ruled by King Mee Cheechi.
+ruler: mee-cheechi
+capital: nevarro-domaz
+continent: elligaesia
+government_type: Monarchy
+government_notes: This nation governs independently and coordinates with the other Elligaesian nations
+  on trade and shared policies.
+leadership:
+- id: nevarro-king
+  title: King
+  holders:
+  - mee-cheechi
+  reports_to: []
+  authority: Leads the government of Nevarro.
+  status: Current
+political_level: nation
+parent_kingdom: north-elligaesia

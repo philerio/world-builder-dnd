@@ -1,0 +1,21 @@
+id: serenno
+name: Serenno
+tags: []
+description: An Elligaesian nation whose ruling family was assassinated, leaving it in civil war.
+ruler: null
+capital: serenno-city
+continent: elligaesia
+government_type: Hereditary monarchy
+government_notes: The Serenno Family held the ruling authority. Its assassination triggered the ongoing
+  civil war; the successor and current governing authority are not established. This nation governs independently
+  and coordinates with the other Elligaesian nations on trade and shared policies.
+leadership:
+- id: serenno-ruling-family
+  title: The Serenno Family
+  holders: []
+  reports_to: []
+  authority: Former ruling dynasty of Serenno.
+  status: Vacant
+  notes: The ruling family was assassinated. No successor has been established.
+political_level: nation
+parent_kingdom: north-elligaesia

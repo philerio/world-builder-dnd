@@ -1,0 +1,20 @@
+id: dwarmar-power-sources-lore
+name: Dwarmar Power Sources
+description: The Dwarmar were an ancient civilization whose knowledge has mostly been lost.
+tags:
+- world-lore
+player_knowledge: null
+common_knowledge: The Dwarmar were an ancient civilization whose knowledge has mostly been lost. Their
+  power sources controlled machines. Some sources survived the civilization’s fall and are now being uncovered.
+common_knowledge_locations:
+- elligaesia
+details: 'The Dwarmar were an ancient civilization whose knowledge has mostly been lost. Their power sources
+  controlled machines. Different sources required different costs: some demanded soul sacrifices, while
+  others continually drained a linked user. When several sources came close together, they could combine
+  and become almost sentient. The Dwarmar king made a sacrifice to destroy the sources, and the act wiped
+  out the people. Some sources survived and are now being uncovered.'
+dm_notes: The source does not specify the king's exact sacrifice or the number of surviving sources. Elves
+  independently learned to activate a source, and gnomes use one for flying ships. The larger artifacts
+  hold remnants of Bane's power. Bane seeks enough remnants to open a portal to the gods' realm, but the
+  required number remains undecided. Keep this connection secret from ordinary world knowledge.
+campaigns: []
