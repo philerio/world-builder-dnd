@@ -40,6 +40,14 @@ drive is available before starting the backend.
 - Generate documentation.
 - Export campaign settings.
 
+Campaign plot points support optional [scene scripts](docs/SCENE_SCRIPTS.md) for
+ordered narration, dialogue, and DM notes, with a reading view for preparation
+and play.
+
+The [live-session workflow](docs/RUNNING_A_SESSION.md) also includes a session
+journal for DM notes, NPC reactions, world changes and follow-ups, explicit
+consequence creation, and session summaries with separate private notes.
+
 ## Project Status
 
 🚧 In Development

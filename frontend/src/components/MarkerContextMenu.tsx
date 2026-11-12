@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemIcon, ListItemText, Menu, MenuItem, Typography, TextField, Box } from "@mui/material";
+import type { MapLayer } from "../types";
 import AddLocationAltIcon from "@mui/icons-material/AddLocationAlt";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -20,6 +21,9 @@ type MarkerContextMenuProps = {
   onChangeOrder: (markerId: string, direction: "front" | "back") => void;
   onDelete: (markerId: string) => Promise<void>;
   onClose: () => void;
+  layers?: MapLayer[];
+  unavailableLayers?: string[];
+  onMoveToLayer?: (markerId: string, layerId: string | null) => void;
 };
 
 function MarkerContextMenu({
@@ -32,6 +36,9 @@ function MarkerContextMenu({
   onChangeOrder,
   onDelete,
   onClose,
+  layers = [],
+  unavailableLayers = [],
+  onMoveToLayer,
 }: MarkerContextMenuProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteMarkerId, setDeleteMarkerId] = useState<string | null>(null);
@@ -50,6 +57,13 @@ function MarkerContextMenu({
       >
         {markerId ? (
           <>
+            {onMoveToLayer && <Box sx={{ px: 2, py: 1 }}>
+              <TextField select fullWidth size="small" label="Move to layer" value="__choose__" onChange={(event) => { onMoveToLayer(markerId, event.target.value || null); onClose(); }}>
+                <MenuItem value="__choose__" disabled>Choose destination</MenuItem>
+                <MenuItem value="">Unassigned</MenuItem>
+                {layers.map((layer) => <MenuItem key={layer.id} value={layer.id} disabled={unavailableLayers.includes(layer.id)}>{layer.name}</MenuItem>)}
+              </TextField>
+            </Box>}
             <MenuItem
               onClick={() => {
                 onDuplicate(markerId);

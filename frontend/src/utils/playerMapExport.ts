@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "../api";
+import { sortMapMarkers } from "./mapEditing.ts";
+import { API_BASE_URL } from "../api.ts";
 import type { Map as WorldMap, MapMarker } from "../types";
 
 const MAX_DIMENSION = 4096;
@@ -161,10 +162,10 @@ function drawMarker(
     context.arc(x, y, radius, 0, Math.PI * 2);
     context.fillStyle = "rgba(18, 18, 18, 0.94)";
     context.fill();
-    context.strokeStyle = "#c9a85b";
+    context.strokeStyle = fill;
     context.lineWidth = Math.max(2, 3 * scale);
     context.stroke();
-    context.fillStyle = "#e0bd69";
+    context.fillStyle = marker.fill_color || "#e0bd69";
     context.font = `bold ${Math.max(10, 15 * scale)}px Arial, sans-serif`;
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -219,15 +220,14 @@ async function flattenMap(
   context.fillRect(0, 0, width, height);
   if (source) context.drawImage(source, 0, 0, width, height);
 
-  const visibleMarkers = [...map.markers]
+  const visibleMarkers = sortMapMarkers(map)
     .filter(
       (marker) =>
         marker.visible &&
         (audience === "dm" || !marker.dm_only) &&
         !marker.player_view_mask &&
         !marker.fog_reveal
-    )
-    .sort((left, right) => (left.z_index ?? 0) - (right.z_index ?? 0));
+    );
   const maskMarkers = map.markers.filter(
     (marker) =>
       marker.visible && marker.type === "area" && marker.player_view_mask

@@ -1,6 +1,6 @@
 # Current Project Handoff
 
-**Updated:** 2026-10-21
+**Updated:** 2026-11-12
 **Purpose:** Durable starting point for a new developer or assistant session. This is a summary, not a replacement for the repository instructions, source code, or campaign files.
 
 ## Read these first
@@ -114,6 +114,155 @@ DnDGameTool now lets the DM choose Enemy, Ally or Party member for each optional
 The combat Map toolbar's **Token visibility** button replaces the old bottom checkbox row. Its right sidebar stages multiple reveal/hide changes, keeps map pan/zoom/drag available, and **Apply** saves the choices together and closes it. Cancel/X/Escape discard changes; switching campaign or scene discards an open draft. Individual unit-card eye buttons still work immediately. When adding later-created heroes to a prepared scene, create/import them in the destination combat campaign, use Combat's include checkboxes if needed, then position/reveal them on Map. The active scene autosaves; wait for the save indicator. Use **Save current map as scene** with a new name first to keep an enemy-only original.
 
 DnDGameTool also bundles offline 2014/2024 SRD spell references with stable edition-specific IDs (`srd-2014-fireball`, `srd-2024-fireball`). Built-ins stay in the app; settings save only custom definitions/overrides and characters save known/prepared IDs. This does not add a World Builder spell API or sync spell rules across apps. See combat `docs/spell-sources.md` and `docs/encounters.md` for catalog provenance and usage. No live map was published and no application server was restarted for this work.
+
+## 2026-10-27: World search and location breadcrumbs
+
+Global search now indexes names, descriptions, tags, notes, and nested story text from shared world data. Results include a labeled matching excerpt and saved location path, with distinct Kingdom/Nation filters. Private text keeps its DM-only context; searching never reveals a marker or changes player knowledge. Technical IDs and asset paths are excluded. Clickable breadcrumbs in entity details and the home dashboard follow explicit location/political references and retain the drawer's existing back history. See [SEARCH_AND_NAVIGATION.md](SEARCH_AND_NAVIGATION.md) for behavior, limits, and verification commands.
+
+Related cumulative frontend work is documented in [SESSION_DASHBOARD.md](SESSION_DASHBOARD.md) and [EDITING_WORKFLOWS.md](EDITING_WORKFLOWS.md). These additions reuse existing backend models and shared world state; preserve the existing story content types and map interaction safeguards.
+
+## 2026-10-27: Map editing
+
+Map editing now includes optional API map revisions, baseline-aware browser
+drafts with per-marker merging/conflict choices, complete map-setting undo,
+HTTP-safe IDs, shared editor/export layer ordering, rigid map-unit transforms,
+direct layer assignment, explicit drawing completion, a nonmodal inspector,
+hidden-item ghosts, mobile tool sheets, selection/nudging, and local export
+preview. See [MAP_EDITING_WORKFLOW.md](MAP_EDITING_WORKFLOW.md). Preserve normal
+marker `pmIgnore` and the stable Geoman control initialization when extending it.
+
+The next map update adds a per-world browser style library with built-in/custom
+point, area, path and image appearances, favorites, rename/delete and validated
+JSON import/export. Styles copy visuals without changing canon, identity,
+geometry, links or visibility. Bulk property editing stages one undoable operation
+and honors locks and marker kinds. Full-screen editing preserves the Leaflet
+instance and includes mobile controls, nested drawer stacking, keyboard focus
+exclusion for covered app chrome, and scroll restoration. See the map workflow
+for storage scope and transfer limits. Keep optional `overlayZIndex` propagation
+when opening nested entity/creation drawers over the full-screen map.
+
+Map conflict resolution now shows draft and saved values with a required choice
+for each conflicting field, item deletion, layer order or invalid assignment.
+`mergeMapDraft` retains its conflict strings for compatibility and adds structured
+`conflictDetails` plus optional choices/legacy-review inputs. `MapConflictDialog`
+provides responsive comparisons and explicit all-mine/all-saved shortcuts.
+Saving rechecks both authored revision and reviewed draft before honoring choices;
+unrelated local/remote edits remain merged. Legacy drafts review all differences.
+
+## 2026-11-04: Optional scene scripts for campaign plot points
+
+Plot points now have an optional ordered `scene_script` containing narration,
+dialogue (with an optional free-text/NPC-name speaker), and DM notes. The existing
+plot-point editor offers Write scene script, paragraph/dialogue/note creation,
+reordering, removal, and draft preview. Save changes persists the script with the
+plot point and keeps the editor/draft open on failure. Existing summaries, inline
+entity links, checks, NPC knowledge, consequences, and campaign history remain in
+their existing fields. Legacy `StoryText`, `StoryEntityLink`, and `StoryContent`
+models are preserved; older beats default to an empty script.
+
+Read scene script opens a responsive reading dialog from the planner, selected
+Session Prep plot points, and the current During Session reference. Its scene
+selector and Previous/Next controls follow plot-point Order without changing the
+current beat, status, clocks, or actions. Show DM notes affects this DM reading
+dialog only; this does not publish text to players or the combat app. Text remains
+plain text with preserved paragraph breaks and is never executed as HTML.
+
+Implementation: `worldbuilder/models/story.py`, frontend `types.ts`, the additive
+`components/SceneScript.tsx`, and campaign dashboard integration. No dependencies
+were added and no authored campaign YAML was changed. See
+[SCENE_SCRIPTS.md](SCENE_SCRIPTS.md) for workflow and storage details.
+
+Validation: 174 Python tests passed (167 baseline), including YAML/API persistence,
+legacy story compatibility and invalid block rejection. All 17 existing dashboard
+and editing unit tests and the existing dashboard browser workflows passed. New
+`npm run test:scene-script-ui` checks desktop/phone authoring, paragraph retention,
+speaker entry, reorder/removal, cancel, failed-save retry, reload, reading order,
+DM-note visibility and session workspace access using intercepted API fixtures.
+Source/test lint, Python lint/formatting, TypeScript and production build passed;
+the production build retains its large-bundle warning.
+
+## 2026-11-10: Live-session journal and accessible post-game summaries
+
+During Session now includes a separate Session journal for DM notes, NPC
+reactions, world changes and follow-ups. Entries persist under
+`CampaignStory.session_entries`; they keep session, optional plot point/NPCs,
+source action/entry IDs, and linked consequences. They never become party actions
+or edit NPC canon. Browser drafts are separated by world/campaign/session and
+survive refresh; failed saves retain text. Follow-ups can be marked done/reopened.
+
+Create consequence from a journal entry or recent party action opens a reviewable
+draft with its cause, owning plot point, optional timing, and possible next plot
+points. Saving adds a pending consequence and source link in the same campaign
+save. No clocks, scene statuses, or current-beat changes happen automatically.
+Deleting a plot point, consequence or party action cleans the corresponding new
+journal links while retaining entries. Data Health reports missing journal
+references; duplicate IDs and invalid session values are rejected by the model.
+
+Session summary is now directly accessible from the live toolbar. Its existing
+recap editor can append an outline from the whole session log while retaining
+authored prose. Party/NPC/world facts go in the summary; DM notes, linked
+consequences and open follow-ups go in private notes. Journal-only sessions appear
+in session history and session-number calculations. Party action saves keep the
+selected session and retain the draft on failure.
+
+The campaign page's shared dialogs are now rendered in both the dashboard and
+prep/live workspaces. Previously the Session history and Close out buttons could
+set their open state during play without rendering their dialogs. The shared
+render path also preserves scene-script readers and event/timeline actions.
+
+See [RUNNING_A_SESSION.md](RUNNING_A_SESSION.md) for preparation, capture,
+consequence and recap workflows. New source modules are `SessionJournal.tsx`,
+`SessionConsequenceDialog.tsx` and `utils/sessionJournal.ts`; the existing story
+models remain intact. No dependencies were added and no authored world data was
+changed. Backend baseline: 174 tests; after changes: 183 tests. Frontend helper
+checks cover journal, dashboard and editing behavior (23 tests). Desktop/phone
+browser checks exercise recovery, retries, NPC causes, consequence links, summary
+privacy, live history/closeout and notes-only sessions; existing dashboard and
+scene-script workflows also passed. Lint, formatting, TypeScript and production
+build pass; the pre-existing large-bundle warning remains.
+
+## 2026-11-10: Campaign typing performance
+
+Campaign text drafts previously lived in `CampaignDashboardPage` state. Each
+character re-rendered unrelated plot points, actions, controls and dialogs. In a
+mocked campaign with 12 plot points, the 21-character plot-name test took about
+8.5 seconds and party capture took 7.5 seconds in development Chromium.
+
+`useEditorDraft` now owns each form's synchronous draft snapshot for the lifetime
+of the campaign page. `DraftEditor` subscribes just the form with
+`useSyncExternalStore`. Save handlers read the current snapshot directly, so an
+immediate click includes the final character. Workspace changes retain unfinished
+captures; failed saves keep drafts. This covers plot/script editors, campaign arcs,
+recaps, prep prose, event drafts, action/consequence/clock editors and creation
+forms. Journal history and response options are memoized separately from capture;
+its recovery draft still writes synchronously to browser storage.
+
+The same typing probe dropped to approximately 1.7 seconds for plot editing and
+0.9 seconds for party capture. These are local development measurements, not
+production performance guarantees. `npm run test:dashboard-typing-ui` uses mocked
+API data and React commit observations to assert that typing does not re-render
+the whole page or saved journal entries, rather than relying on timing thresholds.
+It also checks rich-text/script saves, draft retention, retry, prep, recap, arc,
+plot creation, clock, consequence and action editing. Existing desktop/phone
+dashboard, script and journal browser suites pass, alongside 183 Python and 23
+frontend helper tests. Lint, changed-block formatting and production build pass;
+the existing bundle-size warning remains. No campaign YAML was edited.
+
+## 2026-11-12: Scene reader layout
+
+`SceneScript.tsx` now uses a wider reading column, compact header/footer, a
+top-right close button and scene position counter. Paragraphs separated by blank
+lines render as spaced paragraphs; single newlines still wrap as authored.
+Dialogue and private notes have labeled, shaded blocks. The same presentation is
+used in script previews. The text region scrolls independently, and changing
+scenes resets that region to the top while keeping the dialog height stable.
+Phone navigation uses labeled arrow buttons. No authored script text is changed.
+
+The scene-script browser suite checks desktop and phone authoring, preview,
+save/retry, privacy, reader navigation, short-screen scrolling to the final
+paragraph, fixed controls, scroll reset and both close buttons using mocked data.
+The seven scene-script Python tests, source/test lint, formatting and production
+build also pass. See [SCENE_SCRIPTS.md](SCENE_SCRIPTS.md).
 
 ## Worktree and change safety
 

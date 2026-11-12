@@ -1,3 +1,20 @@
+import MapConflictDialog from "../components/MapConflictDialog";
+import type { MapConflictApproval, MapConflictReview } from "../utils/mapConflicts";
+import useMarkerStyles from "../hooks/useMarkerStyles";
+import type { MarkerStyles } from "../hooks/useMarkerStyles";
+import { applyMarkerStyle, patchMarkerProperties } from "../utils/markerStyles";
+import type { MarkerStyle, MarkerPropertyPatch } from "../utils/markerStyles";
+import BulkMarkerProperties from "../components/BulkMarkerProperties";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { MarkerStyleLibraryDialog } from "../components/MarkerStyles";
+import MapSelectionBox from "../components/MapSelectionBox";
+import MapExportPreview from "../components/MapExportPreview";
+import { createId } from "../utils/createId";
+import { markerBounds, sortMapMarkers, transformMapSelection, mergeMapDraft } from "../utils/mapEditing";
+import { readMapDraft, writeMapDraft, removeMapDraft, type StoredMapDraft, type MapStampAsset, type PendingStampSize } from "../utils/mapDrafts";
+import { draftValuesEqual } from "../utils/entityDrafts";
+import { entityTypeLabel } from "../utils/entityNavigation";
 import { API_BASE_URL } from "../api";
 import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -16,6 +33,7 @@ import {
 import L from "leaflet";
 import {
   Box,
+  Autocomplete,
   Breadcrumbs,
   Button,
   Card,
@@ -52,6 +70,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import UndoIcon from "@mui/icons-material/Undo";
@@ -87,6 +106,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import type { EntityData, EntitySummary, Map, MapLayer, MapMarker, WorldStory } from "../types";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import MarkerDrawer from "../components/MarkerDrawer";
+import { recordRecentEntity } from "../utils/workspacePreferences";
 import MarkerContextMenu from "../components/MarkerContextMenu";
 import useEntityDrawer from "../hooks/useEntityDrawer";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -129,43 +149,11 @@ const QUICK_SHAPE_LABELS: Record<QuickShapePreset, string> = {
   "building-t": "T-shaped building",
   "building-u": "U-shaped building",
 };
-type MapStampAsset = { name: string; image_path: string; default_size: number; category?: "building" | "sprite" };
-type PendingStampSize = { stamp: MapStampAsset; size: number; originalSize: number };
-type StoredMapEditorDraft = { map: Map; stampSizes: [string, PendingStampSize][] };
-type MapEditSnapshot = { markers: MapMarker[]; layers?: MapLayer[] };
+type MapEditSnapshot = Pick<Map, "markers" | "layers" | "canvas_width" | "canvas_height" | "image_path" | "fog_of_war">;
 type MarkerHistoryState = { undo: MapEditSnapshot[]; redo: MapEditSnapshot[] };
 const EMPTY_MAP_LAYERS: MapLayer[] = [];
-
-function mapDraftStorageKey(mapId: string) {
-  return `world-builder-map-draft:${mapId}`;
-}
-
-function readStoredMapEditorDraft(mapId: string): StoredMapEditorDraft | null {
-  try {
-    const stored = window.sessionStorage.getItem(mapDraftStorageKey(mapId));
-    if (!stored) return null;
-    const parsed = JSON.parse(stored) as StoredMapEditorDraft;
-    if (parsed.map?.id !== mapId || !Array.isArray(parsed.map.markers) || !Array.isArray(parsed.stampSizes)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function storeMapEditorDraft(map: Map, stampSizes: globalThis.Map<string, PendingStampSize>) {
-  try {
-    window.sessionStorage.setItem(mapDraftStorageKey(map.id), JSON.stringify({ map, stampSizes: [...stampSizes] } satisfies StoredMapEditorDraft));
-  } catch {
-    // Keep editing available when the browser blocks session storage.
-  }
-}
-
-function clearStoredMapEditorDraft(mapId: string) {
-  try {
-    window.sessionStorage.removeItem(mapDraftStorageKey(mapId));
-  } catch {
-    // Nothing else is required if the browser blocks session storage.
-  }
+function editSnapshot(map: MapEditSnapshot): MapEditSnapshot {
+  return structuredClone({ markers: map.markers, layers: map.layers, canvas_width: map.canvas_width, canvas_height: map.canvas_height, image_path: map.image_path, fog_of_war: map.fog_of_war });
 }
 
 function copyMarkers(markers: MapMarker[]): MapMarker[] {
@@ -176,10 +164,7 @@ function copyMarkers(markers: MapMarker[]): MapMarker[] {
 }
 
 function copyMapEditSnapshot(snapshot: MapEditSnapshot): MapEditSnapshot {
-  return {
-    markers: copyMarkers(snapshot.markers),
-    ...(snapshot.layers ? { layers: snapshot.layers.map((layer) => ({ ...layer })) } : {}),
-  };
+  return editSnapshot(snapshot);
 }
 
 function mapLayerPaneName(layerId: string | null | undefined): string {
@@ -202,22 +187,13 @@ function offsetMapMarker(marker: MapMarker, deltaX: number, deltaY: number): Map
   };
 }
 
-function getMarkerBounds(marker: MapMarker) {
-  const points = marker.points?.length ? marker.points : [[marker.x, marker.y] as [number, number]];
-  return points.reduce(
-    (bounds, [x, y]) => ({
-      minX: Math.min(bounds.minX, x),
-      minY: Math.min(bounds.minY, y),
-      maxX: Math.max(bounds.maxX, x),
-      maxY: Math.max(bounds.maxY, y),
-    }),
-    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
-  );
+function getMarkerBounds(marker: MapMarker, width = 1000, height = 700) {
+  return markerBounds(marker, { width, height });
 }
 
-function getGroupTranslation(markers: MapMarker[], deltaX: number, deltaY: number): [number, number] {
+function getGroupTranslation(markers: MapMarker[], deltaX: number, deltaY: number, dimensions = { width: 1000, height: 700 }): [number, number] {
   if (markers.length === 0) return [deltaX, deltaY];
-  const bounds = markers.map(getMarkerBounds).reduce((group, item) => ({
+  const bounds = markers.map((marker) => getMarkerBounds(marker, dimensions.width, dimensions.height)).reduce((group, item) => ({
     minX: Math.min(group.minX, item.minX),
     minY: Math.min(group.minY, item.minY),
     maxX: Math.max(group.maxX, item.maxX),
@@ -230,7 +206,7 @@ function getGroupTranslation(markers: MapMarker[], deltaX: number, deltaY: numbe
   ];
 }
 
-function getDuplicateTranslation(markers: MapMarker[]): [number, number] {
+function getDuplicateTranslation(markers: MapMarker[], dimensions = { width: 1000, height: 700 }): [number, number] {
   const chooseOffset = (min: number, max: number) => {
     const preferredOffset = 6;
     const positiveSpace = Math.max(0, 100 - max);
@@ -239,7 +215,7 @@ function getDuplicateTranslation(markers: MapMarker[]): [number, number] {
     if (negativeSpace >= preferredOffset) return -preferredOffset;
     return positiveSpace >= negativeSpace ? positiveSpace : -negativeSpace;
   };
-  const bounds = markers.map(getMarkerBounds).reduce((group, item) => ({
+  const bounds = markers.map((marker) => getMarkerBounds(marker, dimensions.width, dimensions.height)).reduce((group, item) => ({
     minX: Math.min(group.minX, item.minX),
     minY: Math.min(group.minY, item.minY),
     maxX: Math.max(group.maxX, item.maxX),
@@ -310,7 +286,7 @@ function createTemplateMarkers(template: MapTemplate): MapMarker[] {
     points: [number, number][],
     fillColor: string,
   ): MapMarker => ({
-    id: crypto.randomUUID(),
+    id: createId(),
     entity_id: null,
     x: 0,
     y: 0,
@@ -324,7 +300,7 @@ function createTemplateMarkers(template: MapTemplate): MapMarker[] {
     fill_opacity: 0.48,
   });
   const makePath = (label: string, points: [number, number][]): MapMarker => ({
-    id: crypto.randomUUID(),
+    id: createId(),
     entity_id: null,
     x: 0,
     y: 0,
@@ -401,7 +377,7 @@ function createQuickShapeMarker(preset: QuickShapePreset, x: number, y: number):
       : [[centerX, centerY - definition.radius], [centerX, centerY + definition.radius]];
 
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     entity_id: null,
     x: points[0][0],
     y: points[0][1],
@@ -484,7 +460,27 @@ function MapCreationDialog({
   );
 }
 
-type MapViewerProps = {
+type MapEditorOptions = {
+  placementStyle?: MarkerStyle | null;
+  fullScreen?: boolean;
+  placementStamp?: MapStampAsset | null;
+  showHiddenItems: boolean;
+  onShowHiddenItemsChange: (show: boolean) => void;
+  repeatPlacement: boolean;
+  onRepeatPlacementChange: (repeat: boolean) => void;
+  onCancelTool: () => void;
+  onFinishDrawing: () => void;
+  onMeasureDimensions: (width: number, height: number) => void;
+  onSelectMarkers: (ids: string[], append: boolean) => void;
+  onAssignMarkerLayer: (markerId: string, layerId: string | null) => void;
+  canEditMarker: (id: string) => boolean;
+};
+
+type MapViewerProps = MapEditorOptions & {
+  styles: MarkerStyles;
+  onPlaceStyle: (style: MarkerStyle) => void;
+  onToggleFullScreen: () => void;
+  onBulkProperties: (style: MarkerStyle | null, patch: Partial<MarkerPropertyPatch>) => Promise<void>;
   map: Map;
   maps: Map[];
   editMode: boolean;
@@ -591,7 +587,7 @@ type MapViewerProps = {
   onShapeEdited: (marker: MapMarker) => void;
 };
 
-type LeafletMapProps = {
+type LeafletMapProps = MapEditorOptions & {
   map: Map;
   maps: Map[];
   editMode: boolean;
@@ -638,9 +634,11 @@ type LeafletMapProps = {
 };
 
 type MapContextMenuProps = {
+  placementStyle?: MarkerStyle | null;
   imageWidth: number;
   imageHeight: number;
   editingEnabled: boolean;
+  placementStamp?: MapStampAsset | null;
   pointPlacementMode: boolean;
   shapePlacementPreset: QuickShapePreset | null;
   snapToGrid: boolean;
@@ -656,6 +654,7 @@ type MapContextMenuProps = {
 };
 
 type GeomanControllerProps = {
+  moveEnabled: boolean;
   mapData: Map;
   imageWidth: number;
   imageHeight: number;
@@ -672,6 +671,7 @@ type GeomanControllerProps = {
 };
 
 type MapMarkersProps = {
+  showHiddenItems: boolean;
   map: Map;
   editMode: boolean;
   campaignActivity: MapCampaignActivity[];
@@ -918,6 +918,7 @@ function getMarkerExplorerFilter(
 }
 
 type MapExplorerProps = {
+  canEditMarker: (id: string) => boolean;
   markers: MapMarker[];
   layers: MapLayer[];
   editMode: boolean;
@@ -935,6 +936,7 @@ type MapExplorerProps = {
 };
 
 function MapExplorer({
+  canEditMarker,
   markers,
   layers,
   editMode,
@@ -997,7 +999,7 @@ function MapExplorer({
         <Box>
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Map Explorer</Typography>
           <Typography variant="caption" color="text.secondary">
-            {view === "markers" ? `${filteredMarkers.length} of ${markers.length} markers` : `${unmappedLocations.length} of ${allUnmappedLocations.length} unmapped locations`}
+            {view === "markers" ? `${filteredMarkers.length} of ${markers.length} markers` : `${unmappedLocations.length} of ${allUnmappedLocations.length} unmapped records`}
           </Typography>
         </Box>
         <Tooltip title="Close map explorer">
@@ -1015,8 +1017,8 @@ function MapExplorer({
           size="small"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder={view === "markers" ? "Search markers" : "Search locations"}
-          aria-label={view === "markers" ? "Search map markers" : "Search unmapped locations"}
+          placeholder={view === "markers" ? "Search markers" : "Search records"}
+          aria-label={view === "markers" ? "Search map markers" : "Search unmapped records"}
           slotProps={{
             input: {
               startAdornment: (
@@ -1074,6 +1076,7 @@ function MapExplorer({
                   <IconButton
                     size="small"
                     aria-label={`Bring ${title} to front within its layer`}
+                    disabled={!canEditMarker(marker.id)}
                     onClick={() => onChangeMarkerOrder(marker.id, "front")}
                     sx={{ p: 0.35 }}
                   >
@@ -1084,6 +1087,7 @@ function MapExplorer({
                   <IconButton
                     size="small"
                     aria-label={`Send ${title} to back within its layer`}
+                    disabled={!canEditMarker(marker.id)}
                     onClick={() => onChangeMarkerOrder(marker.id, "back")}
                     sx={{ p: 0.35 }}
                   >
@@ -1091,12 +1095,14 @@ function MapExplorer({
                   </IconButton>
                 </Tooltip>
               </Stack>}
-              <Tooltip title={entity ? "Open linked entity" : linkedMap ? "Open linked map" : "Edit marker"}>
+              <Tooltip title={editMode ? "Edit marker properties" : entity ? "Open linked entity" : "Open linked map"}>
                 <IconButton
                   size="small"
-                  aria-label={entity ? `Open ${entity.name}` : linkedMap ? `Open ${linkedMap.name}` : `Edit ${title}`}
+                  aria-label={editMode ? `Edit ${title}` : entity ? `Open ${entity.name}` : `Open ${title}`}
+                  disabled={editMode && !canEditMarker(marker.id)}
                   onClick={() => {
-                    if (entity) onOpenEntity(entity.id);
+                    if (editMode) onOpenMarkerEditor(marker.id);
+                    else if (entity) onOpenEntity(entity.id);
                     else if (linkedMap) onOpenMap(linkedMap.id);
                     else onOpenMarkerEditor(marker.id);
                   }}
@@ -1130,7 +1136,7 @@ function MapExplorer({
               ? "No unmapped locations match this search."
               : locations.length === 0
                 ? "No locations found in the world data."
-                : "All known locations have markers on this map."}
+                : "All known records have markers on this map."}
           </Typography>
         )}
       </Box>
@@ -1302,6 +1308,7 @@ function markerIcon(
   rotation = 0,
   mirrorX = false,
   mirrorY = false,
+  color?: string,
 ) {
   if (imagePath) {
     const size = Math.max(1, Math.min(8192, imageSize));
@@ -1317,6 +1324,7 @@ function markerIcon(
     });
   }
 
+  const markerColor = color && /^#[a-f\d]{6}$/i.test(color) ? color : undefined;
   const iconComponents = {
     city: LocationCityIcon,
     castle: CastleIcon,
@@ -1342,7 +1350,7 @@ function markerIcon(
 
   return L.divIcon({
     className: "campaign-map-marker",
-    html: `
+    html: `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
       <div
         style="
           width: 34px;
@@ -1353,17 +1361,17 @@ function markerIcon(
           justify-content: center;
           border-radius: 50%;
           background: rgba(18, 18, 18, 0.94);
-          border: 3px solid ${highlighted ? "#64b5f6" : "#c9a85b"};
-          color: ${highlighted ? "#90caf9" : "#d9b86c"};
+          border: 3px solid ${highlighted ? "#64b5f6" : markerColor ?? "#c9a85b"};
+          color: ${highlighted ? "#90caf9" : markerColor ?? "#d9b86c"};
           box-shadow: ${highlighted ? "0 0 0 4px rgba(100,181,246,0.3), " : ""}0 2px 6px rgba(0,0,0,0.65);
           overflow: visible;
         "
       >
         ${iconMarkup}
-      </div>
+      </div></div>
     `,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
   });
 }
 
@@ -1386,9 +1394,9 @@ function markerLabelIcon(label: string) {
 function shapeResizeHandleIcon() {
   return L.divIcon({
     className: "map-shape-resize-handle",
-    html: '<div title="Drag to resize proportionally" style="width:18px;height:18px;border:2px solid #fff;border-radius:4px;background:#c9a85b;box-shadow:0 1px 5px rgba(0,0,0,.7);cursor:nwse-resize"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    html: '<div title="Drag to resize proportionally" style="width:28px;height:28px;box-sizing:border-box;border:2px solid #fff;border-radius:4px;background:#c9a85b;box-shadow:0 1px 5px rgba(0,0,0,.7);cursor:nwse-resize"></div>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
   });
 }
 
@@ -1418,7 +1426,7 @@ function leafletToWorld(
   snapGridSize = 5,
 ): [number, number] {
   const snap = (value: number) => snapToGrid ? Math.round(value / snapGridSize) * snapGridSize : value;
-  return [snap((longitude / imageWidth) * 100), snap((-latitude / imageHeight) * 100)];
+  return [snap(longitude) / imageWidth * 100, snap(-latitude) / imageHeight * 100];
 }
 
 function useImageDimensions(imageUrl: string | undefined) {
@@ -1540,6 +1548,23 @@ function MapResetButton({
       </Button>
     </Box>
   );
+}
+
+function MapResizeObserver() {
+  const map = useMap();
+  useEffect(() => {
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+    });
+    observer.observe(map.getContainer());
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [map]);
+  return null;
 }
 
 function MapInitialView({
@@ -1678,16 +1703,37 @@ function MapsPage() {
   const [pointPlacementMode, setPointPlacementMode] = useState(false);
   const [shapePlacementPreset, setShapePlacementPreset] = useState<QuickShapePreset | null>(null);
   const [snapToGrid, setSnapToGrid] = useState(false);
-  const [snapGridSize, setSnapGridSize] = useState(5);
+  const [snapGridSize, setSnapGridSize] = useState(50);
   const [showGrid, setShowGrid] = useState(false);
+  const [showHiddenItems, setShowHiddenItems] = useState(false);
+  const [repeatPlacement, setRepeatPlacement] = useState(false);
   const [pendingMapEntitySelection, setPendingMapEntitySelection] = useState<EntitySummary | null>(null);
   const [shapeEditId, setShapeEditId] = useState<string | null>(null);
   const [drawShape, setDrawShape] = useState<"area" | "path" | "rectangle" | null>(null);
   const [shapeDraft, setShapeDraft] = useState<MapMarker | null>(null);
   const [draftShapeLayer, setDraftShapeLayer] = useState<L.Layer | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const mapPhysicalDimensions = useRef({ width: 1000, height: 700 });
   const mapDraftRef = useRef<Map | null>(null);
   const mapBaselineRef = useRef<Map | null>(null);
+  const [draftStorageUnavailable, setDraftStorageUnavailable] = useState(false);
+  const [recoverDraft, setRecoverDraft] = useState<{ map: Map; stored: StoredMapDraft } | null>(null);
+  const [recoveredDraft, setRecoveredDraft] = useState(false);
+  const legacyDraftRef = useRef(false);
+  const [saveConflict, setSaveConflict] = useState<MapConflictReview | null>(null);
+  const [leaveMap, setLeaveMap] = useState(false);
+  const pendingMapNavigation = useRef<(() => void) | null>(null);
+  const pendingMarkerProperties = useRef<MapMarker | null>(null);
+  const [unappliedMarkerProperties, setUnappliedMarkerProperties] = useState(false);
+  const [inspectorActionPending, setInspectorActionPending] = useState(false);
+  const pendingInspectorAction = useRef<(() => void) | null>(null);
+  const handleMarkerPropertiesDraft = useCallback((marker: MapMarker | null) => { pendingMarkerProperties.current = marker; setUnappliedMarkerProperties(Boolean(marker)); }, []);
+  const deferInspectorAction = (action: () => void) => {
+    if (!pendingMarkerProperties.current) return false;
+    pendingInspectorAction.current = action; setInspectorActionPending(true); return true;
+  };
+
+
   const pendingStampSizesRef = useRef(new globalThis.Map<string, PendingStampSize>());
   const markerHistoryRef = useRef(new Map<string, MarkerHistoryState>());
   const markerHistoryActionInProgress = useRef(false);
@@ -1721,7 +1767,19 @@ function MapsPage() {
     worldData,
     worldDataLoading,
     entitiesError,
+    loadEntity,
   } = useWorldData();
+
+  const draftWorldId = worldData?.world?.id ?? worldData?.worlds?.[0]?.id ?? "default";
+  const markerStyles = useMarkerStyles(draftWorldId);
+  const [placementStyle, setPlacementStyle] = useState<MarkerStyle | null>(null);
+  const [mapFullScreen, setMapFullScreen] = useState(false);
+  const clearMapEditorDraft = useCallback((mapId: string) => removeMapDraft(draftWorldId, mapId), [draftWorldId]);
+  const storeMapEditorDraft = useCallback((map: Map, sizes: globalThis.Map<string, PendingStampSize>) => {
+    const base = mapBaselineRef.current;
+    if (!base || base.id !== map.id) return;
+    setDraftStorageUnavailable(!writeMapDraft({ version: 2, worldId: draftWorldId, map, base, stampSizes: [...sizes], savedAt: new Date().toISOString(), legacy: legacyDraftRef.current }));
+  }, [draftWorldId]);
 
   useEffect(() => {
     let active = true;
@@ -1862,18 +1920,19 @@ function MapsPage() {
     useEntityDrawer();
 
   const getEntity = useCallback(
-    (entityId: string) => entities.find((entity) => entity.id === entityId),
-    [entities],
+    (entityId: string) => {
+      const item = entities.find((entity) => entity.id === entityId);
+      return item ? { ...item, entity_type: item.entity_type === "kingdom" && getWorldEntity(entityId)?.entity.political_level === "nation" ? "nation" : item.entity_type } : undefined;
+    },
+    [entities, getWorldEntity],
   );
 
   const activitySummaries = useMemo(
     () => entities.filter((entity) => ["campaign", "world_story", "world_event", "timeline_event"].includes(entity.entity_type)),
     [entities],
   );
-  const placeableLocations = useMemo(
-    () => entities.filter((entity) => isPlaceEntityType(entity.entity_type)),
-    [entities],
-  );
+  const placeableLocations = useMemo(() => entities.filter((entity) => isPlaceEntityType(entity.entity_type)), [entities]);
+  const placeableRecords = useMemo(() => entities.filter((entity) => isPlaceEntityType(entity.entity_type) || ["npc", "player_character", "map"].includes(entity.entity_type)), [entities]);
 
   const worldStories = useMemo(
     () => activitySummaries
@@ -1913,15 +1972,19 @@ function MapsPage() {
   const hasPendingEditorChanges = () => {
     const draft = mapDraftRef.current;
     const baseline = mapBaselineRef.current;
-    return pendingStampSizesRef.current.size > 0
+    return Boolean(pendingMarkerProperties.current) || pendingStampSizesRef.current.size > 0
       || Boolean(draft && baseline && JSON.stringify(draft) !== JSON.stringify(baseline));
   };
 
-  const beginMapEdit = (map: Map) => {
-    const storedDraft = readStoredMapEditorDraft(map.id);
+  const beginMapEdit = (map: Map, restored?: StoredMapDraft, fresh = false) => {
+    const stored = fresh ? null : readMapDraft(draftWorldId, map.id);
+    if (stored && !restored) { setRecoverDraft({ map, stored }); return; }
+    const storedDraft = restored;
+    legacyDraftRef.current = Boolean(restored?.legacy);
+    setRecoveredDraft(Boolean(restored));
     const snapshot = copyMapForEditing(storedDraft?.map ?? map);
     mapDraftRef.current = snapshot;
-    mapBaselineRef.current = copyMapForEditing(map);
+    mapBaselineRef.current = copyMapForEditing(storedDraft && !storedDraft.legacy ? storedDraft.base : map);
     pendingStampSizesRef.current.clear();
     for (const [filename, pendingSize] of storedDraft?.stampSizes ?? []) {
       if (typeof filename === "string" && Number.isInteger(pendingSize?.size) && Number.isInteger(pendingSize?.originalSize)) {
@@ -1963,14 +2026,14 @@ function MapsPage() {
   };
 
   const openMap = async (mapId: string, entityId?: string, placeEntity = false) => {
-    if (hasPendingEditorChanges() && !(await saveMapDraft())) return;
+    if (hasPendingEditorChanges()) { pendingMapNavigation.current = () => { void openMap(mapId, entityId, placeEntity); }; setLeaveMap(true); return; }
     const targetMap = maps.find((map) => map.id === mapId);
     if (placeEntity && targetMap) {
       if (mapDraftRef.current?.id !== mapId || !mapDraftDirty) beginMapEdit(targetMap);
     } else {
       setMapEditMode(false);
       setMapDraft(null);
-      if (mapDraftRef.current) clearStoredMapEditorDraft(mapDraftRef.current.id);
+      if (mapDraftRef.current) clearMapEditorDraft(mapDraftRef.current.id);
       mapDraftRef.current = null;
       mapBaselineRef.current = null;
       setMapDraftDirty(false);
@@ -1993,9 +2056,13 @@ function MapsPage() {
   };
 
   const selectedMap = maps.find((map) => map.id === selectedMapId);
+  const workspaceWorldId = worldData?.world?.id ?? worldData?.worlds?.[0]?.id;
+  useEffect(() => {
+    if (workspaceWorldId && selectedMap?.id) recordRecentEntity(workspaceWorldId, selectedMap.id);
+  }, [workspaceWorldId, selectedMap?.id]);
   const handleDeleteMap = async (map: Map) => {
     await deleteEntity(map.id);
-    clearStoredMapEditorDraft(map.id);
+    clearMapEditorDraft(map.id);
     if (mapDraftRef.current?.id === map.id) {
       mapDraftRef.current = null;
       mapBaselineRef.current = null;
@@ -2022,7 +2089,7 @@ function MapsPage() {
     setMapDraft(snapshot);
     setMapDraftDirty(JSON.stringify(snapshot) !== JSON.stringify(mapBaselineRef.current) || pendingStampSizesRef.current.size > 0);
     storeMapEditorDraft(snapshot, pendingStampSizesRef.current);
-  }, []);
+  }, [storeMapEditorDraft]);
   const editableMap = selectedMap && mapDraft?.id === selectedMap.id ? mapDraft : selectedMap;
 
   const handleUploadMapImage = async (file: File) => {
@@ -2042,25 +2109,30 @@ function MapsPage() {
     }
     const currentMap = mapDraftRef.current?.id === selectedMap.id ? mapDraftRef.current : editableMap;
     if (!currentMap) throw new Error("The selected map is no longer available.");
-    stageMapDraft({ ...currentMap, image_path: result.image_path });
+    const next = { ...currentMap, image_path: result.image_path };
+    recordMapEdit(currentMap.id, currentMap, next);
+    stageMapDraft(next);
   };
 
   const handleClearMapImage = () => {
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
     if (!currentMap) return;
-    stageMapDraft({ ...currentMap, image_path: undefined });
+    const next = { ...currentMap, image_path: undefined };
+    recordMapEdit(currentMap.id, currentMap, next);
+    stageMapDraft(next);
   };
 
   const handleFogSettingsChange = (settings: { enabled?: boolean; color?: string }) => {
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
     if (!currentMap) return;
-    stageMapDraft({
-      ...currentMap,
-      fog_of_war: { enabled: false, color: "#17191f", ...currentMap.fog_of_war, ...settings },
-    });
+    const next = { ...currentMap, fog_of_war: { enabled: false, color: "#17191f", ...currentMap.fog_of_war, ...settings } };
+    recordMapEdit(currentMap.id, currentMap, next);
+    stageMapDraft(next);
   };
 
-  const saveMapDraft = async (): Promise<boolean> => {
+  const saveMapDraft = async (
+    approval?: MapConflictApproval,
+  ): Promise<boolean> => {
     if (mapDraftSaving) return false;
     if (!hasPendingEditorChanges()) {
       setMapDraftDirty(false);
@@ -2069,57 +2141,166 @@ function MapsPage() {
 
     setMapDraftSaving(true);
     try {
+      if (pendingMarkerProperties.current) {
+        await handleSaveMarker(pendingMarkerProperties.current);
+        pendingMarkerProperties.current = null;
+        setUnappliedMarkerProperties(false);
+      }
       while (hasPendingEditorChanges()) {
         const draft = mapDraftRef.current;
         const baseline = mapBaselineRef.current;
-        if (draft && baseline && JSON.stringify(draft) !== JSON.stringify(baseline)) {
-          await updateEntity(draft.id, { ...draft });
-          mapBaselineRef.current = copyMapForEditing(draft);
+        if (
+          draft &&
+          baseline &&
+          JSON.stringify(draft) !== JSON.stringify(baseline)
+        ) {
+          const fresh = await loadEntity(draft.id);
+          const latest = fresh.entity as Map;
+          // Generated timestamps on older maps can change without a new authored revision.
+          // Choices are valid only for the saved revision AND the draft the DM reviewed.
+          const sameSavedVersion =
+            approval?.revision && fresh.revision
+              ? approval.revision === fresh.revision
+              : draftValuesEqual(approval?.latest, latest);
+          const approved = Boolean(
+            approval &&
+              sameSavedVersion &&
+              draftValuesEqual(approval.draft, draft),
+          );
+          const merged = mergeMapDraft(baseline, draft, latest, {
+            legacy: legacyDraftRef.current,
+            choices: approved ? approval?.choices : undefined,
+          });
+          if (approval && !approved && !merged.conflictDetails.length) {
+            setMapError(
+              "The map changed during conflict review. Your choices were not saved. Review your draft and save again.",
+            );
+            return false;
+          }
+          if (
+            merged.conflictDetails.length &&
+            (!approved ||
+              merged.conflictDetails.some(
+                (conflict) => !approval?.choices[conflict.id],
+              ))
+          ) {
+            setSaveConflict({
+              draft: copyMapForEditing(draft),
+              latest,
+              revision: fresh.revision,
+              details: merged.conflictDetails,
+              legacy: legacyDraftRef.current,
+              changed: Boolean(approval),
+            });
+            return false;
+          }
+          const saved = await updateEntity(
+            draft.id,
+            { ...merged.map },
+            fresh.revision,
+          );
+          const savedMap = saved.entity as Map;
+          // Edits made while the request was in flight remain in the draft.
+          const pending = mapDraftRef.current;
+          mapBaselineRef.current = copyMapForEditing(savedMap);
+          legacyDraftRef.current = false;
+          mapDraftRef.current =
+            pending && !draftValuesEqual(pending, draft)
+              ? mergeMapDraft(draft, pending, savedMap).map
+              : copyMapForEditing(savedMap);
+          setMapDraft(mapDraftRef.current);
           continue;
         }
 
-        const pendingEntry = pendingStampSizesRef.current.entries().next().value as [string, { stamp: MapStampAsset; size: number; originalSize: number }] | undefined;
+        const pendingEntry = pendingStampSizesRef.current.entries().next()
+          .value as
+          | [string, { stamp: MapStampAsset; size: number; originalSize: number }]
+          | undefined;
         if (!pendingEntry) break;
         const [filename, pendingSize] = pendingEntry;
-        const assetRoute = pendingSize.stamp.category === "sprite" ? "map-sprites" : "map-assets";
-        const response = await fetch(`${API_BASE_URL}/${assetRoute}/${encodeURIComponent(filename)}/settings`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ default_size: pendingSize.size }),
-        });
-        const result = await response.json() as { default_size: number; detail?: string };
-        if (!response.ok) throw new Error(result.detail ?? `Could not save ${pendingSize.stamp.name} stamp size.`);
+        const assetRoute =
+          pendingSize.stamp.category === "sprite" ? "map-sprites" : "map-assets";
+        const response = await fetch(
+          `${API_BASE_URL}/${assetRoute}/${encodeURIComponent(filename)}/settings`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ default_size: pendingSize.size }),
+          },
+        );
+        const result = (await response.json()) as {
+          default_size: number;
+          detail?: string;
+        };
+        if (!response.ok)
+          throw new Error(
+            result.detail ??
+              `Could not save ${pendingSize.stamp.name} stamp size.`,
+          );
         if (pendingStampSizesRef.current.get(filename) === pendingSize) {
           pendingStampSizesRef.current.delete(filename);
-          const updatedStamp = { ...pendingSize.stamp, default_size: result.default_size };
-          setBuildingStamps((current) => current.map((stamp) => stamp.image_path === updatedStamp.image_path ? updatedStamp : stamp));
-          setDungeonSprites((current) => current.map((sprite) => sprite.image_path === updatedStamp.image_path ? updatedStamp : sprite));
-          setSelectedBuildingStamp((current) => current?.image_path === updatedStamp.image_path ? updatedStamp : current);
+          const updatedStamp = {
+            ...pendingSize.stamp,
+            default_size: result.default_size,
+          };
+          setBuildingStamps((current) =>
+            current.map((stamp) =>
+              stamp.image_path === updatedStamp.image_path ? updatedStamp : stamp,
+            ),
+          );
+          setDungeonSprites((current) =>
+            current.map((sprite) =>
+              sprite.image_path === updatedStamp.image_path
+                ? updatedStamp
+                : sprite,
+            ),
+          );
+          setSelectedBuildingStamp((current) =>
+            current?.image_path === updatedStamp.image_path
+              ? updatedStamp
+              : current,
+          );
         }
       }
 
       if (mapDraftRef.current) stageMapDraft(mapDraftRef.current);
       setMapDraftDirty(hasPendingEditorChanges());
-      if (mapDraftRef.current) clearStoredMapEditorDraft(mapDraftRef.current.id);
+      if (mapDraftRef.current) clearMapEditorDraft(mapDraftRef.current.id);
+      setDraftStorageUnavailable(false);
       setMapError(null);
       return true;
     } catch (error) {
-      setMapError(error instanceof Error ? error.message : "Could not save map changes.");
+      setMapError(
+        error instanceof Error ? error.message : "Could not save map changes.",
+      );
       return false;
     } finally {
       setMapDraftSaving(false);
     }
   };
 
-  const exitMapEditMode = async (): Promise<boolean> => {
-    if (!(await saveMapDraft())) return false;
+  const closeMapEditing = (keepDraft = false) => {
+    pendingMarkerProperties.current = null; setUnappliedMarkerProperties(false);
+    const draft = mapDraftRef.current;
+    if (draft && !keepDraft) clearMapEditorDraft(draft.id);
+    const sizes = [...pendingStampSizesRef.current.values()];
+    const original = new globalThis.Map(sizes.map((pending) => [pending.stamp.image_path, pending.originalSize]));
+    setBuildingStamps((items) => items.map((item) => original.has(item.image_path) ? { ...item, default_size: original.get(item.image_path)! } : item));
+    setDungeonSprites((items) => items.map((item) => original.has(item.image_path) ? { ...item, default_size: original.get(item.image_path)! } : item));
+    if (draft) {
+      markerHistoryRef.current.delete(draft.id);
+      setMarkerHistoryByMap((history) => { const next = new globalThis.Map(history); next.delete(draft.id); return next; });
+    }
     setMapEditMode(false);
+    setMapFullScreen(false);
+    setPlacementStyle(null);
     setMapDraft(null);
-    if (mapDraftRef.current) clearStoredMapEditorDraft(mapDraftRef.current.id);
     mapDraftRef.current = null;
     mapBaselineRef.current = null;
     pendingStampSizesRef.current.clear();
     setMapDraftDirty(false);
+    setRecoveredDraft(false);
+    setDraftStorageUnavailable(false);
     setSelectionMode(false);
     setSelectedMarkerIds([]);
     setMarkerEditMode(false);
@@ -2131,9 +2312,44 @@ function MapsPage() {
     setSnapToGrid(false);
     setShowGrid(false);
     setMarkerContextMenu(null);
+    setMarkerDrawer({ open: false, mode: "create", marker: null });
     clearPendingMapEntity();
-    return true;
   };
+  const finishMapLeave = async (choice: "save" | "keep" | "discard") => {
+    if (choice === "save" && !(await saveMapDraft())) return;
+    if (choice === "keep") {
+      try {
+        if (pendingMarkerProperties.current) { await handleSaveMarker(pendingMarkerProperties.current); pendingMarkerProperties.current = null; setUnappliedMarkerProperties(false); }
+        if (mapDraftRef.current) storeMapEditorDraft(mapDraftRef.current, pendingStampSizesRef.current);
+      } catch (error) { setMapError(error instanceof Error ? error.message : "Apply marker properties before leaving."); return; }
+    }
+    const action = pendingMapNavigation.current;
+    pendingMapNavigation.current = null;
+    setLeaveMap(false);
+    closeMapEditing(choice === "keep");
+    action?.();
+  };
+  const exitMapEditMode = () => {
+    if (hasPendingEditorChanges()) { pendingMapNavigation.current = null; setLeaveMap(true); return; }
+    closeMapEditing();
+  };
+  useEffect(() => {
+    if (!mapDraftDirty && !unappliedMarkerProperties) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const navigateAway = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const target = new URL(link.href, window.location.href);
+      if (target.href === window.location.href || target.origin !== window.location.origin) return;
+      event.preventDefault(); event.stopPropagation();
+      pendingMapNavigation.current = () => navigate(`${target.pathname}${target.search}${target.hash}`);
+      setLeaveMap(true);
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", navigateAway, true);
+    return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", navigateAway, true); };
+  }, [mapDraftDirty, unappliedMarkerProperties, navigate]);
 
   const handleMapEditModeChange = (enabled: boolean) => {
     if (enabled) {
@@ -2245,6 +2461,18 @@ function MapsPage() {
       if (shapeEditId && lockedIds.has(shapeEditId)) setShapeEditId(null);
     }
   };
+  const canEditMarker = (markerId: string): boolean => {
+    const map = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : selectedMap;
+    const marker = map?.markers.find((item) => item.id === markerId);
+    return Boolean(mapEditMode && marker && !isMapMarkerLocked(marker, layerLocks, customLayerLocks));
+  };
+  const layerAcceptsItems = (id: string | null) => !id || Boolean(editableMap?.layers?.some((layer) => layer.id === id) && !customLayerLocks[id] && customLayerVisibility[id] !== false);
+  const assignMarkerLayer = (markerId: string, layerId: string | null) => {
+    if (!canEditMarker(markerId) || !layerAcceptsItems(layerId)) return;
+    const map = mapDraftRef.current ?? selectedMap;
+    if (!map) return;
+    void queueMarkerSave(map, map.markers.map((marker) => marker.id === markerId ? { ...marker, layer_id: layerId } : marker));
+  };
   const handleCreateMapLayer = (name: string) => {
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
     if (!currentMap) return;
@@ -2254,7 +2482,7 @@ function MapsPage() {
       setMapError(`A map layer named “${trimmedName}” already exists.`);
       return;
     }
-    const layer = { id: crypto.randomUUID(), name: trimmedName };
+    const layer = { id: createId(), name: trimmedName };
     const nextMap = { ...currentMap, layers: [layer, ...(currentMap.layers ?? [])] };
     recordMapEdit(currentMap.id, currentMap, nextMap);
     stageMapDraft(nextMap);
@@ -2291,6 +2519,7 @@ function MapsPage() {
     stageMapDraft(nextMap);
   };
   const handleDeleteMapLayer = (layerId: string) => {
+    if (customLayerLocks[layerId]) return;
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
     if (!currentMap) return;
     const markers = currentMap.markers.map((marker) => marker.layer_id === layerId ? { ...marker, layer_id: null } : marker);
@@ -2321,9 +2550,9 @@ function MapsPage() {
   };
   const handleAssignSelectedMarkersToLayer = (layerId: string | null) => {
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
-    if (!currentMap || selectedMarkerIds.length === 0) return;
+    if (!currentMap || selectedMarkerIds.length === 0 || !layerAcceptsItems(layerId)) return;
     const before = copyMarkers(currentMap.markers);
-    const selectedIds = new Set(selectedMarkerIds);
+    const selectedIds = new Set(selectedMarkerIds.filter(canEditMarker));
     const markers = before.map((marker) => selectedIds.has(marker.id) ? { ...marker, layer_id: layerId } : marker);
     if (JSON.stringify(before) === JSON.stringify(markers)) return;
     recordMarkerChange(currentMap.id, before, markers);
@@ -2350,7 +2579,9 @@ function MapsPage() {
       return;
     }
     setMapError(null);
-    stageMapDraft({ ...editableMap, canvas_width: width, canvas_height: height, markers: resizedMarkers });
+    const next = { ...editableMap, canvas_width: width, canvas_height: height, markers: resizedMarkers };
+    recordMapEdit(editableMap.id, editableMap, next);
+    stageMapDraft(next);
   };
   const routePlaceEntityId = searchParams.get("placeEntity");
   const pendingMapEntity = pendingMapEntitySelection
@@ -2378,9 +2609,9 @@ function MapsPage() {
     });
   }, []);
 
-  const recordMapEdit = useCallback((mapId: string, before: Pick<Map, "markers" | "layers">, after: Pick<Map, "markers" | "layers">) => {
-    const beforeSnapshot = copyMapEditSnapshot({ markers: before.markers, layers: before.layers });
-    const afterSnapshot = copyMapEditSnapshot({ markers: after.markers, layers: after.layers });
+  const recordMapEdit = useCallback((mapId: string, before: MapEditSnapshot, after: MapEditSnapshot) => {
+    const beforeSnapshot = editSnapshot(before);
+    const afterSnapshot = editSnapshot(after);
     if (JSON.stringify(beforeSnapshot) === JSON.stringify(afterSnapshot)) return;
     const history = getMarkerHistory(mapId);
     history.undo.push(beforeSnapshot);
@@ -2395,7 +2626,7 @@ function MapsPage() {
       ? mapDraftRef.current
       : selectedMap?.id === mapId ? selectedMap : null;
     const layers = currentMap?.layers;
-    recordMapEdit(mapId, { markers: before, layers }, { markers: after, layers });
+    recordMapEdit(mapId, { ...currentMap, markers: before, layers }, { ...currentMap, markers: after, layers });
   }, [recordMapEdit, selectedMap]);
 
   const queueMarkerSave = useCallback((
@@ -2429,10 +2660,10 @@ function MapsPage() {
     setMarkerHistoryActionBusy(true);
     const current = mapDraftRef.current?.id === selectedMap.id ? mapDraftRef.current : selectedMap;
     try {
-      const restoredMap = { ...current, markers: copyMarkers(previous.markers), ...(previous.layers ? { layers: previous.layers.map((layer) => ({ ...layer })) } : { layers: undefined }) };
+      const restoredMap = { ...current, ...editSnapshot(previous) };
       stageMapDraft(restoredMap);
       history.undo.pop();
-      history.redo.push(copyMapEditSnapshot({ markers: current.markers, layers: current.layers }));
+      history.redo.push(editSnapshot(current));
       publishMarkerHistory(selectedMap.id, history);
     } catch (error) {
       setMapError(error instanceof Error ? error.message : "Could not undo the map change.");
@@ -2452,10 +2683,10 @@ function MapsPage() {
     setMarkerHistoryActionBusy(true);
     const current = mapDraftRef.current?.id === selectedMap.id ? mapDraftRef.current : selectedMap;
     try {
-      const restoredMap = { ...current, markers: copyMarkers(next.markers), ...(next.layers ? { layers: next.layers.map((layer) => ({ ...layer })) } : { layers: undefined }) };
+      const restoredMap = { ...current, ...editSnapshot(next) };
       stageMapDraft(restoredMap);
       history.redo.pop();
-      history.undo.push(copyMapEditSnapshot({ markers: current.markers, layers: current.layers }));
+      history.undo.push(editSnapshot(current));
       publishMarkerHistory(selectedMap.id, history);
     } catch (error) {
       setMapError(error instanceof Error ? error.message : "Could not redo the map change.");
@@ -2502,26 +2733,54 @@ function MapsPage() {
     }
   };
 
-  const handleBack = async () => {
-    if (mapEditMode && !(await exitMapEditMode())) return;
-    setMarkerEditMode(false);
-    setPointPlacementMode(false);
-    setShapePlacementPreset(null);
-    setDrawShape(null);
-    setShapeEditId(null);
-    if (searchParams.get("from") === "world-map") {
-      setSelectionMode(false);
-      setSelectedMarkerIds([]);
-      navigate("/world-map");
-      return;
-    }
+  const cancelMapTool = () => {
+    setPlacementStyle(null);
+    setPointPlacementMode(false); setShapePlacementPreset(null); setDrawShape(null); setShapeEditId(null);
+    setMarkerEditMode(false); setSelectionMode(false); setSelectedMarkerIds([]); setSelectedBuildingStamp(null);
+    clearPendingMapEntity();
+    window.dispatchEvent(new Event("world-builder-cancel-map-drawing"));
+  };
+  const selectMapMarkers = (ids: string[], append: boolean) => {
+    setSelectionMode(true); setMarkerEditMode(false); setPointPlacementMode(false); setShapePlacementPreset(null); setDrawShape(null);
+    setSelectedMarkerIds((current) => [...new Set([...(append ? current : []), ...ids.filter(canEditMarker)])]);
+  };
+  useEffect(() => {
+    if (!mapEditMode) return;
+    const handleKey = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], [role='menu'], [role='listbox'], [role='combobox']")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (pointPlacementMode || shapePlacementPreset || drawShape || shapeEditId || markerEditMode || selectionMode) cancelMapTool();
+        else setMapFullScreen(false);
+        return;
+      }
+      const deltas: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      const delta = deltas[event.key];
+      if (!delta || event.ctrlKey || event.metaKey || !selectedMap || !selectedMarkerIds.length) return;
+      event.preventDefault(); event.stopPropagation();
+      const map = mapDraftRef.current ?? selectedMap;
+      const sources = map.markers.filter((marker) => selectedMarkerIds.includes(marker.id) && canEditMarker(marker.id));
+      const step = event.shiftKey ? 10 : 1;
+      const [dx, dy] = getGroupTranslation(sources, delta[0] * step / mapPhysicalDimensions.current.width * 100, delta[1] * step / mapPhysicalDimensions.current.height * 100, mapPhysicalDimensions.current);
+      void queueMarkerSave(map, map.markers.map((marker) => sources.some((source) => source.id === marker.id) ? offsetMapMarker(marker, dx, dy) : marker));
+    };
+    window.addEventListener("keydown", handleKey, true);
+    return () => window.removeEventListener("keydown", handleKey, true);
+  });
 
-    setSelectionMode(false);
-    setSelectedMarkerIds([]);
-    setSearchParams({});
+  const handleBack = () => {
+    const action = () => {
+      if (searchParams.get("from") === "world-map") navigate("/world-map");
+      else setSearchParams({});
+    };
+    if (hasPendingEditorChanges()) { pendingMapNavigation.current = action; setLeaveMap(true); return; }
+    closeMapEditing();
+    action();
   };
 
   const handleMarkerMove = async (marker: MapMarker) => {
+    if (!canEditMarker(marker.id)) return;
     if (!selectedMap) {
       return;
     }
@@ -2534,7 +2793,7 @@ function MapsPage() {
     const deltaX = marker.x - previous.x;
     const deltaY = marker.y - previous.y;
     const [groupDeltaX, groupDeltaY] = moveTogether
-      ? getGroupTranslation(currentMarkers.filter((item) => movingIds.has(item.id)), deltaX, deltaY)
+      ? getGroupTranslation(currentMarkers.filter((item) => movingIds.has(item.id)), deltaX, deltaY, mapPhysicalDimensions.current)
       : [deltaX, deltaY];
     const updatedMarkers = currentMarkers.map((item) => {
       if (!movingIds.has(item.id)) return item;
@@ -2576,7 +2835,7 @@ function MapsPage() {
         }
       : marker;
     const markerToSave = {
-      ...markerDraft,
+      ...(placementStyle && !shapeDraft ? applyMarkerStyle(markerDraft, placementStyle) : markerDraft),
       label: markerDraft.label?.trim() || (markerDraft.type === "area" ? "New area" : "New path"),
     };
     setMapLayerMarkerId(layer, markerToSave.id);
@@ -2591,10 +2850,12 @@ function MapsPage() {
   };
 
   const handlePlacePointMarker = (x: number, y: number) => {
+    if (deferInspectorAction(() => handlePlacePointMarker(x, y))) return;
     setMapError(null);
     const marker: MapMarker = {
-      id: crypto.randomUUID(),
-      entity_id: pendingMapEntity?.id ?? null,
+      id: createId(),
+      entity_id: pendingMapEntity?.entity_type === "map" ? null : pendingMapEntity?.id ?? null,
+      linked_map: pendingMapEntity?.entity_type === "map" ? pendingMapEntity.id : undefined,
       x: Math.min(100, Math.max(0, x)),
       y: Math.min(100, Math.max(0, y)),
       label: pendingMapEntity?.name ?? (selectedBuildingStamp ? `New ${selectedBuildingStamp.name}` : "New marker"),
@@ -2606,19 +2867,20 @@ function MapsPage() {
       icon_size: selectedBuildingStamp?.default_size ?? undefined,
       type: "point",
     };
+    const styledMarker = placementStyle ? applyMarkerStyle(marker, placementStyle) : marker;
     draftShapeLayer?.remove();
     setDraftShapeLayer(null);
     setShapeDraft(null);
-    if (pendingMapEntity) {
-      setPointPlacementMode(false);
-      clearPendingMapEntity();
-    }
-    void savePlacedMarker(marker).catch(() => undefined);
+    if (!repeatPlacement || pendingMapEntity) {
+      setPointPlacementMode(false); clearPendingMapEntity(); setSelectedBuildingStamp(null); setMarkerEditMode(true);
+      void savePlacedMarker(styledMarker).then(() => setMarkerDrawer({ open: true, mode: "edit", marker: { ...styledMarker, layer_id: activeLayerId } })).catch(() => undefined);
+    } else void savePlacedMarker(styledMarker).catch(() => undefined);
   };
 
   const handlePlaceQuickShape = (marker: MapMarker, layer: L.Layer) => {
+    if (placementStyle) marker = applyMarkerStyle(marker, placementStyle);
     setMapError(null);
-    if (shapePlacementPreset?.startsWith("building-")) setShapePlacementPreset(null);
+    if (!repeatPlacement) setShapePlacementPreset(null);
     draftShapeLayer?.remove();
     setMapLayerMarkerId(layer, marker.id);
     setShapeDraft(null);
@@ -2632,6 +2894,7 @@ function MapsPage() {
 
   const handlePlaceMapEntity = (entity: EntitySummary) => {
     setMapError(null);
+    setShapePlacementPreset(null);
     setSelectionMode(false);
     setSelectedMarkerIds([]);
     setSelectedBuildingStamp(null);
@@ -2643,6 +2906,7 @@ function MapsPage() {
   };
 
   const handleStartDrawing = (type: "area" | "path" | "rectangle", draft?: MapMarker) => {
+    if (deferInspectorAction(() => handleStartDrawing(type, draft))) return;
     setSelectionMode(false);
     setSelectedMarkerIds([]);
     setSelectedBuildingStamp(null);
@@ -2655,7 +2919,40 @@ function MapsPage() {
     setDrawShape(type);
   };
 
+  const handlePlaceStyle = (style: MarkerStyle) => {
+    if (deferInspectorAction(() => handlePlaceStyle(style))) return;
+    cancelMapTool();
+    setPlacementStyle(style);
+    setMarkerDrawer({ open: false, mode: "create", marker: null });
+    if (style.kind === "point") setPointPlacementMode(true);
+    else handleStartDrawing(style.kind);
+  };
+
+  const handleBulkProperties = async (
+    style: MarkerStyle | null,
+    patch: Partial<MarkerPropertyPatch>,
+  ) => {
+    if (pendingMarkerProperties.current)
+      throw new Error(
+        "Apply or discard the open marker properties before editing a selection.",
+      );
+    const map = mapDraftRef.current ?? selectedMap;
+    if (!map || !mapEditMode) return;
+    const ids = new Set(selectedMarkerIds.filter(canEditMarker));
+    if (!ids.size) throw new Error("Select at least one unlocked item.");
+    const markers = map.markers.map((marker) => {
+      if (!ids.has(marker.id)) return marker;
+      const styled = style ? applyMarkerStyle(marker, style) : marker;
+      // Size applies to stamps; ordinary symbol markers keep their screen-size hit target.
+      const changes = { ...patch };
+      if (!styled.icon_image) delete changes.icon_size;
+      return patchMarkerProperties(styled, changes);
+    });
+    await queueMarkerSave(map, markers);
+  };
+
   const handleStartShapeEdit = (markerId: string) => {
+    if (!canEditMarker(markerId)) return;
     clearPendingMapEntity();
     setPointPlacementMode(false);
     setMarkerEditMode(true);
@@ -2668,6 +2965,9 @@ function MapsPage() {
   }, []);
 
   const handleOpenMarkerEditor = (markerId: string) => {
+    if (markerDrawer.open && markerDrawer.marker?.id === markerId) return;
+    if (deferInspectorAction(() => handleOpenMarkerEditor(markerId))) return;
+    if (!canEditMarker(markerId)) return;
     if (!selectedMap) return;
     const marker = latestMarkersFor(selectedMap).find((item) => item.id === markerId);
     if (!marker) return;
@@ -2679,6 +2979,7 @@ function MapsPage() {
   };
 
   const handleShapeEdited = async (marker: MapMarker) => {
+    if (!canEditMarker(marker.id)) return;
     if (!selectedMap) {
       return;
     }
@@ -2691,7 +2992,7 @@ function MapsPage() {
     const deltaX = (marker.points?.[0]?.[0] ?? marker.x) - (previous.points?.[0]?.[0] ?? previous.x);
     const deltaY = (marker.points?.[0]?.[1] ?? marker.y) - (previous.points?.[0]?.[1] ?? previous.y);
     const [groupDeltaX, groupDeltaY] = moveTogether
-      ? getGroupTranslation(currentMarkers.filter((item) => movingIds.has(item.id)), deltaX, deltaY)
+      ? getGroupTranslation(currentMarkers.filter((item) => movingIds.has(item.id)), deltaX, deltaY, mapPhysicalDimensions.current)
       : [deltaX, deltaY];
     const updatedMarkers = currentMarkers.map((item) => {
       if (!movingIds.has(item.id)) return item;
@@ -2712,6 +3013,7 @@ function MapsPage() {
   };
 
   const handleResizeShape = async (marker: MapMarker) => {
+    if (!canEditMarker(marker.id)) return;
     if (!selectedMap) return;
     const currentMarkers = latestMarkersFor(selectedMap);
     if (!currentMarkers.some((item) => item.id === marker.id)) return;
@@ -2734,6 +3036,7 @@ function MapsPage() {
     markerId?: string,
   ) => {
     event.preventDefault();
+    if (!mapEditMode || markerId && !canEditMarker(markerId)) return;
 
     setMarkerContextMenu({
       mouseX: event.clientX,
@@ -2745,6 +3048,7 @@ function MapsPage() {
   };
 
   const handleChangeMarkerOrder = (markerId: string, direction: "front" | "back") => {
+    if (!canEditMarker(markerId)) return;
     const currentMap = mapDraftRef.current?.id === selectedMap?.id ? mapDraftRef.current : editableMap;
     if (!currentMap) return;
     const selectedIds = new Set(
@@ -2781,7 +3085,8 @@ function MapsPage() {
   };
 
   const handleEditMarker = () => {
-    if (!markerContextMenu?.markerId || !selectedMap) {
+    if (deferInspectorAction(handleEditMarker)) return;
+    if (!markerContextMenu?.markerId || !selectedMap || !canEditMarker(markerContextMenu.markerId)) {
       return;
     }
 
@@ -2803,12 +3108,13 @@ function MapsPage() {
   };
 
   const handleCreateMarker = () => {
+    if (deferInspectorAction(handleCreateMarker)) return;
     if (!markerContextMenu) {
       return;
     }
 
     const marker: MapMarker = {
-      id: crypto.randomUUID(),
+      id: createId(),
       entity_id: null,
       x: Math.min(100, Math.max(0, markerContextMenu.mapX)),
       y: Math.min(100, Math.max(0, markerContextMenu.mapY)),
@@ -2832,6 +3138,7 @@ function MapsPage() {
   };
 
   const handleDeleteMarkerById = async (markerId: string) => {
+    if (!canEditMarker(markerId)) throw new Error("Unlock this item before deleting it.");
     if (!selectedMap) return;
     try {
       await queueMarkerSave(
@@ -2856,15 +3163,15 @@ function MapsPage() {
   const handleDuplicateMarkers = async (markerIds: string[]) => {
     if (!selectedMap) return;
     const markers = latestMarkersFor(selectedMap);
-    const sources = markers.filter((marker) => markerIds.includes(marker.id));
+    const sources = markers.filter((marker) => markerIds.includes(marker.id) && canEditMarker(marker.id));
     if (sources.length === 0) return;
-    const [offsetX, offsetY] = getDuplicateTranslation(sources);
+    const [offsetX, offsetY] = getDuplicateTranslation(sources, mapPhysicalDimensions.current);
     const duplicates = sources.map((source): MapMarker => {
       const duplicate = offsetMapMarker(source, offsetX, offsetY);
       const points = duplicate.points;
       return {
         ...duplicate,
-        id: crypto.randomUUID(),
+        id: createId(),
         entity_id: null,
         linked_map: undefined,
         label: source.label ? `${source.label} copy` : "New marker copy",
@@ -2889,6 +3196,8 @@ function MapsPage() {
   };
 
   const handleToggleMarkerSelection = (markerId: string) => {
+    if (!canEditMarker(markerId)) return;
+    setSelectionMode(true); setMarkerEditMode(false); setPointPlacementMode(false); setShapePlacementPreset(null); setDrawShape(null);
     setSelectedMarkerIds((current) => current.includes(markerId)
       ? current.filter((selectedId) => selectedId !== markerId)
       : [...current, markerId]);
@@ -2897,10 +3206,10 @@ function MapsPage() {
   const handleAlignSelectedMarkers = async (alignment: MarkerAlignment) => {
     if (!selectedMap || selectedMarkerIds.length < 2) return;
     const currentMarkers = latestMarkersFor(selectedMap);
-    const selectedMarkers = currentMarkers.filter((marker) => selectedMarkerIds.includes(marker.id));
+    const selectedMarkers = currentMarkers.filter((marker) => selectedMarkerIds.includes(marker.id) && canEditMarker(marker.id));
     if (selectedMarkers.length < 2) return;
 
-    const bounds = selectedMarkers.map((marker) => ({ marker, bounds: getMarkerBounds(marker) }));
+    const bounds = selectedMarkers.map((marker) => ({ marker, bounds: getMarkerBounds(marker, mapPhysicalDimensions.current.width, mapPhysicalDimensions.current.height) }));
     const group = bounds.reduce((result, item) => ({
       minX: Math.min(result.minX, item.bounds.minX),
       minY: Math.min(result.minY, item.bounds.minY),
@@ -2940,47 +3249,9 @@ function MapsPage() {
   const handleTransformSelectedMarkers = async (transform: "rotate-left" | "rotate-right" | "mirror-horizontal" | "mirror-vertical") => {
     if (!selectedMap || selectedMarkerIds.length === 0) return;
     const currentMarkers = latestMarkersFor(selectedMap);
-    const selectedMarkers = currentMarkers.filter((marker) => selectedMarkerIds.includes(marker.id));
-    if (selectedMarkers.length === 0) return;
-    const selectedBounds = selectedMarkers.map(getMarkerBounds);
-    const group = selectedBounds.reduce((result, item) => ({
-      minX: Math.min(result.minX, item.minX),
-      minY: Math.min(result.minY, item.minY),
-      maxX: Math.max(result.maxX, item.maxX),
-      maxY: Math.max(result.maxY, item.maxY),
-    }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
-    const centerX = (group.minX + group.maxX) / 2;
-    const centerY = (group.minY + group.maxY) / 2;
-    const angle = transform === "rotate-left" ? -Math.PI / 2 : Math.PI / 2;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const transformPoint = ([x, y]: [number, number]): [number, number] => {
-      if (transform === "mirror-horizontal") return [2 * centerX - x, y];
-      if (transform === "mirror-vertical") return [x, 2 * centerY - y];
-      const dx = x - centerX;
-      const dy = y - centerY;
-      return [centerX + dx * cos - dy * sin, centerY + dx * sin + dy * cos];
-    };
-    const selectedIds = new Set(selectedMarkerIds);
-    const transformedMarkers = currentMarkers.map((marker) => {
-      if (!selectedIds.has(marker.id)) return marker;
-      const points = marker.points?.map(transformPoint);
-      const position = transformPoint([marker.x, marker.y]);
-      const nextRotation = marker.icon_image && (transform === "rotate-left" || transform === "rotate-right")
-        ? (((marker.rotation ?? 0) + (transform === "rotate-left" ? -90 : 90)) % 360 + 360) % 360
-        : marker.icon_image && (transform === "mirror-horizontal" || transform === "mirror-vertical")
-          ? (((-(marker.rotation ?? 0)) % 360) + 360) % 360
-          : marker.rotation;
-      return {
-        ...marker,
-        x: Math.min(100, Math.max(0, points?.[0]?.[0] ?? position[0])),
-        y: Math.min(100, Math.max(0, points?.[0]?.[1] ?? position[1])),
-        ...(points ? { points: points.map(([x, y]): [number, number] => [Math.min(100, Math.max(0, x)), Math.min(100, Math.max(0, y))]) } : {}),
-        ...(nextRotation === undefined ? {} : { rotation: nextRotation }),
-        ...(transform === "mirror-horizontal" && marker.icon_image ? { mirror_x: !marker.mirror_x } : {}),
-        ...(transform === "mirror-vertical" && marker.icon_image ? { mirror_y: !marker.mirror_y } : {}),
-      };
-    });
+    let transformedMarkers: MapMarker[];
+    try { transformedMarkers = transformMapSelection(currentMarkers, selectedMarkerIds.filter(canEditMarker), transform, mapPhysicalDimensions.current); }
+    catch (error) { setMapError(error instanceof Error ? error.message : "Could not transform selection."); return; }
     try {
       await queueMarkerSave(selectedMap, transformedMarkers);
     } catch (error) {
@@ -3004,14 +3275,18 @@ function MapsPage() {
   };
 
   const handleSaveMarker = async (marker: MapMarker) => {
+    if (![marker.x, marker.y].every((value) => Number.isFinite(value) && value >= 0 && value <= 100)) throw new Error("Marker positions must be between 0 and 100.");
+    if (marker.fill_opacity !== undefined && (!Number.isFinite(marker.fill_opacity) || marker.fill_opacity < 0 || marker.fill_opacity > 1)) throw new Error("Fill opacity must be between 0 and 1.");
     if (!selectedMap) {
       return;
     }
 
     const currentMarkers = latestMarkersFor(selectedMap);
     const existingMarker = currentMarkers.find((item) => item.id === marker.id);
+    if (existingMarker && !canEditMarker(marker.id)) throw new Error("Unlock this item before editing it.");
+    if (!layerAcceptsItems(marker.layer_id ?? null) && marker.layer_id !== existingMarker?.layer_id) throw new Error("Choose a visible, unlocked layer.");
     const updatedMarkers = existingMarker
-      ? currentMarkers.map((item) => item.id === marker.id ? { ...marker, layer_id: marker.layer_id ?? existingMarker.layer_id ?? null } : item)
+      ? currentMarkers.map((item) => item.id === marker.id ? { ...marker, layer_id: marker.layer_id === undefined ? existingMarker.layer_id ?? null : marker.layer_id } : item)
       : [...currentMarkers, { ...marker, layer_id: marker.layer_id ?? activeLayerId }];
 
     try {
@@ -3039,6 +3314,34 @@ function MapsPage() {
     });
   }, [selectedMapId]);
 
+  const mapEditDialogs = <>
+    <Dialog open={inspectorActionPending} onClose={() => setInspectorActionPending(false)}>
+      <DialogTitle>Apply marker changes?</DialogTitle>
+      <DialogContent><Typography>You have unapplied marker properties. Apply them to the map draft before continuing, or discard those property edits.</Typography></DialogContent>
+      <DialogActions><Button onClick={() => { pendingInspectorAction.current = null; setInspectorActionPending(false); }}>Keep editing</Button><Button color="error" onClick={() => { const action = pendingInspectorAction.current; pendingInspectorAction.current = null; pendingMarkerProperties.current = null; setUnappliedMarkerProperties(false); setInspectorActionPending(false); action?.(); }}>Discard properties</Button><Button variant="contained" onClick={async () => { const properties = pendingMarkerProperties.current; if (!properties) return; try { await handleSaveMarker(properties); pendingMarkerProperties.current = null; setUnappliedMarkerProperties(false); const action = pendingInspectorAction.current; pendingInspectorAction.current = null; setInspectorActionPending(false); action?.(); } catch (error) { setMapError(error instanceof Error ? error.message : "Could not apply marker properties."); } }}>Apply and continue</Button></DialogActions>
+    </Dialog>
+    <Dialog open={Boolean(recoverDraft)} onClose={() => setRecoverDraft(null)}>
+      <DialogTitle>Recover map draft?</DialogTitle>
+      <DialogContent><Typography>An unfinished draft of {recoverDraft?.map.name} is saved in this browser{recoverDraft?.stored.savedAt ? ` from ${new Date(recoverDraft.stored.savedAt).toLocaleString()}` : ""}. Saved changes from other devices will be checked before saving.</Typography>{recoverDraft?.stored.legacy && <Alert severity="warning" sx={{ mt: 1 }}>This older draft has no original baseline. Review its changes before saving.</Alert>}</DialogContent>
+      <DialogActions><Button onClick={() => setRecoverDraft(null)}>Cancel</Button><Button color="error" onClick={() => { if (!recoverDraft) return; clearMapEditorDraft(recoverDraft.map.id); beginMapEdit(recoverDraft.map, undefined, true); setRecoverDraft(null); }}>Discard draft</Button><Button variant="contained" onClick={() => { if (!recoverDraft) return; beginMapEdit(recoverDraft.map, recoverDraft.stored); setRecoverDraft(null); }}>Recover draft</Button></DialogActions>
+    </Dialog>
+    <Dialog open={leaveMap} onClose={() => !mapDraftSaving && setLeaveMap(false)}>
+      <DialogTitle>Keep your map changes?</DialogTitle>
+      <DialogContent><Typography>Save to the world, keep an unfinished draft in this browser, or discard this editing session.</Typography>{draftStorageUnavailable && <Alert severity="warning">Browser storage is unavailable. Save the map before leaving to keep these changes.</Alert>}</DialogContent>
+      <DialogActions sx={{ flexWrap: "wrap", gap: 1 }}><Button disabled={mapDraftSaving} onClick={() => { pendingMapNavigation.current = null; setLeaveMap(false); }}>Keep editing</Button><Button color="error" disabled={mapDraftSaving} onClick={() => void finishMapLeave("discard")}>Discard changes</Button><Button disabled={mapDraftSaving || draftStorageUnavailable} onClick={() => void finishMapLeave("keep")}>Keep draft</Button><Button variant="contained" disabled={mapDraftSaving} onClick={() => void finishMapLeave("save")}>Save map</Button></DialogActions>
+    </Dialog>
+    {saveConflict && <MapConflictDialog
+      review={saveConflict}
+      getEntityName={(id) => getEntity(id)?.name}
+      onClose={() => setSaveConflict(null)}
+      onResolve={async (choices) => {
+        const approval = { draft: saveConflict.draft, latest: saveConflict.latest, revision: saveConflict.revision, choices };
+        setSaveConflict(null);
+        if (await saveMapDraft(approval) && leaveMap) await finishMapLeave("save");
+      }}
+    />}
+  </>;
+
   if (worldDataLoading) {
     return <Typography color="text.secondary">Loading maps…</Typography>;
   }
@@ -3054,12 +3357,32 @@ function MapsPage() {
   if (selectedMap) {
     return (
       <>
+        {mapEditDialogs}
+        {mapEditMode && recoveredDraft && <Alert severity="info">Recovered your map draft. Review it, then save the map.</Alert>}
+        {mapEditMode && draftStorageUnavailable && <Alert severity="warning">Browser draft storage is unavailable. Keep this page open until you save the map.</Alert>}
         <MapViewer
+          styles={markerStyles}
+          onPlaceStyle={handlePlaceStyle}
+          placementStyle={placementStyle}
+          fullScreen={mapEditMode && mapFullScreen}
+          onToggleFullScreen={() => setMapFullScreen((value) => !value)}
+          onBulkProperties={handleBulkProperties}
+          placementStamp={selectedBuildingStamp}
+          showHiddenItems={showHiddenItems}
+          onShowHiddenItemsChange={setShowHiddenItems}
+          repeatPlacement={repeatPlacement}
+          onRepeatPlacementChange={setRepeatPlacement}
+          onCancelTool={cancelMapTool}
+          onFinishDrawing={() => window.dispatchEvent(new Event("world-builder-finish-map-drawing"))}
+          onMeasureDimensions={(width, height) => { mapPhysicalDimensions.current = { width, height }; }}
+          onSelectMarkers={selectMapMarkers}
+          onAssignMarkerLayer={assignMarkerLayer}
+          canEditMarker={canEditMarker}
           key={selectedMap.id}
           map={mapEditMode && editableMap ? editableMap : selectedMap}
           maps={maps}
           editMode={mapEditMode}
-          hasUnsavedChanges={mapDraftDirty}
+          hasUnsavedChanges={mapDraftDirty || unappliedMarkerProperties}
           onSaveChanges={() => void saveMapDraft()}
           onSaveMapDraft={saveMapDraft}
           onUploadMapImage={handleUploadMapImage}
@@ -3068,7 +3391,7 @@ function MapsPage() {
           onEditModeChange={handleMapEditModeChange}
           focusEntityId={searchParams.get("focusEntity")}
           fromWorldMap={searchParams.get("from") === "world-map"}
-          locations={placeableLocations}
+          locations={placeableRecords}
           pendingMapEntityName={pendingMapEntity?.name ?? null}
           worldStories={worldStories}
           campaignActivity={campaignActivity}
@@ -3194,6 +3517,7 @@ function MapsPage() {
           onUploadDungeonSprites={handleUploadDungeonSprites}
           onStageBuildingStampSize={handleStageBuildingStampSize}
           onSelectBuildingStamp={(stamp) => {
+            setPlacementStyle(null);
             setSelectedBuildingStamp(stamp);
             setPointPlacementMode(Boolean(stamp));
             if (stamp) {
@@ -3230,6 +3554,7 @@ function MapsPage() {
 
         <EntityDetailDrawer
           entityId={entityId}
+          overlayZIndex={mapEditMode && mapFullScreen ? 1295 : undefined}
           open={isOpen}
           onClose={closeEntity}
           onOpenEntity={openEntity}
@@ -3244,8 +3569,16 @@ function MapsPage() {
         <MarkerDrawer
           key={`${markerDrawer.mode}-${markerDrawer.marker?.id ?? "closed"}-${markerDrawer.marker?.type ?? "none"}`}
           open={markerDrawer.open}
-          marker={markerDrawer.marker}
+          marker={markerDrawer.marker ? editableMap?.markers.find((marker) => marker.id === markerDrawer.marker?.id) ?? markerDrawer.marker : null}
+          onDraftChange={handleMarkerPropertiesDraft}
+          styles={markerStyles}
+          fullScreen={mapEditMode && mapFullScreen}
+          layers={editableMap?.layers ?? []}
+          unavailableLayers={(editableMap?.layers ?? []).filter((layer) => !layerAcceptsItems(layer.id)).map((layer) => layer.id)}
+          onOpenEntity={openEntity}
+          onOpenMap={openMap}
           mode={markerDrawer.mode}
+          mapEntityId={selectedMap?.entity_id}
           onClose={() => {
             draftShapeLayer?.remove();
             setDraftShapeLayer(null);
@@ -3263,6 +3596,9 @@ function MapsPage() {
         />
 
         <MarkerContextMenu
+          layers={editableMap?.layers ?? []}
+          unavailableLayers={(editableMap?.layers ?? []).filter((layer) => !layerAcceptsItems(layer.id)).map((layer) => layer.id)}
+          onMoveToLayer={assignMarkerLayer}
           open={Boolean(markerContextMenu)}
           position={
             markerContextMenu
@@ -3295,6 +3631,7 @@ function MapsPage() {
 
   return (
     <Box>
+      {mapEditDialogs}
       <Box
         sx={{
           px: { xs: 3, md: 5 },
@@ -3675,6 +4012,7 @@ function PlayerMapPublishPanel({
         Send the full map to the DM and its fogged version to players. Both
         views share the same framing.
       </Typography>
+      <MapExportPreview map={map} />
       <TextField
         size="small"
         label="DnDGameTool API address"
@@ -3799,7 +4137,7 @@ function MapBackgroundFogPanel({
               slotProps={{ htmlInput: { sx: { height: 30, p: 0.5 } } }}
             />
             <Button size="small" fullWidth variant="outlined" onClick={() => onStartDrawing("rectangle", {
-              id: crypto.randomUUID(),
+              id: createId(),
               entity_id: null,
               type: "area",
               x: 0,
@@ -3816,7 +4154,7 @@ function MapBackgroundFogPanel({
               Draw reveal rectangle
             </Button>
             <Button size="small" fullWidth variant="outlined" onClick={() => onStartDrawing("area", {
-              id: crypto.randomUUID(),
+              id: createId(),
               entity_id: null,
               type: "area",
               x: 0,
@@ -3846,6 +4184,8 @@ function MapBackgroundFogPanel({
 }
 
 function MapViewer({
+  styles, onPlaceStyle, placementStyle, fullScreen = false, onToggleFullScreen, onBulkProperties,
+  placementStamp, showHiddenItems, onShowHiddenItemsChange, repeatPlacement, onRepeatPlacementChange, onCancelTool, onFinishDrawing, onMeasureDimensions, onSelectMarkers, onAssignMarkerLayer, canEditMarker,
   map,
   maps,
   editMode,
@@ -3946,13 +4286,33 @@ function MapViewer({
   onShapeCreated,
   onShapeEdited,
 }: MapViewerProps) {
+  const [styleLibraryOpen, setStyleLibraryOpen] = useState(false);
+  const [bulkPropertiesOpen, setBulkPropertiesOpen] = useState(false);
   const [mapControlTab, setMapControlTab] = useState<"tools" | "layers" | "player">("tools");
+  const compactControls = useMediaQuery("(max-width: 1199px)");
+  const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
+  const choosePointMode = (enabled: boolean) => { onPointPlacementModeChange(enabled); if (compactControls) setMobileControlsOpen(false); };
+  const chooseShape = (preset: QuickShapePreset | null) => { onShapePresetChange(preset); if (compactControls) setMobileControlsOpen(false); };
+  const chooseDraw = (shape: "area" | "path" | "rectangle") => { onStartDrawing(shape); if (compactControls) setMobileControlsOpen(false); };
+
   const [newMapLayerName, setNewMapLayerName] = useState("");
   const [mapExplorerOpen, setMapExplorerOpen] = useState(false);
   const [manualFocus, setManualFocus] = useState<{ mapId: string; markerId: string } | null>(null);
   const stampFileInput = useRef<HTMLInputElement>(null);
   const spriteFileInput = useRef<HTMLInputElement>(null);
   const mapLayers: MapLayer[] = map.layers ?? [];
+  useEffect(() => {
+    if (!fullScreen) return;
+    const previous = document.body.style.overflow;
+    const chrome = [...document.querySelectorAll<HTMLElement>("[data-app-chrome]")]
+      .map((element) => ({ element, inert: element.inert }));
+    chrome.forEach(({ element }) => { element.inert = true; });
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+      chrome.forEach(({ element, inert }) => { element.inert = inert; });
+    };
+  }, [fullScreen]);
   const focusedMarkerId = manualFocus?.mapId === map.id
     ? manualFocus.markerId
     : focusEntityId
@@ -3995,9 +4355,33 @@ function MapViewer({
   ).size;
 
   return (
-    <Box>
+    <Box
+      role={fullScreen ? "region" : undefined}
+      aria-label={fullScreen ? "Full-screen map editor" : undefined}
+      sx={
+        fullScreen
+          ? {
+              position: "fixed",
+              inset: 0,
+              width: "100%",
+              height: "100dvh",
+              zIndex: 1250,
+              bgcolor: "background.default",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              pt: "env(safe-area-inset-top)",
+              pb: "env(safe-area-inset-bottom)",
+              boxSizing: "border-box",
+            }
+          : undefined
+      }
+    >
+      <MarkerStyleLibraryDialog open={styleLibraryOpen} onClose={() => setStyleLibraryOpen(false)} styles={styles} onPlace={(style) => { onPlaceStyle(style); setMobileControlsOpen(false); }} />
+      {bulkPropertiesOpen && <BulkMarkerProperties markers={map.markers.filter((marker) => selectedMarkerIds.includes(marker.id) && canEditMarker(marker.id))} skipped={selectedMarkerIds.filter((id) => !canEditMarker(id)).length} styles={styles} onClose={() => setBulkPropertiesOpen(false)} onApply={onBulkProperties} />}
       <Box
         sx={{
+          display: fullScreen ? "none" : undefined,
           px: { xs: 1.25, md: 2 },
           py: { xs: 0.75, md: 1 },
           borderBottom: 1,
@@ -4070,7 +4454,7 @@ function MapViewer({
               </Typography>
               <Chip
                 size="small"
-                label={(entity?.entity_type ?? map.map_type ?? "MAP").replaceAll("_", " ")}
+                label={entityTypeLabel(entity?.entity_type ?? map.map_type ?? "map")}
                 sx={{ height: 22, fontSize: "0.68rem", textTransform: "uppercase" }}
               />
             </Stack>
@@ -4101,11 +4485,7 @@ function MapViewer({
           </Box>
 
           <Stack direction="row" spacing={0.75} useFlexGap sx={{ flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {editMode && hasUnsavedChanges && (
-              <Button variant="outlined" size="small" disabled={savingMap} onClick={onSaveChanges}>
-                Save changes
-              </Button>
-            )}
+
             <Button
               variant={editMode ? "contained" : "outlined"}
               size="small"
@@ -4119,9 +4499,9 @@ function MapViewer({
             >
               {editMode ? "Done editing" : "Edit map"}
             </Button>
-            <DeleteMapControl map={map} onDelete={onDeleteMap} />
+            <DeleteMapControl map={map} onDelete={onDeleteMap} iconOnly={compactControls} />
             {editMode && (
-              <Button variant="outlined" size="small" startIcon={<AddLocationAltIcon />} onClick={onCreateChildMap}>
+              <Button variant="outlined" size="small" startIcon={<AddLocationAltIcon />} onClick={onCreateChildMap} sx={{ display: { xs: "none", lg: "inline-flex" } }}>
                 Add child map
               </Button>
             )}
@@ -4134,14 +4514,50 @@ function MapViewer({
           px: { xs: 2, md: 3 },
           pt: { xs: 0.75, md: 1 },
           pb: { xs: 1, md: 1.25 },
+          ...(fullScreen ? { px: 1, py: 1, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}),
           backgroundColor: "background.default",
         }}
       >
         {mapError && <Alert severity="error" sx={{ mb: 2 }}>{mapError}</Alert>}
         <>
-          <Stack direction={{ xs: "column-reverse", lg: "row" }} spacing={1.5} sx={{ alignItems: "stretch" }}>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} sx={{ alignItems: "stretch", ...(fullScreen ? { flex: 1, minHeight: 0 } : {}) }}>
+            <Box sx={{ flex: 1, minWidth: 0, ...(fullScreen ? { minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
+              {editMode && <Paper component="section" aria-label="Map tools" variant="outlined" sx={{ p: 0.75, mb: 1, flexShrink: 0, position: "sticky", top: fullScreen ? 0 : { xs: 56, md: 0 }, zIndex: 1050, bgcolor: "background.paper" }}>
+                <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 0.5, "& button": { minHeight: 44, minWidth: 0, px: 0.9, fontSize: "0.72rem", whiteSpace: "nowrap" } }}>
+                  <Button size="small" variant={!markerEditMode && !selectionMode && !pointPlacementMode && !shapePlacementPreset && !drawShape ? "contained" : "outlined"} onClick={onCancelTool}>Pan</Button>
+                  <Button size="small" variant={markerEditMode ? "contained" : "outlined"} onClick={() => { onMarkerEditModeChange(true); setMobileControlsOpen(false); }}>Select</Button>
+                  <Button size="small" variant={pointPlacementMode ? "contained" : "outlined"} aria-label="Place point" onClick={() => choosePointMode(!pointPlacementMode)}>{compactControls ? "Place" : "Place point"}</Button>
+                  <Button size="small" variant={drawShape ? "contained" : "outlined"} aria-label="Draw area" onClick={() => chooseDraw("area")}>{compactControls ? "Draw" : "Draw area"}</Button>
+                  <Button size="small" onClick={() => { setMapControlTab("layers"); setMobileControlsOpen(true); }}>Layers</Button>
+                  <Button size="small" onClick={() => setStyleLibraryOpen(true)}>Styles</Button>
+                  {selectedMarkerIds.length > 0 && <Button size="small" onClick={() => setBulkPropertiesOpen(true)}>Edit selected</Button>}
+                  <Tooltip title={fullScreen ? "Exit full screen" : "Full screen"}><IconButton aria-label={fullScreen ? "Exit full screen" : "Full screen"} onClick={onToggleFullScreen}>{fullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}</IconButton></Tooltip>
+                  {fullScreen && <Button size="small" onClick={() => onEditModeChange(false)}>Done editing</Button>}
+                  <Button size="small" aria-label="Map controls" onClick={() => { setMapControlTab("tools"); setMobileControlsOpen(!mobileControlsOpen); }}>{compactControls ? "Tools" : "Tools & assets"}</Button>
+                  {drawShape && <Button size="small" variant="contained" onClick={onFinishDrawing}>Finish drawing</Button>}
+                  {shapeEditActive && <Button size="small" variant="contained" onClick={onFinishShapeEdit}>Finish shape edit</Button>}
+                  {(pointPlacementMode || shapePlacementPreset || drawShape || shapeEditActive) && <Button size="small" color="warning" onClick={onCancelTool}>Cancel tool</Button>}
+                  <Tooltip title="Undo map edit"><span><IconButton aria-label="Undo" size="small" disabled={!canUndo || markerHistoryBusy} onClick={onUndo}><UndoIcon /></IconButton></span></Tooltip>
+                  <Tooltip title="Redo map edit"><span><IconButton aria-label="Redo" size="small" disabled={!canRedo || markerHistoryBusy} onClick={onRedo}><RedoIcon /></IconButton></span></Tooltip>
+                  <Button size="small" variant="contained" disabled={!hasUnsavedChanges || savingMap} onClick={onSaveChanges}>Save map</Button>
+                </Stack>
+                <Stack direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap", gap: 1, mt: 0.5 }}>
+                  {fullScreen && <Typography variant="caption" noWrap sx={{ maxWidth: 150 }}>{map.name}</Typography>}
+                  {placementStyle && (pointPlacementMode || shapePlacementPreset || drawShape) && <Chip size="small" label={`Style: ${placementStyle.name}`} onDelete={onCancelTool} />}
+                  <Chip size="small" label={`Layer: ${mapLayers.find((layer) => layer.id === activeLayerId)?.name ?? "Unassigned"}`} onClick={() => { setMapControlTab("layers"); setMobileControlsOpen(true); }} />
+                  <Typography variant="caption" role="status">{savingMap ? "Saving…" : hasUnsavedChanges ? "Unsaved map changes" : "Map saved"} · {snapToGrid ? `Snap ${snapGridSize} units` : "Snap off"}{pendingMapEntityName ? ` · Placing ${pendingMapEntityName}` : shapePlacementPreset ? ` · ${QUICK_SHAPE_LABELS[shapePlacementPreset]}` : ""}</Typography>
+                  {(pointPlacementMode || shapePlacementPreset) && <FormControlLabel sx={{ m: 0 }} control={<Checkbox size="small" checked={repeatPlacement} onChange={(_event, checked) => onRepeatPlacementChange(checked)} />} label={<Typography variant="caption">Repeat placement</Typography>} />}
+                  {selectedMarkerIds.length > 0 && <Chip size="small" label={`${selectedMarkerIds.length} selected`} />}
+                </Stack>
+              </Paper>}
               <LeafletMap
+                placementStyle={placementStyle}
+                fullScreen={fullScreen}
+                placementStamp={placementStamp}
+                showHiddenItems={showHiddenItems} onShowHiddenItemsChange={onShowHiddenItemsChange}
+                repeatPlacement={repeatPlacement} onRepeatPlacementChange={onRepeatPlacementChange}
+                onCancelTool={onCancelTool} onFinishDrawing={onFinishDrawing} onMeasureDimensions={onMeasureDimensions}
+                onSelectMarkers={onSelectMarkers} onAssignMarkerLayer={onAssignMarkerLayer} canEditMarker={canEditMarker}
                 map={map}
                 maps={maps}
                 editMode={editMode}
@@ -4188,19 +4604,25 @@ function MapViewer({
                 aria-label="Map controls"
                 sx={{
                   p: 1.5,
+                  display: { xs: mobileControlsOpen ? "block" : "none", lg: "block" },
+                  boxSizing: "border-box",
+                  zIndex: 1150,
+                  bottom: { xs: 0, lg: "auto" },
+                  left: { xs: 0, lg: "auto" },
                   width: { xs: "100%", lg: 264 },
                   flexShrink: 0,
                   alignSelf: "flex-start",
-                  position: { lg: "sticky" },
+                  position: { xs: "fixed", lg: "sticky" },
                   top: { lg: 16 },
                   ...(editMode ? {
-                    height: { lg: "calc(100dvh - 110px)" },
-                    maxHeight: { lg: "calc(100dvh - 110px)" },
-                    overflowY: { lg: "auto" },
+                    height: { xs: "auto", lg: fullScreen ? "100%" : "calc(100dvh - 110px)" },
+                    maxHeight: { xs: "52dvh", lg: fullScreen ? "100%" : "calc(100dvh - 110px)" },
+                    overflowY: "auto",
                   } : {}),
                 }}
               >
                 <Stack spacing={1.5}>
+                  {compactControls && <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}><Typography variant="subtitle2">Map controls</Typography><IconButton aria-label="Close map controls" onClick={() => setMobileControlsOpen(false)}><CloseIcon /></IconButton></Stack>}
                   {editMode && <Tabs
                     value={mapControlTab}
                     onChange={(_event, value: "tools" | "layers" | "player") => setMapControlTab(value)}
@@ -4303,6 +4725,7 @@ function MapViewer({
                     <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
                       <Typography variant="overline" color="text.secondary">CUSTOM LAYERS · {mapLayers.length}</Typography>
                     </Stack>
+                    {editMode && <FormControlLabel control={<Switch size="small" checked={showHiddenItems} onChange={(_event, checked) => onShowHiddenItemsChange(checked)} />} label={<Typography variant="caption">Show hidden / DM-only items</Typography>} />}
                     {editMode && mapLayers.length > 0 && <FormControl size="small" fullWidth sx={{ mb: 1 }}>
                       <InputLabel id="new-map-item-layer-label">New items go to</InputLabel>
                       <Select
@@ -4320,13 +4743,14 @@ function MapViewer({
                       <Select
                         labelId="assign-selected-map-layer-label"
                         label={`Move ${selectedMarkerIds.length} selected`}
-                        value=""
+                        value="__choose_destination__"
                         onChange={(event) => {
                           const layerId = String(event.target.value);
                           onAssignSelectedMarkersToLayer(layerId || null);
                           onClearMarkerSelection();
                         }}
                       >
+                        <MenuItem value="__choose_destination__" disabled>Choose destination</MenuItem>
                         <MenuItem value="">Unassigned</MenuItem>
                         {mapLayers.map((layer) => <MenuItem key={layer.id} value={layer.id} disabled={customLayerLocks[layer.id] || !customLayerVisibility[layer.id]}>{layer.name}</MenuItem>)}
                       </Select>
@@ -4386,13 +4810,19 @@ function MapViewer({
                             </IconButton>
                           </Tooltip>}
                           {editMode && <Tooltip title={`Delete ${layer.name}; its items become unassigned`}>
-                            <IconButton size="small" aria-label={`Delete ${layer.name} layer`} onClick={() => onDeleteMapLayer(layer.id)}>
+                            <IconButton size="small" aria-label={`Delete ${layer.name} layer`} disabled={customLayerLocks[layer.id]} onClick={() => onDeleteMapLayer(layer.id)}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>}
                         </Stack>;
                       })}
                     </Stack>}
+                    {editMode && <Accordion disableGutters elevation={0} sx={{ mb: 1 }}>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography variant="caption">Items by layer</Typography></AccordionSummary>
+                      <AccordionDetails sx={{ maxHeight: 240, overflowY: "auto", px: 0 }}>
+                        {[...mapLayers, { id: "", name: "Unassigned" }].map((layer) => <Box key={layer.id} sx={{ mb: 1 }}><Typography variant="caption" sx={{ px: 1 }}>{layer.name}</Typography>{map.markers.filter((marker) => (marker.layer_id ?? "") === layer.id).map((marker) => <ListItemButton key={marker.id} disabled={!canEditMarker(marker.id)} onClick={() => { onOpenMarkerEditor(marker.id); setMobileControlsOpen(false); }} sx={{ py: 0.5 }}><Typography variant="body2">{marker.label ?? getEntity(marker.entity_id ?? "")?.name ?? "Unnamed item"}{marker.dm_only ? " · DM only" : !marker.visible ? " · Hidden" : ""}</Typography></ListItemButton>)}</Box>)}
+                      </AccordionDetails>
+                    </Accordion>}
                     {editMode && <Stack direction="row" spacing={0.5}>
                       <TextField
                         size="small"
@@ -4432,9 +4862,10 @@ function MapViewer({
                       onSaveMapDraft={onSaveMapDraft}
                     />
                   )}
+                  {editMode && compactControls && mapControlTab === "tools" && <Button size="small" onClick={onCreateChildMap}>Add child map</Button>}
                   {editMode && mapControlTab === "tools" && (
                     <Typography variant="caption" color="text.secondary">
-                      Map edits stay local until you save changes or finish editing.
+                      Apply properties to the map draft, then Save map. Done editing offers save, keep draft, or discard.
                     </Typography>
                   )}
 
@@ -4503,13 +4934,13 @@ function MapViewer({
                   {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">SELECT</Typography>
                     <Stack spacing={0.75}>
-                      <Button size="small" fullWidth variant={!markerEditMode && !pointPlacementMode && !shapePlacementPreset && !drawShape && !shapeEditActive ? "contained" : "outlined"} onClick={() => { onSelectMode(); onSelectBuildingStamp(null); setMapExplorerOpen(false); }}>Browse</Button>
+                      <Button size="small" fullWidth variant={!markerEditMode && !pointPlacementMode && !shapePlacementPreset && !drawShape && !shapeEditActive ? "contained" : "outlined"} onClick={() => { onSelectMode(); onSelectBuildingStamp(null); setMapExplorerOpen(false); }}>Pan</Button>
                       <Button size="small" fullWidth variant={markerEditMode ? "contained" : "outlined"} onClick={() => onMarkerEditModeChange(!markerEditMode)}>{markerEditMode ? "Done editing markers" : "Edit markers"}</Button>
                       <Button size="small" fullWidth variant={selectionMode ? "contained" : "outlined"} aria-pressed={selectionMode} onClick={() => onSelectionModeChange(!selectionMode)}>{selectionMode ? "Done selecting" : "Select multiple"}</Button>
                       {shapeEditActive && <Button size="small" fullWidth color="warning" variant="contained" onClick={onFinishShapeEdit}>Finish shape edit</Button>}
                       {selectionMode && (
                         <Stack spacing={0.75}>
-                          <Typography variant="caption" color="text.secondary">Click items to add or remove them. Drag any selected item to move the group.</Typography>
+                          <Typography variant="caption" color="text.secondary">Click items to add or remove them. Shift-click or Shift-drag a box to select. Drag a selected item to move the group; arrow keys nudge, Shift+arrow moves 10 units.</Typography>
                           {selectedMarkerIds.length === 1 && map.markers.some((marker) => marker.id === selectedMarkerIds[0] && marker.type === "area") && (
                             <Typography variant="caption" color="text.secondary">Drag a gold corner handle to resize proportionally around the opposite corner.</Typography>
                           )}
@@ -4518,6 +4949,7 @@ function MapViewer({
                           )}
                           <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
                             <Chip size="small" label={`${selectedMarkerIds.length} selected`} />
+                            <Button size="small" disabled={selectedMarkerIds.length === 0} onClick={() => setBulkPropertiesOpen(true)}>Edit selected properties</Button>
                             <Button size="small" disabled={selectedMarkerIds.length === 0} onClick={onDuplicateSelectedMarkers}>Duplicate selected</Button>
                             <Button size="small" disabled={selectedMarkerIds.length === 0} onClick={onClearMarkerSelection}>Clear</Button>
                           </Stack>
@@ -4552,10 +4984,12 @@ function MapViewer({
 
                   {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">PLACE</Typography>
+                    <Autocomplete size="small" options={locations} getOptionLabel={(item) => item.name} getOptionKey={(item) => item.id} value={null} onChange={(_event, entity) => { if (entity) { onPlaceMapEntity(entity); setMobileControlsOpen(false); } }} renderOption={(props, item) => { const { key, ...rest } = props; return <Box component="li" key={key} {...rest}><Stack><Typography variant="body2">{item.name}</Typography><Typography variant="caption">{entityTypeLabel(getEntity(item.id)?.entity_type ?? item.entity_type)}</Typography></Stack></Box>; }} renderInput={(params) => <TextField {...params} label="Place existing record" placeholder="Find a place, character, or map" />} sx={{ mb: 1 }} />
+
                     <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 0.5 }}>
-                      <Button size="small" sx={{ flex: "1 1 104px" }} variant={pointPlacementMode ? "contained" : "outlined"} onClick={() => onPointPlacementModeChange(!pointPlacementMode)}>{pointPlacementMode ? (selectedStampPath ? "Cancel stamp placement" : "Cancel point placement") : "Point marker"}</Button>
+                      <Button size="small" sx={{ flex: "1 1 104px" }} variant={pointPlacementMode ? "contained" : "outlined"} onClick={() => choosePointMode(!pointPlacementMode)}>{pointPlacementMode ? (selectedStampPath ? "Cancel stamp placement" : "Cancel point placement") : "Point marker"}</Button>
                       {(["room", "building", "street", "corridor"] as const).map((preset) => (
-                        <Button key={preset} size="small" sx={{ flex: "1 1 96px" }} variant={shapePlacementPreset === preset ? "contained" : "outlined"} aria-pressed={shapePlacementPreset === preset} onClick={() => { onPointPlacementModeChange(false); onShapePresetChange(shapePlacementPreset === preset ? null : preset); }}>
+                        <Button key={preset} size="small" sx={{ flex: "1 1 96px" }} variant={shapePlacementPreset === preset ? "contained" : "outlined"} aria-pressed={shapePlacementPreset === preset} onClick={() => { onPointPlacementModeChange(false); chooseShape(shapePlacementPreset === preset ? null : preset); }}>
                           {preset[0].toUpperCase() + preset.slice(1)}
                         </Button>
                       ))}
@@ -4671,7 +5105,7 @@ function MapViewer({
                             aria-pressed={shapePlacementPreset === preset}
                             onClick={() => {
                               onPointPlacementModeChange(false);
-                              onShapePresetChange(shapePlacementPreset === preset ? null : preset);
+                              chooseShape(shapePlacementPreset === preset ? null : preset);
                             }}
                           >
                             {QUICK_SHAPE_LABELS[preset]}
@@ -4684,9 +5118,9 @@ function MapViewer({
                   {editMode && mapControlTab === "tools" && <Box>
                     <Typography variant="overline" color="text.secondary">DRAW</Typography>
                     <Stack spacing={0.75}>
-                      <Button size="small" fullWidth variant={drawShape === "area" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); onStartDrawing("area"); }}>Area</Button>
-                      <Button size="small" fullWidth variant={drawShape === "path" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); onStartDrawing("path"); }}>Path</Button>
-                      <Typography variant="caption" color="text.secondary">Press Enter to finish or Esc to cancel. Hold Shift while drawing to constrain segments.</Typography>
+                      <Button size="small" fullWidth variant={drawShape === "area" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); chooseDraw("area"); }}>Area</Button>
+                      <Button size="small" fullWidth variant={drawShape === "path" ? "contained" : "outlined"} onClick={() => { onPointPlacementModeChange(false); onMarkerEditModeChange(false); chooseDraw("path"); }}>Path</Button>
+                      <Typography variant="caption" color="text.secondary">Use Finish drawing or Enter to finish, and Cancel tool or Esc to cancel. Hold Shift to constrain segments.</Typography>
                       <Button size="small" fullWidth variant={showGrid ? "contained" : "outlined"} aria-pressed={showGrid} onClick={() => onShowGridChange(!showGrid)}>{showGrid ? "Hide grid" : "Show grid"}</Button>
                       <Button size="small" fullWidth variant={snapToGrid ? "contained" : "outlined"} aria-pressed={snapToGrid} onClick={() => onSnapToGridChange(!snapToGrid)}>{snapToGrid ? "Grid snap on" : "Grid snap off"}</Button>
                       {(showGrid || snapToGrid) && <FormControl size="small" fullWidth>
@@ -4697,10 +5131,10 @@ function MapViewer({
                           value={snapGridSize}
                           onChange={(event) => onSnapGridSizeChange(Number(event.target.value))}
                         >
-                          <MenuItem value={2.5}>Fine · 2.5%</MenuItem>
-                          <MenuItem value={5}>Standard · 5%</MenuItem>
-                          <MenuItem value={10}>Coarse · 10%</MenuItem>
-                          <MenuItem value={20}>Very coarse · 20%</MenuItem>
+                          <MenuItem value={10}>Fine · 10 units</MenuItem>
+                          <MenuItem value={25}>Standard · 25 units</MenuItem>
+                          <MenuItem value={50}>Standard · 50 units</MenuItem>
+                          <MenuItem value={100}>Coarse · 100 units</MenuItem>
                         </Select>
                       </FormControl>}
                     </Stack>
@@ -4726,6 +5160,7 @@ function MapViewer({
   );
 }
 function LeafletMap({
+  fullScreen = false, placementStyle, placementStamp, showHiddenItems, onMeasureDimensions, onSelectMarkers, canEditMarker,
   map,
   maps,
   editMode,
@@ -4770,13 +5205,16 @@ function LeafletMap({
     ? imageDimensions
     : { width: map.canvas_width ?? 1000, height: map.canvas_height ?? 700 };
   const imageBounds = mapDimensions ? getImageBounds(mapDimensions) : null;
+  const measuredWidth = mapDimensions?.width, measuredHeight = mapDimensions?.height;
+  useEffect(() => { if (measuredWidth && measuredHeight) onMeasureDimensions(measuredWidth, measuredHeight); }, [measuredWidth, measuredHeight, onMeasureDimensions]);
 
   return (
     <Box
       sx={{
         width: "100%",
-        height: { xs: "58vh", lg: "calc(100dvh - 110px)" },
-        minHeight: { xs: 420, lg: 480 },
+        height: fullScreen ? "auto" : { xs: "calc(100dvh - 370px)", lg: "calc(100dvh - 110px)" },
+        flex: fullScreen ? 1 : undefined,
+        minHeight: fullScreen ? 0 : { xs: 260, lg: 480 },
         overflow: "hidden",
         border: 1,
         borderColor: "divider",
@@ -4815,9 +5253,9 @@ function LeafletMap({
         "& .campaign-map-marker:not(.campaign-map-stamp)": {
           background: "transparent !important",
           border: "0 !important",
-          width: "34px !important",
-          height: "34px !important",
-          margin: "-17px 0 0 -17px !important",
+          width: "44px !important",
+          height: "44px !important",
+          margin: "-22px 0 0 -22px !important",
         },
         "& .campaign-map-stamp": {
           background: "transparent !important",
@@ -4866,6 +5304,7 @@ function LeafletMap({
           background: "transparent",
         }}
       >
+        <MapResizeObserver />
         {mapDimensions && imageBounds && (
           <>
             <MapInitialView
@@ -4895,10 +5334,14 @@ function LeafletMap({
               imageHeight={mapDimensions.height}
             />
 
+            <MapSelectionBox enabled={editMode && selectionMode} markers={map.markers.filter((marker) => (showHiddenItems || marker.visible && !marker.dm_only) && (!marker.layer_id || customLayerVisibility[marker.layer_id] !== false))} width={mapDimensions.width} height={mapDimensions.height} canSelect={canEditMarker} onSelect={onSelectMarkers} />
             <MapContextMenu
+              key={`placement-${editMode}-${pointPlacementMode}-${shapePlacementPreset ?? "none"}`}
               imageWidth={mapDimensions.width}
               imageHeight={mapDimensions.height}
               editingEnabled={editMode}
+              placementStyle={placementStyle}
+              placementStamp={placementStamp}
               pointPlacementMode={pointPlacementMode}
               shapePlacementPreset={shapePlacementPreset}
               snapToGrid={snapToGrid}
@@ -4909,6 +5352,7 @@ function LeafletMap({
             />
 
             <MapMarkers
+              showHiddenItems={showHiddenItems}
               map={map}
               editMode={editMode}
               campaignActivity={campaignActivity}
@@ -4935,6 +5379,7 @@ function LeafletMap({
             />
 
             <GeomanController
+              moveEnabled={markerEditMode || selectionMode}
               mapData={map}
               imageWidth={mapDimensions.width}
               imageHeight={mapDimensions.height}
@@ -4954,6 +5399,7 @@ function LeafletMap({
       </MapContainer>
       {mapExplorerOpen && (
         <MapExplorer
+          canEditMarker={canEditMarker}
           markers={map.markers}
           layers={map.layers ?? []}
           editMode={editMode}
@@ -4975,10 +5421,11 @@ function LeafletMap({
 }
 
 function SnapGrid({ imageWidth, imageHeight, gridSize }: { imageWidth: number; imageHeight: number; gridSize: number }) {
-  const lines = Array.from({ length: Math.floor(100 / gridSize) + 1 }, (_, index) => index * gridSize);
+  const vertical = Array.from({ length: Math.min(1001, Math.floor(imageWidth / gridSize) + 1) }, (_, index) => index * gridSize / imageWidth * 100);
+  const horizontal = Array.from({ length: Math.min(1001, Math.floor(imageHeight / gridSize) + 1) }, (_, index) => index * gridSize / imageHeight * 100);
   return (
     <>
-      {lines.map((value) => (
+      {vertical.map((value) => (
           <Polyline
             key={`grid-x-${value}`}
           positions={[
@@ -4990,7 +5437,7 @@ function SnapGrid({ imageWidth, imageHeight, gridSize }: { imageWidth: number; i
             pmIgnore
         />
       ))}
-      {lines.map((value) => (
+      {horizontal.map((value) => (
         <Polyline
           key={`grid-y-${value}`}
           positions={[
@@ -5010,6 +5457,8 @@ function MapContextMenu({
   imageWidth,
   imageHeight,
   editingEnabled,
+  placementStyle,
+  placementStamp,
   pointPlacementMode,
   shapePlacementPreset,
   snapToGrid,
@@ -5019,28 +5468,39 @@ function MapContextMenu({
   onOpenMarkerMenu,
 }: MapContextMenuProps) {
   const map = useMap();
+  const touchPlacement = useMediaQuery("(pointer: coarse)");
+  const [hover, setHover] = useState<[number, number] | null>(null);
+  const [pendingTap, setPendingTap] = useState<[number, number] | null>(null);
+  const placeAt = (x: number, y: number) => {
+    if (shapePlacementPreset) {
+      const marker = createQuickShapeMarker(shapePlacementPreset, x, y);
+      const points = marker.points!.map((point) => worldToLeaflet(point, imageWidth, imageHeight));
+      const layer = marker.type === "area"
+        ? L.polygon(points, { color: marker.fill_color, fillColor: marker.fill_color, fillOpacity: marker.fill_opacity, weight: 2 })
+        : L.polyline(points, { color: marker.fill_color, opacity: marker.fill_opacity, weight: 4 });
+      setMapLayerMarkerId(layer, marker.id); layer.addTo(map); onPlaceQuickShape(marker, layer);
+    } else onPlacePointMarker(x, y);
+    setPendingTap(null);
+  };
+
 
   useMapEvents({
     click(event) {
-      if (!pointPlacementMode && !shapePlacementPreset) return;
+      if (!editingEnabled || !pointPlacementMode && !shapePlacementPreset) return;
       const target = event.originalEvent.target;
       if (target instanceof HTMLElement && target.closest(".leaflet-marker-icon, .leaflet-interactive, .leaflet-popup")) {
         return;
       }
       const [x, y] = leafletToWorld(event.latlng.lat, event.latlng.lng, imageWidth, imageHeight, snapToGrid, snapGridSize);
-      if (shapePlacementPreset) {
-        const marker = createQuickShapeMarker(shapePlacementPreset, x, y);
-        const points = marker.points!.map((point) => worldToLeaflet(point, imageWidth, imageHeight));
-        const layer = marker.type === "area"
-          ? L.polygon(points, { color: marker.fill_color, fillColor: marker.fill_color, fillOpacity: marker.fill_opacity, weight: 2 })
-          : L.polyline(points, { color: marker.fill_color, opacity: marker.fill_opacity, weight: 4 });
-        setMapLayerMarkerId(layer, marker.id);
-        layer.addTo(map);
-        onPlaceQuickShape(marker, layer);
-      } else {
-        onPlacePointMarker(x, y);
-      }
+      if (x < 0 || x > 100 || y < 0 || y > 100) return;
+      if (touchPlacement) setPendingTap([x, y]); else placeAt(x, y);
     },
+    mousemove(event) {
+      if (!editingEnabled || !pointPlacementMode && !shapePlacementPreset || touchPlacement) return;
+      const [x, y] = leafletToWorld(event.latlng.lat, event.latlng.lng, imageWidth, imageHeight, snapToGrid, snapGridSize);
+      setHover(x >= 0 && x <= 100 && y >= 0 && y <= 100 ? [x, y] : null);
+    },
+    mouseout() { setHover(null); },
     contextmenu(event) {
       if (!editingEnabled) return;
       const [x, y] = leafletToWorld(
@@ -5070,9 +5530,21 @@ function MapContextMenu({
     },
   });
 
-  return null;
+  const preview = editingEnabled && (pointPlacementMode || shapePlacementPreset) ? pendingTap ?? hover : null;
+  if (!preview) return null;
+  const shape = shapePlacementPreset ? createQuickShapeMarker(shapePlacementPreset, preview[0], preview[1]) : null;
+  const confirm = pendingTap ? <Popup position={worldToLeaflet(preview, imageWidth, imageHeight)} closeButton={false} autoPan>
+    <Stack spacing={1}><Typography variant="body2">Place here?</Typography><Button size="small" onClick={() => placeAt(...preview)}>Place here</Button><Button size="small" onClick={() => setPendingTap(null)}>Cancel placement</Button></Stack>
+  </Popup> : null;
+  return <>
+    {shape ? shape.type === "area" ? <Polygon positions={shape.points!.map((point) => worldToLeaflet(point, imageWidth, imageHeight))} pathOptions={{ color: "#ffd166", dashArray: "5", fillOpacity: 0.15 }} interactive={false} pmIgnore />
+      : <Polyline positions={shape.points!.map((point) => worldToLeaflet(point, imageWidth, imageHeight))} pathOptions={{ color: "#ffd166", dashArray: "5" }} interactive={false} pmIgnore />
+      : <Marker position={worldToLeaflet(preview, imageWidth, imageHeight)} icon={markerIcon(placementStyle?.appearance.icon ?? "location", false, placementStyle?.appearance.icon_image ?? placementStamp?.image_path, (placementStyle?.appearance.icon_size ?? placementStamp?.default_size ?? 72) * map.getZoomScale(map.getZoom(), 0), 0, false, false, placementStyle?.appearance.fill_color)} opacity={0.5} interactive={false} keyboard={false} pmIgnore />}
+    {confirm}
+  </>;
 }
 function MapMarkers({
+  showHiddenItems,
   map,
   editMode,
   campaignActivity,
@@ -5114,15 +5586,15 @@ function MapMarkers({
     ? paneNameByLayerId.get(marker.layer_id) ?? unassignedPaneName
     : unassignedPaneName;
   const visibleMarkers = useMemo(() => map.markers.filter(
-    (marker) => marker.visible && !marker.dm_only && (
+    (marker) => (editMode && showHiddenItems || marker.visible && !marker.dm_only) && (
       marker.type === "area" ? layerVisibility.areas
         : marker.type === "path" ? layerVisibility.paths
           : layerVisibility.points
     ) && (!marker.layer_id || customLayerVisibility[marker.layer_id] !== false),
-  ), [customLayerVisibility, layerVisibility, map.markers]);
+  ), [customLayerVisibility, layerVisibility, map.markers, editMode, showHiddenItems]);
   const orderedMarkers = useMemo(
-    () => [...visibleMarkers].sort((left, right) => (left.z_index ?? 0) - (right.z_index ?? 0)),
-    [visibleMarkers],
+    () => sortMapMarkers({ markers: visibleMarkers, layers: mapLayers }),
+    [visibleMarkers, mapLayers],
   );
 
   useEffect(() => {
@@ -5152,7 +5624,7 @@ function MapMarkers({
   const previewGroupDrag = useCallback((markerId: string, x: number, y: number) => {
     const origin = groupDragOrigin.current;
     if (!origin || origin.anchorId !== markerId) return;
-    const [deltaX, deltaY] = getGroupTranslation(origin.markers, x - origin.x, y - origin.y);
+    const [deltaX, deltaY] = getGroupTranslation(origin.markers, x - origin.x, y - origin.y, { width: imageWidth, height: imageHeight });
     const markerById = new globalThis.Map<string, MapMarker>(origin.markers.map((marker): [string, MapMarker] => [marker.id, marker]));
 
     leafletMap.eachLayer((layer) => {
@@ -5266,6 +5738,7 @@ function MapMarkers({
             pathOptions={{
               color: marker.player_view_mask ? "#555a64" : marker.fog_reveal ? "#69bd9b" : selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
               fillColor: marker.player_view_mask ? "#14161b" : marker.fog_reveal ? "#69bd9b" : selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
+              opacity: !marker.visible || marker.dm_only ? 0.4 : 1,
               fillOpacity: marker.player_view_mask ? 0.8 : marker.fog_reveal ? 0.25 : selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? Math.max(marker.fill_opacity ?? 0.2, 0.4) : marker.fill_opacity ?? 0.2,
               weight: selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? 4 : 2,
             }}
@@ -5276,11 +5749,13 @@ function MapMarkers({
               }
             }}
             eventHandlers={{
-              click: () => {
-                if (selectionMode) {
+              click: (event) => {
+                if (selectionMode || event.originalEvent.shiftKey) {
                   if (!isMapMarkerLocked(marker, layerLocks, customLayerLocks)) onToggleMarkerSelection(marker.id);
                 } else if (markerEditMode) {
                   if (!isMapMarkerLocked(marker, layerLocks, customLayerLocks)) onOpenMarkerEditor(marker.id);
+                } else if (editMode) {
+                  return;
                 } else if (marker.linked_map) {
                   onOpenMap(marker.linked_map);
                 } else if (marker.entity_id) {
@@ -5378,7 +5853,7 @@ function MapMarkers({
             pathOptions={{
               color: selectedMarkerIds.includes(marker.id) ? "#ffd166" : focusedMarkerId === marker.id ? "#64b5f6" : marker.fill_color ?? "#1976d2",
               weight: selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? 7 : 4,
-              opacity: selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? 1 : 0.9,
+              opacity: !marker.visible || marker.dm_only ? 0.4 : selectedMarkerIds.includes(marker.id) || focusedMarkerId === marker.id ? 1 : 0.9,
             }}
             ref={(layer) => {
               if (layer) {
@@ -5387,11 +5862,13 @@ function MapMarkers({
               }
             }}
             eventHandlers={{
-              click: () => {
-                if (selectionMode) {
+              click: (event) => {
+                if (selectionMode || event.originalEvent.shiftKey) {
                   if (!isMapMarkerLocked(marker, layerLocks, customLayerLocks)) onToggleMarkerSelection(marker.id);
                 } else if (markerEditMode) {
                   if (!isMapMarkerLocked(marker, layerLocks, customLayerLocks)) onOpenMarkerEditor(marker.id);
+                } else if (editMode) {
+                  return;
                 } else if (marker.linked_map) {
                   onOpenMap(marker.linked_map);
                 } else if (marker.entity_id) {
@@ -5537,6 +6014,7 @@ function CampaignMarker({
   // imageHeight * 32 pixels. One order step must exceed that span so an
   // explicit stack order takes precedence over the default geographic sort.
   const zIndexOffset = Math.min(marker.z_index ?? 0, 6_000) * (imageHeight * 32 + 1);
+  const markerName = `${marker.label ?? getEntity(marker.entity_id ?? "")?.name ?? "Map marker"}${marker.dm_only ? " (DM only)" : !marker.visible ? " (hidden)" : ""}`;
 
   return (
     <>
@@ -5544,12 +6022,21 @@ function CampaignMarker({
         position={position}
         pane={pane}
         zIndexOffset={zIndexOffset}
-        icon={markerIcon(marker.icon, campaignActivity.length > 0 || highlighted || selected, marker.icon_image, stampDisplaySize, marker.rotation, marker.mirror_x, marker.mirror_y)}
-        draggable={editMode && !locked}
+        icon={markerIcon(marker.icon, campaignActivity.length > 0 || highlighted || selected, marker.icon_image, stampDisplaySize, marker.rotation, marker.mirror_x, marker.mirror_y, marker.fill_color)}
+        draggable={editMode && !locked && (markerEditMode || selectionMode && selected)}
+        opacity={!marker.visible || marker.dm_only ? 0.45 : 1}
+        title={markerName}
+        alt={marker.label ?? getEntity(marker.entity_id ?? "")?.name ?? "Map marker"}
         pmIgnore
         ref={(layer) => {
           if (layer) {
             setMapLayerMarkerId(layer, marker.id);
+            // Leaflet does not update constructor-only title/alt options when a label changes.
+            layer.options.title = markerName;
+            layer.options.alt = markerName;
+            const element = layer.getElement();
+            element?.setAttribute("title", markerName);
+            element?.setAttribute("aria-label", markerName);
           }
         }}
         eventHandlers={{
@@ -5577,11 +6064,13 @@ function CampaignMarker({
             });
             onMarkerDragEnd(marker.id);
           },
-          click: () => {
-            if (selectionMode) {
+          click: (event) => {
+            if (selectionMode || event.originalEvent.shiftKey) {
               if (!locked) onToggleMarkerSelection(marker.id);
             } else if (markerEditMode) {
               if (!locked) onOpenMarkerEditor(marker.id);
+            } else if (editMode) {
+              return;
             } else if (campaignActivity.length === 0) {
               if (marker.linked_map) {
                 onOpenMap(marker.linked_map);
@@ -5663,6 +6152,7 @@ function CampaignMarker({
         <Marker
           position={position}
           icon={markerLabelIcon(marker.label)}
+          pane={pane}
           interactive={false}
           keyboard={false}
           pmIgnore
@@ -5673,6 +6163,7 @@ function CampaignMarker({
 }
 
 function GeomanController({
+  moveEnabled,
   mapData,
   imageWidth,
   imageHeight,
@@ -5703,6 +6194,7 @@ function GeomanController({
       return;
     }
 
+    map.pm.setGlobalOptions({ finishOnEnter: true });
     map.pm.addControls({
       position: "topleft",
       drawMarker: false,
@@ -5712,13 +6204,12 @@ function GeomanController({
       drawText: false,
       drawPolyline: false,
       drawPolygon: false,
-      editMode: true,
-      dragMode: true,
+      editMode: false,
+      dragMode: false,
       cutPolygon: false,
       removalMode: false,
       rotateMode: false,
     });
-    map.pm.enableGlobalDragMode();
 
     return () => {
       if (map.pm.globalDragModeEnabled()) {
@@ -5727,6 +6218,23 @@ function GeomanController({
       map.pm.removeControls();
     };
   }, [editMode, map]);
+
+  useEffect(() => {
+    if (editMode && moveEnabled) map.pm.enableGlobalDragMode();
+    else map.pm.disableGlobalDragMode();
+    return () => { map.pm.disableGlobalDragMode(); };
+  }, [editMode, map, moveEnabled]);
+  useEffect(() => {
+    const finish = () => {
+      const shape = map.pm.Draw.getActiveShape();
+      const tool = (map.pm.Draw as unknown as Record<string, { _finishShape?: () => void }>)[shape];
+      tool?._finishShape?.();
+    };
+    const cancel = () => { for (const shape of ["Polygon", "Line", "Rectangle"] as const) map.pm.disableDraw(shape); };
+    window.addEventListener("world-builder-finish-map-drawing", finish);
+    window.addEventListener("world-builder-cancel-map-drawing", cancel);
+    return () => { window.removeEventListener("world-builder-finish-map-drawing", finish); window.removeEventListener("world-builder-cancel-map-drawing", cancel); };
+  }, [map]);
 
   useEffect(() => {
     if (!editMode || !drawShape) return;
@@ -5847,7 +6355,7 @@ function GeomanController({
       }
 
       const marker: MapMarker = {
-        id: crypto.randomUUID(),
+        id: createId(),
         entity_id: null,
         type,
         x: points[0][0],

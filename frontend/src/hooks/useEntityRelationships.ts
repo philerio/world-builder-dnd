@@ -2,6 +2,7 @@ import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 
 import type { EntitySummary } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
 
 type EntityRelationships = {
   outgoing: EntitySummary[];
@@ -9,6 +10,7 @@ type EntityRelationships = {
 };
 
 function useEntityRelationships(entityId: string | null) {
+  const { worldData } = useWorldData();
   const [result, setResult] = useState<{
     entityId: string;
     relationships: EntityRelationships;
@@ -39,7 +41,7 @@ function useEntityRelationships(entityId: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [entityId]);
+  }, [entityId, worldData]);
 
   const isCurrentResult = entityId !== null && result?.entityId === entityId;
 

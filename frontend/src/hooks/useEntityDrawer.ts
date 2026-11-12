@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useWorldData } from "../context/WorldDataContext";
+import { recordRecentEntity } from "../utils/workspacePreferences";
 
 function useEntityDrawer(initialEntityId: string | null = null) {
     const [entityId, setEntityId] = useState<string | null>(initialEntityId);
     const [history, setHistory] = useState<string[]>([]);
+    const { worldData } = useWorldData();
+    const worldId = worldData?.world?.id ?? worldData?.worlds?.[0]?.id;
+    useEffect(() => {
+        if (worldId && entityId) recordRecentEntity(worldId, entityId);
+    }, [worldId, entityId]);
 
     const openEntity = (id: string) => {
         setEntityId((currentId) => {

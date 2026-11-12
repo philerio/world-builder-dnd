@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Autocomplete,
   Accordion,
@@ -52,6 +52,7 @@ import type {
   CampaignStory,
   EntityResponse,
   StoryBeat,
+  SceneScriptBlock,
   StoryBeatCheck,
   StoryBeatNpcKnowledge,
   StoryBeatStatus,
@@ -69,9 +70,18 @@ import type {
 import { useWorldData } from "../context/WorldDataContext";
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
 import useEntityDrawer from "../hooks/useEntityDrawer";
+import useEditorDraft from "../hooks/useEditorDraft";
+import DraftEditor from "../components/DraftEditor";
 import formatStatusLabel from "../utils/formatStatusLabel";
 import CombatEncounterEditor, { EncounterLaunchButton } from "../components/CombatEncounterEditor";
 import type { CombatEncounter } from "../types";
+import { campaignSessions } from "../utils/sessionDashboard";
+import { SceneScriptEditor, SceneScriptReader } from "../components/SceneScript";
+import SessionJournal, { SessionEntryList } from "../components/SessionJournal";
+import SessionConsequenceDialog from "../components/SessionConsequenceDialog";
+import { groupSessionHistory, sessionLogOutline, type ConsequenceSource } from "../utils/sessionJournal";
+import { createId } from "../utils/createId";
+import { recordRecentEntity, rememberCampaign } from "../utils/workspacePreferences";
 
 const EMPTY_STORY: CampaignStory = {
   beats: [],
@@ -137,6 +147,7 @@ type BeatDraft = {
   encounter?: CombatEncounter;
   name: string;
   description: string;
+  scene_script: SceneScriptBlock[];
   description_content: StoryContent;
   events_content: StoryContent;
   triggers_content: StoryContent;
@@ -1004,15 +1015,17 @@ function CollapsibleDashboardSection({
   children,
   gridRow,
   summaryAdornment,
+  id,
 }: {
   eyebrow: string;
   title: string;
   children: ReactNode;
   gridRow: number;
   summaryAdornment?: ReactNode;
+  id?: string;
 }) {
   return (
-    <Card sx={{ gridRow: { xs: gridRow, lg: "auto" } }}>
+    <Card id={id} sx={{ gridRow: { xs: gridRow, lg: "auto" }, scrollMarginTop: 80 }}>
       <Accordion
         defaultExpanded
         disableGutters
@@ -1045,9 +1058,19 @@ function CollapsibleDashboardSection({
 
 function CampaignDashboardPage() {
   const { campaignId } = useParams();
+  const [searchParams] = useSearchParams();
+  const routeQuery = searchParams.toString();
+  const appliedDashboardRequest = useRef<string | null>(null);
   const navigate = useNavigate();
   const { loadEntity, updateEntity, createEntity, loadCampaignReferences, entities, getEntity, worldData } = useWorldData();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const worldId = worldData?.world?.id ?? worldData?.worlds?.[0]?.id;
+  useEffect(() => {
+    if (worldId && campaign?.id === campaignId && campaignId) {
+      rememberCampaign(worldId, campaignId);
+      recordRecentEntity(worldId, campaignId);
+    }
+  }, [worldId, campaignId, campaign?.id]);
   const [workspace, setWorkspace] = useState<CampaignWorkspace>("dashboard");
   const [campaignLinkedRecords, setCampaignLinkedRecords] = useState<EntitySummary[]>([]);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -1056,14 +1079,13 @@ function CampaignDashboardPage() {
   const [loadedCampaignId, setLoadedCampaignId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [campaignArcEditorOpen, setCampaignArcEditorOpen] = useState(false);
-  const [campaignArcDraft, setCampaignArcDraft] = useState<CampaignArcDraft | null>(null);
+  const campaignArcEditor = useEditorDraft<CampaignArcDraft | null>(null);
+  const setCampaignArcDraft = campaignArcEditor.set;
   const [error, setError] = useState<string | null>(null);
-  const [beatName, setBeatName] = useState("");
-  const [beatDescription, setBeatDescription] = useState("");
-  const [actionDescription, setActionDescription] = useState("");
+  const newBeatEditor = useEditorDraft({ name: "", description: "" });
+  const actionCaptureEditor = useEditorDraft({ description: "", worldStories: [] as string[], threadLinks: [] as WorldStoryThreadLink[] });
   const [actionSessionInput, setActionSessionInput] = useState("");
-  const [actionWorldStories, setActionWorldStories] = useState<string[]>([]);
-  const [actionWorldStoryThreads, setActionWorldStoryThreads] = useState<WorldStoryThreadLink[]>([]);
+
   const [beatStatusFilter, setBeatStatusFilter] = useState<StoryBeatStatus | "all">("all");
   const [beatConsequenceFilterIds, setBeatConsequenceFilterIds] = useState<string[]>([]);
   const [beatEventFilterIds, setBeatEventFilterIds] = useState<string[]>([]);
@@ -1075,38 +1097,46 @@ function CampaignDashboardPage() {
   const [clockProgressFilter, setClockProgressFilter] = useState<ClockProgressFilter>("all");
   const [plotClockProgressFilter, setPlotClockProgressFilter] = useState<ClockProgressFilter>("all");
   const [plotClockBeatFilterId, setPlotClockBeatFilterId] = useState("all");
-  const [clockName, setClockName] = useState("");
-  const [clockMaximum, setClockMaximum] = useState("3");
-  const [plotClockName, setPlotClockName] = useState("");
-  const [plotClockMaximum, setPlotClockMaximum] = useState("3");
-  const [plotClockCreateBeatId, setPlotClockCreateBeatId] = useState("");
-  const [consequenceDescription, setConsequenceDescription] = useState("");
+  const newClockEditor = useEditorDraft({ name: "", maximum: "3" });
+  const newPlotClockEditor = useEditorDraft({ name: "", maximum: "3", beatId: "" });
+  const newConsequenceEditor = useEditorDraft("");
+  const setConsequenceDescription = newConsequenceEditor.set;
   const [editingBeatId, setEditingBeatId] = useState<string | null>(null);
-  const [beatDraft, setBeatDraft] = useState<BeatDraft | null>(null);
+  const beatEditor = useEditorDraft<BeatDraft | null>(null);
+  const setBeatDraft = beatEditor.set;
+  const [readingScriptId, setReadingScriptId] = useState<string | null>(null);
+  const [consequenceSource, setConsequenceSource] = useState<ConsequenceSource | null>(null);
+  const actionCaptureId = useRef<string | null>(null);
   const [editingConsequenceId, setEditingConsequenceId] = useState<string | null>(null);
-  const [consequenceDraft, setConsequenceDraft] = useState<ConsequenceDraft | null>(null);
+  const consequenceEditor = useEditorDraft<ConsequenceDraft | null>(null);
+  const setConsequenceDraft = consequenceEditor.set;
   const [editingClockId, setEditingClockId] = useState<string | null>(null);
-  const [clockDraft, setClockDraft] = useState<ClockDraft | null>(null);
+  const clockEditor = useEditorDraft<ClockDraft | null>(null);
+  const setClockDraft = clockEditor.set;
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
-  const [actionDraft, setActionDraft] = useState<ActionDraft | null>(null);
+  const actionEditor = useEditorDraft<ActionDraft | null>(null);
+  const setActionDraft = actionEditor.set;
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [worldEventDialogOpen, setWorldEventDialogOpen] = useState(false);
-  const [worldEventDraft, setWorldEventDraft] = useState<WorldEventDraft | null>(null);
+  const worldEventEditor = useEditorDraft<WorldEventDraft | null>(null);
+  const setWorldEventDraft = worldEventEditor.set;
   const [worldEventSource, setWorldEventSource] = useState<WorldEventSourceDraft | null>(null);
   const [creatingWorldEvent, setCreatingWorldEvent] = useState(false);
   const [closeoutOpen, setCloseoutOpen] = useState(false);
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const [sessionHistoryFilter, setSessionHistoryFilter] = useState("all");
   const [sessionRecapDialogOpen, setSessionRecapDialogOpen] = useState(false);
-  const [sessionRecapDraft, setSessionRecapDraft] = useState<SessionRecapDraft | null>(null);
-  const [timelineEventDraft, setTimelineEventDraft] = useState<TimelineEventDraft | null>(null);
+  const sessionRecapEditor = useEditorDraft<SessionRecapDraft | null>(null);
+  const setSessionRecapDraft = sessionRecapEditor.set;
+  const timelineEventEditor = useEditorDraft<TimelineEventDraft | null>(null);
+  const setTimelineEventDraft = timelineEventEditor.set;
   const [creatingTimelineEvent, setCreatingTimelineEvent] = useState(false);
   const [editingSessionRecapNumber, setEditingSessionRecapNumber] = useState<number | null>(null);
-  const [closeoutDrafts, setCloseoutDrafts] = useState<Record<string, CloseoutActionDraft>>({});
+  const closeoutEditor = useEditorDraft<Record<string, CloseoutActionDraft>>({});
+  const setCloseoutDrafts = closeoutEditor.set;
   const [closeoutSessionFilter, setCloseoutSessionFilter] = useState("all");
   const [prepSessionInput, setPrepSessionInput] = useState("");
-  const [prepAgenda, setPrepAgenda] = useState("");
-  const [prepNotes, setPrepNotes] = useState("");
+  const prepEditor = useEditorDraft({ agenda: "", notes: "" });
   const [prepPlotPointIds, setPrepPlotPointIds] = useState<string[]>([]);
   const [prepReferenceIds, setPrepReferenceIds] = useState<string[]>([]);
   const {
@@ -1270,41 +1300,10 @@ function CampaignDashboardPage() {
   const sessionHistorySessionValues = [...new Set([
     ...actions.flatMap((action) => action.session === undefined ? [] : [String(action.session)]),
     ...(campaignStory.session_recaps ?? []).map((recap) => String(recap.session)),
+    ...(campaignStory.session_entries ?? []).map((entry) => String(entry.session)),
   ])].sort((left, right) => Number(right) - Number(left));
-  const sessionHistoryGroups = (() => {
-    const groups = new Map<string, { label: string; session: number | null; actions: typeof actions; recap?: SessionRecap }>();
-    for (const recap of campaignStory.session_recaps ?? []) {
-      const key = String(recap.session);
-      if (sessionHistoryFilter !== "all" && sessionHistoryFilter !== key) continue;
-      groups.set(key, {
-        label: "Session " + key,
-        session: recap.session,
-        actions: [],
-        recap,
-      });
-    }
-    for (const action of actions) {
-      const key = action.session === undefined ? "unassigned" : String(action.session);
-      if (sessionHistoryFilter !== "all" && sessionHistoryFilter !== key) continue;
-      const group = groups.get(key) ?? {
-        label: key === "unassigned" ? "Session not set" : `Session ${key}`,
-        session: action.session ?? null,
-        actions: [],
-      };
-      group.actions.push(action);
-      groups.set(key, group);
-    }
-    return [...groups.entries()]
-      .sort(([left], [right]) => {
-        if (left === "unassigned") return 1;
-        if (right === "unassigned") return -1;
-        return Number(right) - Number(left);
-      })
-      .map(([, group]) => group);
-  })();
-  const nextPrepSession = sessionHistorySessionValues.length
-    ? Math.max(...sessionHistorySessionValues.map(Number)) + 1
-    : 1;
+  const sessionHistoryGroups = groupSessionHistory(campaignStory, sessionHistoryFilter);
+  const { next: nextPrepSession, live: liveSession } = campaignSessions(campaignStory);
   const prepSessionNumber = Math.max(1, Number.parseInt(prepSessionInput, 10) || nextPrepSession);
   const selectedPrepBeats = beats.filter((beat) => prepPlotPointIds.includes(beat.id));
   const selectedPrepConsequences = consequences.filter(({ beat, consequence }) =>
@@ -1339,7 +1338,7 @@ function CampaignDashboardPage() {
     }
   };
 
-  const loadPrepDraft = (sessionNumber: number) => {
+  const loadPrepDraft = useCallback((sessionNumber: number) => {
     const savedPrep = (campaignStory.session_preps ?? []).find((item) => item.session === sessionNumber);
     const defaultBeatIds = savedPrep?.plot_point_ids ?? (currentBeat ? [currentBeat.id] : []);
     const defaultReferenceIds = [...new Set([
@@ -1353,13 +1352,13 @@ function CampaignDashboardPage() {
         ...(beat.world_events ?? []),
       ]),
     ])];
-    setPrepAgenda(savedPrep?.agenda ?? "");
-    setPrepNotes(savedPrep?.dm_notes ?? "");
+    prepEditor.set({ agenda: savedPrep?.agenda ?? "", notes: savedPrep?.dm_notes ?? "" });
     setPrepPlotPointIds(savedPrep?.plot_point_ids ?? defaultBeatIds);
     setPrepReferenceIds(savedPrep?.reference_ids ?? defaultReferenceIds);
-  };
+  }, [campaignStory.session_preps, currentBeat, campaign, beats, prepEditor]);
 
   const saveSessionPrep = async () => {
+    const { agenda: prepAgenda, notes: prepNotes } = prepEditor.getSnapshot();
     if (legacyStory) return;
     const prep: SessionPrep = {
       session: prepSessionNumber,
@@ -1384,13 +1383,7 @@ function CampaignDashboardPage() {
   };
 
   const openLiveSessionWorkspace = () => {
-    const unreviewedSessionNumbers = unreviewedActions
-      .flatMap((action) => action.session === undefined ? [] : [action.session]);
-    const sessionNumber = unreviewedSessionNumbers.length
-      ? Math.max(...unreviewedSessionNumbers)
-      : sessionHistorySessionValues.length
-        ? Math.max(...sessionHistorySessionValues.map(Number))
-        : nextPrepSession;
+    const sessionNumber = liveSession;
     setActionSessionInput(String(sessionNumber));
     setPrepSessionInput(String(sessionNumber));
     loadPrepDraft(sessionNumber);
@@ -1422,6 +1415,7 @@ function CampaignDashboardPage() {
   };
 
   const saveCampaignArc = async () => {
+    const campaignArcDraft = campaignArcEditor.getSnapshot();
     if (!campaign || !campaignId || !campaignArcDraft) return;
     setSaving(true);
     setError(null);
@@ -1463,54 +1457,20 @@ function CampaignDashboardPage() {
     setSessionRecapDialogOpen(true);
   };
 
-  const generateSessionRecapDraft = () => {
-    if (!sessionRecapDraft) return;
-    const sessionNumber = Number.parseInt(sessionRecapDraft.session, 10);
-    if (!Number.isFinite(sessionNumber) || sessionNumber < 1) return;
-
-    const sessionActions = actions.filter((action) => action.session === sessionNumber);
-    if (!sessionActions.length) return;
-
-    const actionBeatsById = new Map<string, StoryBeat>();
-    const linkedConsequencesById = new Map<string, (typeof consequences)[number]>();
-    for (const action of sessionActions) {
-      const beat = beats.find((item) => item.id === action.story_beat);
-      if (beat) actionBeatsById.set(beat.id, beat);
-      for (const consequenceId of action.consequence_ids ?? []) {
-        const consequence = consequences.find((item) => item.consequence.id === consequenceId);
-        if (consequence) linkedConsequencesById.set(consequence.consequence.id, consequence);
-      }
-    }
-    const actionBeats = [...actionBeatsById.values()];
-    const linkedConsequences = [...linkedConsequencesById.values()];
-    const relatedEventIds = new Set([
-      ...actionBeats.flatMap((beat) => beat.world_events ?? []),
-      ...linkedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []),
-    ]);
-    const relatedEvents = worldEventOptions.filter((event) => relatedEventIds.has(event.id));
-    const resultingBeatIds = new Set(linkedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []));
-    const resultingBeats = beats.filter((beat) => resultingBeatIds.has(beat.id));
-
-    const sections = [
-      `During Session ${sessionNumber}, the party:\n${sessionActions.map((action) => {
-        const beat = beats.find((item) => item.id === action.story_beat);
-        return `- ${action.description}${beat ? ` (Plot Point: ${beat.name})` : ""}`;
-      }).join("\n")}`,
-    ];
-    if (actionBeats.length) sections.push(`Plot Points: ${actionBeats.map((beat) => beat.name).join(", ")}`);
-    if (linkedConsequences.length) {
-      sections.push(`Linked consequences:\n${linkedConsequences.map(({ consequence }) => `- ${consequence.description} (${formatStatusLabel(consequence.status)})`).join("\n")}`);
-    }
-    if (resultingBeats.length) sections.push(`Possible next Plot Points: ${resultingBeats.map((beat) => beat.name).join(", ")}`);
-    if (relatedEvents.length) sections.push(`Related events: ${relatedEvents.map((event) => event.name).join(", ")}`);
-
-    setSessionRecapDraft({ ...sessionRecapDraft, summary: sections.join("\n\n") });
+  const generateSessionRecapDraft = (sessionRecapDraft: SessionRecapDraft) => {
+    const sessionNumber = Number(sessionRecapDraft.session);
+    if (!Number.isSafeInteger(sessionNumber) || sessionNumber < 1) return sessionRecapDraft;
+    const names = Object.fromEntries(npcOptions.map((npc) => [npc.id, npc.name]));
+    const outline = sessionLogOutline(campaignStory, sessionNumber, names);
+    const append = (existing: string, extra: string) => !extra || existing.includes(extra) ? existing : [existing, extra].filter(Boolean).join("\n\n");
+    return { ...sessionRecapDraft, summary: append(sessionRecapDraft.summary, outline.summary), notes: append(sessionRecapDraft.notes, outline.notes) };
   };
 
   const saveSessionRecap = async () => {
+    const sessionRecapDraft = sessionRecapEditor.getSnapshot();
     if (!sessionRecapDraft) return;
     const sessionNumber = Number.parseInt(sessionRecapDraft.session, 10);
-    if (!Number.isFinite(sessionNumber) || sessionNumber < 1) return;
+    if (!Number.isSafeInteger(sessionNumber) || sessionNumber < 1) return;
     const recap: SessionRecap = {
       session: sessionNumber,
       played_on: optionalText(sessionRecapDraft.played_on),
@@ -1654,6 +1614,7 @@ function CampaignDashboardPage() {
   };
 
   const createTimelineEventFromPlay = async () => {
+    const timelineEventDraft = timelineEventEditor.getSnapshot();
     if (!campaignId || !timelineEventDraft || !timelineEventDraft.name.trim()) return;
     if (timelineEventDraft.date_precision === "range" && (!timelineEventDraft.date_start.trim() || !timelineEventDraft.date_end.trim())) {
       setError("A date range needs both a start and an end date or year.");
@@ -1720,7 +1681,7 @@ function CampaignDashboardPage() {
     }
   };
 
-  const openSessionCloseout = () => {
+  const openSessionCloseout = useCallback(() => {
     setCloseoutDrafts(Object.fromEntries(actions.map((action) => [action.id, {
       session: action.session === undefined ? "" : String(action.session),
       consequence_ids: action.consequence_ids ?? [],
@@ -1729,9 +1690,10 @@ function CampaignDashboardPage() {
     }])));
     setCloseoutSessionFilter("all");
     setCloseoutOpen(true);
-  };
+  }, [actions, setCloseoutDrafts]);
 
   const saveCloseoutAction = async (actionId: string, reviewed: boolean) => {
+    const closeoutDrafts = closeoutEditor.getSnapshot();
     const action = actions.find((item) => item.id === actionId);
     const draft = closeoutDrafts[actionId];
     if (!action || !draft) return null;
@@ -1824,6 +1786,7 @@ function CampaignDashboardPage() {
   };
 
   const saveWorldEventFromConsequence = async () => {
+    const worldEventDraft = worldEventEditor.getSnapshot();
     if (!campaignId || !campaign || !worldEventDraft || !worldEventSource || !worldEventDraft.name.trim()) return;
     const beat = worldEventSource.plotPointId
       ? beats.find((item) => item.id === worldEventSource.plotPointId)
@@ -1924,6 +1887,7 @@ function CampaignDashboardPage() {
             })),
           })),
         current_beat: current.current_beat === deleteTarget.id ? undefined : current.current_beat,
+        session_entries: (current.session_entries ?? []).map((entry) => ({ ...entry, story_beat: entry.story_beat === deleteTarget.id ? undefined : entry.story_beat, consequence_ids: (entry.consequence_ids ?? []).filter((id) => !removedConsequences.includes(id)) })),
         world_clocks: current.world_clocks.map((clock) => clock.plot_point_id === deleteTarget.id
           ? { ...clock, plot_point_id: undefined }
           : clock),
@@ -1940,6 +1904,7 @@ function CampaignDashboardPage() {
     } else if (deleteTarget.kind === "consequence") {
       updateStory((current) => ({
         ...current,
+        session_entries: (current.session_entries ?? []).map((entry) => ({ ...entry, consequence_ids: (entry.consequence_ids ?? []).filter((id) => id !== deleteTarget.id) })),
         beats: current.beats.map((beat) => beat.id === deleteTarget.parentBeatId
           ? { ...beat, consequences: (beat.consequences ?? []).filter((item) => item.id !== deleteTarget.id) }
           : beat),
@@ -1965,6 +1930,7 @@ function CampaignDashboardPage() {
       updateStory((current) => ({
         ...current,
         player_actions: current.player_actions.filter((action) => action.id !== deleteTarget.id),
+        session_entries: (current.session_entries ?? []).map((entry) => entry.source_action_id === deleteTarget.id ? { ...entry, source_action_id: undefined } : entry),
       }));
       if (editingActionId === deleteTarget.id) {
         setEditingActionId(null);
@@ -1975,6 +1941,7 @@ function CampaignDashboardPage() {
   };
 
   const addBeat = () => {
+    const { name: beatName, description: beatDescription } = newBeatEditor.getSnapshot();
     const name = beatName.trim();
     if (!name) return;
     const beat: StoryBeat = {
@@ -1988,31 +1955,23 @@ function CampaignDashboardPage() {
       ...current,
       beats: [...current.beats, beat],
     }));
-    setBeatName("");
-    setBeatDescription("");
+    newBeatEditor.set({ name: "", description: "" });
   };
 
-  const addAction = () => {
+  const addAction = async () => {
+    const { description: actionDescription, worldStories: actionWorldStories, threadLinks: actionWorldStoryThreads } = actionCaptureEditor.getSnapshot();
     const description = actionDescription.trim();
-    if (!description) return;
-    updateStory((current) => ({
-      ...current,
-      player_actions: [
-        {
-          id: crypto.randomUUID(),
-          description,
-          session: optionalInteger(actionSessionInput),
-          story_beat: current.current_beat,
-          world_stories: actionWorldStories,
-          world_story_threads: actionWorldStoryThreads,
-        },
-        ...current.player_actions,
-      ],
-    }));
-    setActionDescription("");
-    setActionSessionInput("");
-    setActionWorldStories([]);
-    setActionWorldStoryThreads([]);
+    if (!description || saving || legacyStory) return;
+    const session = actionSessionInput.trim() ? Number(actionSessionInput) : undefined;
+    if (session !== undefined && (!Number.isSafeInteger(session) || session < 1)) { setError("Choose a positive whole session number."); return; }
+    actionCaptureId.current ??= createId();
+    if (await saveStory({
+      ...campaignStory,
+      player_actions: [{ id: actionCaptureId.current, description, session, story_beat: campaignStory.current_beat, world_stories: actionWorldStories, world_story_threads: actionWorldStoryThreads }, ...campaignStory.player_actions.filter((action) => action.id !== actionCaptureId.current)],
+    })) {
+      actionCaptureId.current = null;
+      actionCaptureEditor.set({ description: "", worldStories: [], threadLinks: [] });
+    }
   };
 
   const addClock = (nameValue: string, maximumValue: string, plotPointId?: string) => {
@@ -2033,16 +1992,14 @@ function CampaignDashboardPage() {
       world_clocks: [...current.world_clocks, clock],
     }));
     if (plotPointId) {
-      setPlotClockName("");
-      setPlotClockMaximum("3");
-      setPlotClockCreateBeatId("");
+      newPlotClockEditor.set({ name: "", maximum: "3", beatId: "" });
     } else {
-      setClockName("");
-      setClockMaximum("3");
+      newClockEditor.set({ name: "", maximum: "3" });
     }
   };
 
   const addConsequence = () => {
+    const consequenceDescription = newConsequenceEditor.getSnapshot();
     const description = consequenceDescription.trim();
     if (!description || !campaignStory.current_beat) return;
     const consequence: StoryConsequence = {
@@ -2111,6 +2068,7 @@ function CampaignDashboardPage() {
       encounter: beat.encounter ? structuredClone(beat.encounter) : undefined,
       name: beat.name,
       description: beat.description ?? "",
+      scene_script: structuredClone(beat.scene_script ?? []),
       description_content: beat.description_content ?? storyContentFromText(beat.description ?? ""),
       events_content: beat.events_content ?? storyContentFromText(beat.events ?? ""),
       triggers_content: beat.triggers_content ?? storyContentFromText(listToText(beat.triggers)),
@@ -2131,14 +2089,16 @@ function CampaignDashboardPage() {
     });
   };
 
-  const saveBeatEdit = (beatId: string) => {
-    if (!beatDraft?.name.trim()) return;
-    updateStory((current) => ({
-      ...current,
-      beats: current.beats.map((beat) => beat.id === beatId ? {
+  const saveBeatEdit = async (beatId: string) => {
+    const beatDraft = beatEditor.getSnapshot();
+    if (!beatDraft?.name.trim() || saving || legacyStory) return;
+    const saved = await saveStory({
+      ...campaignStory,
+      beats: campaignStory.beats.map((beat) => beat.id === beatId ? {
         ...beat,
         encounter: beatDraft.encounter,
         name: beatDraft.name.trim(),
+        scene_script: beatDraft.scene_script,
         description: optionalText(storyContentText(beatDraft.description_content)),
         description_content: hasEntityLinks(beatDraft.description_content)
           ? beatDraft.description_content
@@ -2166,9 +2126,11 @@ function CampaignDashboardPage() {
         world_stories: withThreadStories(beatDraft.world_stories, beatDraft.world_story_threads),
         world_story_threads: beatDraft.world_story_threads,
       } : beat),
-    }));
-    setEditingBeatId(null);
-    setBeatDraft(null);
+    });
+    if (saved) {
+      setEditingBeatId(null);
+      setBeatDraft(null);
+    }
   };
 
   const startConsequenceEdit = (consequence: StoryConsequence) => {
@@ -2186,6 +2148,7 @@ function CampaignDashboardPage() {
   };
 
   const saveConsequenceEdit = (beatId: string, consequenceId: string) => {
+    const consequenceDraft = consequenceEditor.getSnapshot();
     if (!consequenceDraft?.description.trim()) return;
     updateStory((current) => ({
       ...current,
@@ -2209,6 +2172,7 @@ function CampaignDashboardPage() {
   };
 
   const updateConsequenceTargetIds = (selectedIds: string[], options: EntitySummary[]) => {
+    const consequenceDraft = consequenceEditor.getSnapshot();
     if (!consequenceDraft) return;
     const replacedIds = new Set(options.map((option) => option.id));
     const preservedIds = textToList(consequenceDraft.leads_to).filter((id) => !replacedIds.has(id));
@@ -2233,6 +2197,7 @@ function CampaignDashboardPage() {
   };
 
   const saveClockEdit = (clockId: string) => {
+    const clockDraft = clockEditor.getSnapshot();
     if (!clockDraft?.name.trim()) return;
     const maximum = Math.max(1, Number.parseInt(clockDraft.maximum, 10) || 1);
     const current = Math.min(maximum, Math.max(0, Number.parseInt(clockDraft.current, 10) || 0));
@@ -2265,6 +2230,7 @@ function CampaignDashboardPage() {
   };
 
   const saveActionEdit = (actionId: string) => {
+    const actionDraft = actionEditor.getSnapshot();
     if (!actionDraft?.description.trim()) return;
     updateStory((current) => ({
       ...current,
@@ -2331,6 +2297,34 @@ function CampaignDashboardPage() {
     }
   };
 
+  useEffect(() => {
+    if (!campaignId || loadedCampaignId !== campaignId || campaign?.id !== campaignId) return;
+    const requestKey = `${campaignId}?${routeQuery}`;
+    if (appliedDashboardRequest.current === requestKey) return;
+    // Apply a deep link after the loaded campaign has reached the DOM.
+    const frame = requestAnimationFrame(() => {
+    appliedDashboardRequest.current = requestKey;
+    const query = new URLSearchParams(routeQuery);
+    const requestedWorkspace = query.get("workspace");
+    const nextWorkspace = requestedWorkspace === "prep" || requestedWorkspace === "session" ? requestedWorkspace : "dashboard";
+    setWorkspace(nextWorkspace);
+    if (nextWorkspace !== "dashboard") {
+      const rawSession = query.get("session");
+      const requestedSession = rawSession ? Number(rawSession) : NaN;
+      const session = Number.isSafeInteger(requestedSession) && requestedSession >= 1 ? requestedSession : nextWorkspace === "prep" ? nextPrepSession : liveSession;
+      setPrepSessionInput(String(session));
+      setActionSessionInput(String(session));
+      loadPrepDraft(session);
+    }
+    const section = query.get("section");
+    if (nextWorkspace === "dashboard" && section === "actions") openSessionCloseout();
+    if (nextWorkspace === "dashboard" && (section === "clocks" || section === "consequences")) {
+      requestAnimationFrame(() => document.getElementById(`campaign-${section}`)?.scrollIntoView({ block: "start" }));
+    }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [campaignId, loadedCampaignId, campaign?.id, routeQuery, nextPrepSession, liveSession, loadPrepDraft, openSessionCloseout]);
+
   if (!campaignId) {
     return <Alert severity="error">Campaign ID is missing.</Alert>;
   }
@@ -2346,8 +2340,6 @@ function CampaignDashboardPage() {
   if (!campaign) return null;
 
   const campaignStatusOptions = [...new Set([...CAMPAIGN_STATUSES, campaign.status ?? "planned"])];
-  const recapSessionNumber = Number.parseInt(sessionRecapDraft?.session ?? "", 10);
-  const recapActionCount = actions.filter((action) => action.session === recapSessionNumber).length;
   const workspaceNavigation = (
     <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
       <Button size="small" variant={workspace === "dashboard" ? "contained" : "outlined"} onClick={() => setWorkspace("dashboard")}>Dashboard</Button>
@@ -2355,6 +2347,1024 @@ function CampaignDashboardPage() {
       <Button size="small" variant={workspace === "session" ? "contained" : "outlined"} onClick={openLiveSessionWorkspace}>During Session</Button>
     </Stack>
   );
+
+  const scriptReader = readingScriptId ? <SceneScriptReader key={readingScriptId} beats={beats} initialBeatId={readingScriptId} onClose={() => setReadingScriptId(null)} /> : null;
+
+  const campaignDialogs = (<>
+      <DraftEditor draft={closeoutEditor}>
+        {(closeoutDrafts, setCloseoutDrafts) => (
+          <Dialog
+            open={closeoutOpen}
+            onClose={() => !saving && setCloseoutOpen(false)}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle>Session closeout</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ pt: 1 }}>
+                <Alert
+                  severity="info"
+                  action={
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setCloseoutOpen(false);
+                        navigate("/world-stories");
+                      }}
+                    >
+                      Review World Stories
+                    </Button>
+                  }
+                >
+                  Review what the party did, connect relevant consequences, and decide
+                  whether an action should become a World Event. Nothing advances
+                  automatically.
+                </Alert>
+                {unreviewedActions.length > 0 && (
+                  <FormControl size="small" sx={{ maxWidth: 260 }}>
+                    <Select
+                      aria-label="Filter closeout actions by session"
+                      value={closeoutSessionFilter}
+                      onChange={(event) =>
+                        setCloseoutSessionFilter(event.target.value)
+                      }
+                    >
+                      <MenuItem value="all">All sessions</MenuItem>
+                      <MenuItem value="unassigned">Session not set</MenuItem>
+                      {closeoutSessions.map((session) => (
+                        <MenuItem key={session} value={session}>
+                          Session {session}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+                {unreviewedActions.length === 0 ? (
+                  <Typography color="text.secondary">
+                    All logged actions have been reviewed.
+                  </Typography>
+                ) : closeoutActions.length === 0 ? (
+                  <Typography color="text.secondary">
+                    No unreviewed actions match this session filter.
+                  </Typography>
+                ) : (
+                  closeoutActions.map((action) => {
+                    const draft = closeoutDrafts[action.id] ?? {
+                      session:
+                        action.session === undefined ? "" : String(action.session),
+                      consequence_ids: action.consequence_ids ?? [],
+                      world_stories: action.world_stories ?? [],
+                      world_story_threads: action.world_story_threads ?? [],
+                    };
+                    return (
+                      <Box
+                        key={action.id}
+                        sx={{
+                          p: 1.75,
+                          border: 1,
+                          borderColor: "divider",
+                          borderRadius: 1.5,
+                        }}
+                      >
+                        <Stack spacing={1.25}>
+                          <Box>
+                            <Typography sx={{ fontWeight: 600 }}>
+                              {action.description}
+                            </Typography>
+                            {beats.find((beat) => beat.id === action.story_beat) && (
+                              <Typography variant="caption" color="text.secondary">
+                                During{" "}
+                                {
+                                  beats.find((beat) => beat.id === action.story_beat)
+                                    ?.name
+                                }
+                              </Typography>
+                            )}
+                          </Box>
+                          <TextField
+                            label="Session (optional)"
+                            type="number"
+                            value={draft.session}
+                            onChange={(event) =>
+                              setCloseoutDrafts((current) => ({
+                                ...current,
+                                [action.id]: {
+                                  ...draft,
+                                  session: event.target.value,
+                                },
+                              }))
+                            }
+                            disabled={saving}
+                          />
+                          <EntityIdMultiSelect
+                            label="Consequences"
+                            ids={draft.consequence_ids}
+                            options={consequenceOptions}
+                            onChange={(consequence_ids) =>
+                              setCloseoutDrafts((current) => ({
+                                ...current,
+                                [action.id]: { ...draft, consequence_ids },
+                              }))
+                            }
+                            disabled={saving}
+                          />
+                          <WorldStoryLinksEditor
+                            worldStoryIds={draft.world_stories}
+                            threadLinks={draft.world_story_threads}
+                            worldStoryOptions={worldStoryOptions}
+                            threadOptions={worldStoryThreadOptions}
+                            onChange={(world_stories, world_story_threads) =>
+                              setCloseoutDrafts((current) => ({
+                                ...current,
+                                [action.id]: {
+                                  ...draft,
+                                  world_stories,
+                                  world_story_threads,
+                                },
+                              }))
+                            }
+                            disabled={saving}
+                          />
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{ justifyContent: "flex-end", flexWrap: "wrap" }}
+                          >
+                            <Button
+                              size="small"
+                              startIcon={<EventIcon />}
+                              onClick={async () => {
+                                const updatedAction = await saveCloseoutAction(
+                                  action.id,
+                                  false
+                                );
+                                if (updatedAction) {
+                                  setCloseoutOpen(false);
+                                  startWorldEventFromAction(updatedAction);
+                                }
+                              }}
+                              disabled={saving || creatingWorldEvent}
+                            >
+                              Create World Event
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<CheckIcon />}
+                              onClick={() => void saveCloseoutAction(action.id, true)}
+                              disabled={saving}
+                            >
+                              Mark reviewed
+                            </Button>
+                          </Stack>
+                        </Stack>
+                      </Box>
+                    );
+                  })
+                )}
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setCloseoutOpen(false)} disabled={saving}>
+                Done
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+      </DraftEditor>
+
+      <Dialog open={sessionHistoryOpen} onClose={() => setSessionHistoryOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>Session history</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
+              <Typography color="text.secondary">
+                Review party actions, NPC reactions, DM notes, follow-ups, summaries, and their linked plot points.
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <Select aria-label="Filter history by session" value={sessionHistoryFilter} onChange={(event) => setSessionHistoryFilter(event.target.value)}>
+                    <MenuItem value="all">All sessions</MenuItem>
+                    <MenuItem value="unassigned">Session not set</MenuItem>
+                    {sessionHistorySessionValues.map((session) => <MenuItem key={session} value={session}>Session {session}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <Button startIcon={<AddIcon />} onClick={() => openSessionRecap()} disabled={saving}>Add recap</Button>
+              </Stack>
+            </Stack>
+            {sessionHistoryGroups.length === 0 ? (
+              <Typography color="text.secondary">No sessions match this filter. Add a recap to start a session record.</Typography>
+            ) : sessionHistoryGroups.map((group) => (
+              <Stack key={group.label} spacing={1}>
+                <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="h3" sx={{ fontSize: "1.05rem" }}>{group.label}</Typography>
+                  {group.session !== null && (
+                    <Button size="small" onClick={() => openSessionRecap(group.session!)} disabled={saving}>
+                      {group.recap ? "Edit recap" : "Add recap"}
+                    </Button>
+                  )}
+                </Stack>
+                {group.recap && (
+                  <Box sx={{ p: 1.5, border: 1, borderColor: "primary.light", borderRadius: 1.5, bgcolor: "action.hover" }}>
+                    <Stack spacing={0.5}>
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                        <Typography variant="subtitle2">Session recap</Typography>
+                        {group.recap.played_on && <Typography variant="caption" color="text.secondary">{group.recap.played_on}</Typography>}
+                      </Stack>
+                      {group.recap.summary && <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.summary}</Typography>}
+                      {group.recap.notes && <Box><Typography variant="caption" color="warning.main">Private DM notes / next session</Typography><Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.notes}</Typography></Box>}
+                      {!group.recap.summary && !group.recap.notes && <Typography variant="body2" color="text.secondary">No recap text yet.</Typography>}
+                      {group.recap.timeline_event_id ? (
+                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => openEntity(group.recap!.timeline_event_id!)}>
+                          Open linked timeline event
+                        </Button>
+                      ) : (
+                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => startTimelineEventFromRecap(group.recap!)}>
+                          Create timeline event
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
+                {group.entries.length > 0 && <Box><Typography variant="subtitle2" sx={{ mb: 1 }}>Session journal</Typography><SessionEntryList story={campaignStory} entries={group.entries} npcs={npcOptions} onOpenEntity={openEntity} onConsequence={setConsequenceSource} disabled={saving || legacyStory} /></Box>}
+                {group.actions.map((action) => {
+                  const relatedBeat = beats.find((beat) => beat.id === action.story_beat);
+                  const relatedConsequences = consequences.filter(({ consequence }) => action.consequence_ids?.includes(consequence.id));
+                  const resultingEvents = [...new Set(relatedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []))]
+                    .map((eventId) => worldEventOptions.find((event) => event.id === eventId))
+                    .filter((event): event is EntitySummary => Boolean(event));
+
+                  return (
+                    <Box key={action.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
+                      <Stack spacing={0.75}>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "flex-start" } }}>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 600 }}>{action.description}</Typography>
+                            {relatedBeat && <Typography variant="caption" color="text.secondary">During {relatedBeat.name}</Typography>}
+                          </Box>
+                          <Chip size="small" label={action.reviewed ? "Reviewed" : "Needs review"} color={action.reviewed ? "success" : "warning"} />
+                        </Stack>
+                        {action.notes && <Typography variant="body2" color="text.secondary">{action.notes}</Typography>}
+                        {relatedConsequences.length > 0 && (
+                          <Stack spacing={0.5}>
+                            {relatedConsequences.map(({ consequence, beat }) => (
+                              <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} spacing={0.75} sx={{ alignItems: { sm: "center" } }}>
+                                <Typography variant="body2">{consequence.description}</Typography>
+                                <Chip size="small" variant="outlined" label={formatStatusLabel(consequence.status)} />
+                                {beat.id !== relatedBeat?.id && <Typography variant="caption" color="text.secondary">From {beat.name}</Typography>}
+                              </Stack>
+                            ))}
+                          </Stack>
+                        )}
+                        {resultingEvents.length > 0 && (
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                            {resultingEvents.map((event) => <Chip key={event.id} size="small" icon={<EventIcon />} label={event.name} clickable onClick={() => openEntity(event.id)} />)}
+                          </Stack>
+                        )}
+                        <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            ))}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSessionHistoryOpen(false)}>Close</Button>
+          <Button onClick={() => { setSessionHistoryOpen(false); openSessionCloseout(); }} disabled={!actions.length || saving}>Review actions</Button>
+        </DialogActions>
+      </Dialog>
+
+      <DraftEditor draft={sessionRecapEditor}>
+        {(sessionRecapDraft, setSessionRecapDraft) => {
+          const recapSessionNumber = Number.parseInt(
+            sessionRecapDraft?.session ?? "",
+            10
+          );
+          const recapActionCount = actions.filter(
+            (action) => action.session === recapSessionNumber
+          ).length;
+          const recapEntryCount = (campaignStory.session_entries ?? []).filter(
+            (entry) => entry.session === recapSessionNumber
+          ).length;
+          return (
+            <Dialog
+              open={sessionRecapDialogOpen}
+              onClose={() => !saving && setSessionRecapDialogOpen(false)}
+              fullWidth
+              maxWidth="sm"
+            >
+              <DialogTitle>
+                {editingSessionRecapNumber === null
+                  ? "Add session recap"
+                  : `Edit Session ${editingSessionRecapNumber} recap`}
+              </DialogTitle>
+              <DialogContent>
+                {sessionRecapDraft && (
+                  <Stack spacing={2} sx={{ pt: 1 }}>
+                    {error && <Alert severity="error">{error}</Alert>}
+                    <TextField
+                      label="Session number"
+                      type="number"
+                      slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                      value={sessionRecapDraft.session}
+                      onChange={(event) =>
+                        setSessionRecapDraft({
+                          ...sessionRecapDraft,
+                          session: event.target.value,
+                        })
+                      }
+                      required
+                      disabled={saving}
+                    />
+                    <TextField
+                      label="Date played (optional)"
+                      type="date"
+                      slotProps={{ inputLabel: { shrink: true } }}
+                      value={sessionRecapDraft.played_on}
+                      onChange={(event) =>
+                        setSessionRecapDraft({
+                          ...sessionRecapDraft,
+                          played_on: event.target.value,
+                        })
+                      }
+                      disabled={saving}
+                    />
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      sx={{
+                        alignItems: { sm: "center" },
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        {recapActionCount + recapEntryCount
+                          ? `${recapActionCount} party actions and ${recapEntryCount} journal entries for Session ${recapSessionNumber}.`
+                          : "No logged entries match this session number."}
+                      </Typography>
+                      <Button
+                        size="small"
+                        title="Appends an editable outline. DM notes, pending consequences and open follow-ups go in private notes."
+                        onClick={() =>
+                          setSessionRecapDraft(
+                            generateSessionRecapDraft(sessionRecapDraft)
+                          )
+                        }
+                        disabled={!(recapActionCount + recapEntryCount) || saving}
+                      >
+                        Add session log outline
+                      </Button>
+                    </Stack>
+                    <TextField
+                      label="Session summary"
+                      value={sessionRecapDraft.summary}
+                      onChange={(event) =>
+                        setSessionRecapDraft({
+                          ...sessionRecapDraft,
+                          summary: event.target.value,
+                        })
+                      }
+                      multiline
+                      minRows={3}
+                      disabled={saving}
+                    />
+                    <TextField
+                      label="Private DM notes / next session"
+                      value={sessionRecapDraft.notes}
+                      onChange={(event) =>
+                        setSessionRecapDraft({
+                          ...sessionRecapDraft,
+                          notes: event.target.value,
+                        })
+                      }
+                      multiline
+                      minRows={2}
+                      disabled={saving}
+                    />
+                  </Stack>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => setSessionRecapDialogOpen(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => void saveSessionRecap()}
+                  disabled={
+                    saving ||
+                    !Number.isSafeInteger(Number(sessionRecapDraft?.session)) ||
+                    Number(sessionRecapDraft?.session) < 1
+                  }
+                >
+                  {saving ? "Saving…" : "Save recap"}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          );
+        }}
+      </DraftEditor>
+
+      <DraftEditor draft={timelineEventEditor}>
+        {(timelineEventDraft, setTimelineEventDraft) => (
+          <Dialog
+            open={Boolean(timelineEventDraft)}
+            onClose={() => !creatingTimelineEvent && setTimelineEventDraft(null)}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle>
+              Create timeline event from {timelineEventDraft?.source_label}
+            </DialogTitle>
+            <DialogContent>
+              {timelineEventDraft && (
+                <Stack spacing={1.5} sx={{ pt: 1 }}>
+                  <Alert severity="info">
+                    Review this campaign source as a world timeline entry. It will
+                    link to {campaign.name} and retain references to{" "}
+                    {timelineEventDraft.plot_point_ids.length} Plot Points,{" "}
+                    {timelineEventDraft.player_action_ids.length} player actions, and{" "}
+                    {timelineEventDraft.consequence_ids.length} consequences. Nothing
+                    is created until you select Create timeline event.
+                  </Alert>
+                  <TextField
+                    label="Event name"
+                    value={timelineEventDraft.name}
+                    onChange={(event) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        name: event.target.value,
+                      })
+                    }
+                    disabled={creatingTimelineEvent}
+                    required
+                  />
+                  <TextField
+                    select
+                    label="Date precision"
+                    value={timelineEventDraft.date_precision}
+                    onChange={(event) => {
+                      const date_precision = event.target
+                        .value as TimelineEventDraft["date_precision"];
+                      const year = /^(-?\d{1,6})/.exec(
+                        timelineEventDraft.date_start
+                      )?.[1];
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        date_precision,
+                        date_start:
+                          date_precision === "unknown"
+                            ? ""
+                            : date_precision === "year" && year
+                            ? year
+                            : timelineEventDraft.date_start,
+                        date_end:
+                          date_precision === "range"
+                            ? timelineEventDraft.date_end
+                            : "",
+                      });
+                    }}
+                    disabled={creatingTimelineEvent}
+                  >
+                    <MenuItem value="unknown">Unknown / not recorded</MenuItem>
+                    <MenuItem value="exact">Exact date</MenuItem>
+                    <MenuItem value="year">Year only</MenuItem>
+                    <MenuItem value="approximate">Approximate</MenuItem>
+                    <MenuItem value="range">Date range</MenuItem>
+                  </TextField>
+                  <TextField
+                    label={
+                      timelineEventDraft.date_precision === "range"
+                        ? "Start date or year"
+                        : "Date or year (optional)"
+                    }
+                    placeholder="2026-10-08, 1472, or -1200"
+                    helperText="Use YYYY-MM-DD or a year. Negative years represent BCE. For events without dates, the timeline preserves manual era order."
+                    value={timelineEventDraft.date_start}
+                    onChange={(event) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        date_start: event.target.value,
+                      })
+                    }
+                    disabled={
+                      creatingTimelineEvent ||
+                      timelineEventDraft.date_precision === "unknown"
+                    }
+                  />
+                  {timelineEventDraft.date_precision === "range" && (
+                    <TextField
+                      label="End date or year"
+                      placeholder="2027-03-14 or 1475"
+                      value={timelineEventDraft.date_end}
+                      onChange={(event) =>
+                        setTimelineEventDraft({
+                          ...timelineEventDraft,
+                          date_end: event.target.value,
+                        })
+                      }
+                      disabled={creatingTimelineEvent}
+                    />
+                  )}
+                  <TextField
+                    label="Event summary"
+                    value={timelineEventDraft.description}
+                    onChange={(event) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        description: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={4}
+                    disabled={creatingTimelineEvent}
+                  />
+                  <EntityIdMultiSelect
+                    label="Locations involved"
+                    ids={timelineEventDraft.locations}
+                    options={locationOptions}
+                    onChange={(locations) =>
+                      setTimelineEventDraft({ ...timelineEventDraft, locations })
+                    }
+                    disabled={creatingTimelineEvent}
+                  />
+                  <EntityIdMultiSelect
+                    label="Characters involved"
+                    ids={timelineEventDraft.characters}
+                    options={entities.filter(
+                      (entity) =>
+                        entity.entity_type === "npc" ||
+                        entity.entity_type === "player_character"
+                    )}
+                    onChange={(characters) =>
+                      setTimelineEventDraft({ ...timelineEventDraft, characters })
+                    }
+                    disabled={creatingTimelineEvent}
+                  />
+                  <WorldStoryLinksEditor
+                    worldStoryIds={timelineEventDraft.world_stories}
+                    threadLinks={timelineEventDraft.world_story_threads}
+                    worldStoryOptions={worldStoryOptions}
+                    threadOptions={worldStoryThreadOptions}
+                    onChange={(world_stories, world_story_threads) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        world_stories,
+                        world_story_threads,
+                      })
+                    }
+                    disabled={creatingTimelineEvent}
+                  />
+                  <TextField
+                    label="Consequences (one per line)"
+                    value={listToText(timelineEventDraft.consequences)}
+                    onChange={(event) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        consequences: textToList(event.target.value),
+                      })
+                    }
+                    multiline
+                    minRows={2}
+                    disabled={creatingTimelineEvent}
+                  />
+                  <TextField
+                    label="DM-only notes"
+                    value={timelineEventDraft.dm_notes}
+                    onChange={(event) =>
+                      setTimelineEventDraft({
+                        ...timelineEventDraft,
+                        dm_notes: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={2}
+                    disabled={creatingTimelineEvent}
+                  />
+                </Stack>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setTimelineEventDraft(null)}
+                disabled={creatingTimelineEvent}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={
+                  creatingTimelineEvent ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <EventIcon />
+                  )
+                }
+                onClick={() => void createTimelineEventFromPlay()}
+                disabled={
+                  creatingTimelineEvent ||
+                  !timelineEventDraft?.name.trim() ||
+                  !isTimelineDateDraftValid(timelineEventDraft)
+                }
+              >
+                {creatingTimelineEvent ? "Creating…" : "Create timeline event"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+      </DraftEditor>
+
+      <DraftEditor draft={campaignArcEditor}>
+        {(campaignArcDraft, setCampaignArcDraft) => (
+          <Dialog
+            open={campaignArcEditorOpen}
+            onClose={() => !saving && setCampaignArcEditorOpen(false)}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle>Edit campaign arc</DialogTitle>
+            <DialogContent>
+              {campaignArcDraft && (
+                <Stack spacing={2} sx={{ pt: 1 }}>
+                  <TextField
+                    label="Campaign description"
+                    value={campaignArcDraft.description}
+                    onChange={(event) =>
+                      setCampaignArcDraft({
+                        ...campaignArcDraft,
+                        description: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={2}
+                    disabled={saving}
+                  />
+                  <TextField
+                    label="Campaign overview"
+                    helperText="A concise summary of the campaign so far or its central premise."
+                    value={campaignArcDraft.overview}
+                    onChange={(event) =>
+                      setCampaignArcDraft({
+                        ...campaignArcDraft,
+                        overview: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={3}
+                    disabled={saving}
+                  />
+                  <Box>
+                    <Stack
+                      direction="row"
+                      sx={{
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 1,
+                        mb: 1,
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="subtitle1">
+                          Overarching plot sections
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Give each thread or phase a short title. Existing paragraphs
+                          are kept as editable sections.
+                        </Typography>
+                      </Box>
+                      <Button
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={() =>
+                          setCampaignArcDraft({
+                            ...campaignArcDraft,
+                            overarching_plot_sections: [
+                              ...campaignArcDraft.overarching_plot_sections,
+                              { id: crypto.randomUUID(), title: "", content: "" },
+                            ],
+                          })
+                        }
+                        disabled={saving}
+                      >
+                        Add section
+                      </Button>
+                    </Stack>
+                    <Stack spacing={1.5}>
+                      {campaignArcDraft.overarching_plot_sections.map(
+                        (section, index) => (
+                          <Box
+                            key={section.id}
+                            sx={{
+                              p: 1.5,
+                              border: 1,
+                              borderColor: "divider",
+                              borderRadius: 1.5,
+                            }}
+                          >
+                            <Stack spacing={1}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: "center" }}
+                              >
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  label={`Section ${index + 1} title`}
+                                  value={section.title}
+                                  onChange={(event) =>
+                                    setCampaignArcDraft({
+                                      ...campaignArcDraft,
+                                      overarching_plot_sections:
+                                        campaignArcDraft.overarching_plot_sections.map(
+                                          (item) =>
+                                            item.id === section.id
+                                              ? { ...item, title: event.target.value }
+                                              : item
+                                        ),
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <Tooltip title="Remove section">
+                                  <span>
+                                    <IconButton
+                                      aria-label={`Remove arc section ${index + 1}`}
+                                      onClick={() =>
+                                        setCampaignArcDraft({
+                                          ...campaignArcDraft,
+                                          overarching_plot_sections:
+                                            campaignArcDraft.overarching_plot_sections.filter(
+                                              (item) => item.id !== section.id
+                                            ),
+                                        })
+                                      }
+                                      disabled={saving}
+                                    >
+                                      <DeleteOutlineIcon />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              </Stack>
+                              <TextField
+                                label="Section details"
+                                value={section.content}
+                                onChange={(event) =>
+                                  setCampaignArcDraft({
+                                    ...campaignArcDraft,
+                                    overarching_plot_sections:
+                                      campaignArcDraft.overarching_plot_sections.map(
+                                        (item) =>
+                                          item.id === section.id
+                                            ? { ...item, content: event.target.value }
+                                            : item
+                                      ),
+                                  })
+                                }
+                                multiline
+                                minRows={3}
+                                disabled={saving}
+                              />
+                            </Stack>
+                          </Box>
+                        )
+                      )}
+                    </Stack>
+                  </Box>
+                  <Autocomplete
+                    multiple
+                    options={worldStoryOptions}
+                    value={worldStoryOptions.filter((option) =>
+                      campaignArcDraft.world_stories.includes(option.id)
+                    )}
+                    onChange={(_, values) =>
+                      setCampaignArcDraft({
+                        ...campaignArcDraft,
+                        world_stories: values.map((value) => value.id),
+                      })
+                    }
+                    getOptionLabel={(option) => option.name}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Connected World Stories"
+                        helperText="Link setting-wide storylines that this campaign contributes to."
+                      />
+                    )}
+                    disabled={saving}
+                  />
+                </Stack>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setCampaignArcEditorOpen(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => void saveCampaignArc()}
+                variant="contained"
+                startIcon={<SaveIcon />}
+                disabled={saving || !campaignArcDraft}
+              >
+                {saving ? "Saving…" : "Save"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+      </DraftEditor>
+
+      {scriptReader}
+
+      <DraftEditor draft={worldEventEditor}>
+        {(worldEventDraft, setWorldEventDraft) => (
+          <Dialog
+            open={worldEventDialogOpen}
+            onClose={() => !creatingWorldEvent && setWorldEventDialogOpen(false)}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle>Create World Event from Campaign Story</DialogTitle>
+            <DialogContent>
+              {worldEventDraft && worldEventSource && (
+                <Stack spacing={1.5} sx={{ pt: 1 }}>
+                  <Alert severity="info">
+                    <Stack spacing={0.25}>
+                      <Typography variant="body2">
+                        Created from {campaign?.name}
+                      </Typography>
+                      {worldEventSource.plotPointId && (
+                        <Typography variant="body2">
+                          Plot point:{" "}
+                          {
+                            beats.find(
+                              (beat) => beat.id === worldEventSource.plotPointId
+                            )?.name
+                          }
+                        </Typography>
+                      )}
+                      {worldEventSource.actionDescriptions.map(
+                        (description, index) => (
+                          <Typography key={`${index}-${description}`} variant="body2">
+                            Player action: {description}
+                          </Typography>
+                        )
+                      )}
+                      {worldEventSource.consequenceDescriptions.map(
+                        (description, index) => (
+                          <Typography key={`${index}-${description}`} variant="body2">
+                            Consequence: {description}
+                          </Typography>
+                        )
+                      )}
+                    </Stack>
+                  </Alert>
+                  <TextField
+                    label="Event name"
+                    value={worldEventDraft.name}
+                    onChange={(event) =>
+                      setWorldEventDraft({
+                        ...worldEventDraft,
+                        name: event.target.value,
+                      })
+                    }
+                    disabled={creatingWorldEvent}
+                    required
+                  />
+                  <TextField
+                    label="What is happening?"
+                    value={worldEventDraft.description}
+                    onChange={(event) =>
+                      setWorldEventDraft({
+                        ...worldEventDraft,
+                        description: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={3}
+                    disabled={creatingWorldEvent}
+                  />
+                  <TextField
+                    select
+                    label="Status"
+                    value={worldEventDraft.status}
+                    onChange={(event) =>
+                      setWorldEventDraft({
+                        ...worldEventDraft,
+                        status: event.target.value,
+                      })
+                    }
+                    disabled={creatingWorldEvent}
+                  >
+                    {["ongoing", "rumored", "resolved"].map((status) => (
+                      <MenuItem key={status} value={status}>
+                        {formatStatusLabel(status)}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <EntityIdMultiSelect
+                    label="Locations involved"
+                    ids={worldEventDraft.locations}
+                    options={locationOptions}
+                    onChange={(locations) =>
+                      setWorldEventDraft({ ...worldEventDraft, locations })
+                    }
+                    disabled={creatingWorldEvent}
+                  />
+                  <EntityIdMultiSelect
+                    label="Characters involved"
+                    ids={worldEventDraft.characters}
+                    options={entities.filter(
+                      (entity) =>
+                        entity.entity_type === "npc" ||
+                        entity.entity_type === "player_character"
+                    )}
+                    onChange={(characters) =>
+                      setWorldEventDraft({ ...worldEventDraft, characters })
+                    }
+                    disabled={creatingWorldEvent}
+                  />
+                  <WorldStoryLinksEditor
+                    worldStoryIds={worldEventDraft.world_stories}
+                    threadLinks={worldEventDraft.world_story_threads}
+                    worldStoryOptions={worldStoryOptions}
+                    threadOptions={worldStoryThreadOptions}
+                    onChange={(world_stories, world_story_threads) =>
+                      setWorldEventDraft({
+                        ...worldEventDraft,
+                        world_stories,
+                        world_story_threads,
+                      })
+                    }
+                    disabled={creatingWorldEvent}
+                  />
+                  <TextField
+                    label="DM-only notes"
+                    value={worldEventDraft.dm_notes}
+                    onChange={(event) =>
+                      setWorldEventDraft({
+                        ...worldEventDraft,
+                        dm_notes: event.target.value,
+                      })
+                    }
+                    multiline
+                    minRows={2}
+                    disabled={creatingWorldEvent}
+                  />
+                </Stack>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  setWorldEventDialogOpen(false);
+                  setWorldEventDraft(null);
+                  setWorldEventSource(null);
+                }}
+                disabled={creatingWorldEvent}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => void saveWorldEventFromConsequence()}
+                disabled={creatingWorldEvent || !worldEventDraft?.name.trim()}
+              >
+                {creatingWorldEvent ? "Creating…" : "Create World Event"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+      </DraftEditor>
+
+      <Dialog open={Boolean(deleteTarget)} onClose={() => !saving && setDeleteTarget(null)}>
+        <DialogTitle>Delete {deleteTarget?.kind}?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Delete “{deleteTarget?.label}”? This cannot be undone.
+            {deleteTarget?.kind === "plot point" && " Links to this plot point and its consequences will be removed, and logged actions will be unlinked."}
+            {deleteTarget?.kind === "consequence" && " Logged actions linked to this consequence will be unlinked."}
+            {deleteTarget?.kind === "player action" && " This action will be removed from the campaign log."}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)} disabled={saving}>Cancel</Button>
+          <Button color="error" startIcon={<DeleteOutlineIcon />} onClick={confirmDelete} disabled={saving}>
+            {saving ? "Deleting…" : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {consequenceSource && <SessionConsequenceDialog key={`${consequenceSource.kind}:${consequenceSource.id}`} story={campaignStory} source={consequenceSource} disabled={saving || legacyStory} onSave={saveStory} onClose={() => setConsequenceSource(null)} />}
+    </>);
 
   if (workspace !== "dashboard") {
     const activeSessionNumber = Math.max(1, Number.parseInt(actionSessionInput, 10) || nextPrepSession);
@@ -2385,32 +3395,103 @@ function CampaignDashboardPage() {
 
         {workspace === "prep" ? (
           <Stack spacing={2}>
-            <Card variant="outlined">
-              <CardContent>
-                <Stack spacing={2}>
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
-                    <Box>
-                      <Typography variant="overline" color="text.secondary">PREPARE</Typography>
-                      <Typography variant="h2">Session {prepSessionNumber} run sheet</Typography>
-                    </Box>
-                    <Stack direction="row" spacing={1}>
-                      <TextField label="Session number" type="number" size="small" value={prepSessionInput || String(nextPrepSession)} onChange={(event) => {
-                        const value = event.target.value;
-                        setPrepSessionInput(value);
-                        const parsed = Number.parseInt(value, 10);
-                        loadPrepDraft(Number.isFinite(parsed) && parsed >= 1 ? parsed : nextPrepSession);
-                      }} slotProps={{ htmlInput: { min: 1 } }} disabled={saving} />
-                      <Button variant="contained" startIcon={<SaveIcon />} onClick={() => void saveSessionPrep()} disabled={saving || legacyStory}>{saving ? "Saving…" : "Save prep"}</Button>
-                      <Button startIcon={<HistoryIcon />} onClick={() => window.print()}>Print</Button>
+            <DraftEditor draft={prepEditor}>
+              {(draft, setDraft) => (
+                <Card variant="outlined">
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        sx={{
+                          alignItems: { sm: "center" },
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="overline" color="text.secondary">
+                            PREPARE
+                          </Typography>
+                          <Typography variant="h2">
+                            Session {prepSessionNumber} run sheet
+                          </Typography>
+                        </Box>
+                        <Stack direction="row" spacing={1}>
+                          <TextField
+                            label="Session number"
+                            type="number"
+                            size="small"
+                            value={prepSessionInput || String(nextPrepSession)}
+                            onChange={(event) => {
+                              const value = event.target.value;
+                              setPrepSessionInput(value);
+                              const parsed = Number.parseInt(value, 10);
+                              loadPrepDraft(
+                                Number.isFinite(parsed) && parsed >= 1
+                                  ? parsed
+                                  : nextPrepSession
+                              );
+                            }}
+                            slotProps={{ htmlInput: { min: 1 } }}
+                            disabled={saving}
+                          />
+                          <Button
+                            variant="contained"
+                            startIcon={<SaveIcon />}
+                            onClick={() => void saveSessionPrep()}
+                            disabled={saving || legacyStory}
+                          >
+                            {saving ? "Saving…" : "Save prep"}
+                          </Button>
+                          <Button
+                            startIcon={<HistoryIcon />}
+                            onClick={() => window.print()}
+                          >
+                            Print
+                          </Button>
+                        </Stack>
+                      </Stack>
+                      <TextField
+                        label="Session agenda"
+                        value={draft.agenda}
+                        onChange={(event) =>
+                          setDraft({ ...draft, agenda: event.target.value })
+                        }
+                        multiline
+                        minRows={2}
+                        placeholder="What do you want to make sure happens or gets covered?"
+                        disabled={saving || legacyStory}
+                      />
+                      <EntityIdMultiSelect
+                        label="Plot Points to prepare"
+                        ids={prepPlotPointIds}
+                        options={plotPointOptions}
+                        onChange={setPrepPlotPointIds}
+                        disabled={saving || legacyStory}
+                      />
+                      <EntityIdMultiSelect
+                        label="Quick references"
+                        ids={prepReferenceIds}
+                        options={entities}
+                        onChange={setPrepReferenceIds}
+                        disabled={saving || legacyStory}
+                      />
+                      <TextField
+                        label="Private prep notes"
+                        value={draft.notes}
+                        onChange={(event) =>
+                          setDraft({ ...draft, notes: event.target.value })
+                        }
+                        multiline
+                        minRows={3}
+                        placeholder="Reminders, questions, or details to keep handy."
+                        disabled={saving || legacyStory}
+                      />
                     </Stack>
-                  </Stack>
-                  <TextField label="Session agenda" value={prepAgenda} onChange={(event) => setPrepAgenda(event.target.value)} multiline minRows={2} placeholder="What do you want to make sure happens or gets covered?" disabled={saving || legacyStory} />
-                  <EntityIdMultiSelect label="Plot Points to prepare" ids={prepPlotPointIds} options={plotPointOptions} onChange={setPrepPlotPointIds} disabled={saving || legacyStory} />
-                  <EntityIdMultiSelect label="Quick references" ids={prepReferenceIds} options={entities} onChange={setPrepReferenceIds} disabled={saving || legacyStory} />
-                  <TextField label="Private prep notes" value={prepNotes} onChange={(event) => setPrepNotes(event.target.value)} multiline minRows={3} placeholder="Reminders, questions, or details to keep handy." disabled={saving || legacyStory} />
-                </Stack>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
+            </DraftEditor>
 
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 1.4fr) minmax(0, 1fr)" }, gap: 2, alignItems: "start" }}>
               <Stack spacing={2}>
@@ -2425,6 +3506,7 @@ function CampaignDashboardPage() {
                       {beat.description && <Typography sx={{ mt: 1, whiteSpace: "pre-wrap" }}>{beat.description}</Typography>}
                       {beat.triggers?.length ? <Box sx={{ mt: 1 }}><Typography variant="subtitle2">Possible triggers</Typography><Typography variant="body2" color="text.secondary">{beat.triggers.join(" · ")}</Typography></Box> : null}
                       {beat.possible_approaches?.length ? <Box sx={{ mt: 1 }}><Typography variant="subtitle2">Possible approaches</Typography><Typography variant="body2" color="text.secondary">{beat.possible_approaches.join(" · ")}</Typography></Box> : null}
+                      {beat.scene_script?.length ? <Button size="small" onClick={() => setReadingScriptId(beat.id)} aria-label={`Read scene script for ${beat.name}`}>Read scene script</Button> : null}
                       <Button size="small" onClick={() => setWorkspace("dashboard")}>Open in planner</Button>
                     </Box>
                   ))}</Stack> : <Typography color="text.secondary">Choose Plot Points above to build this run sheet.</Typography>}
@@ -2476,9 +3558,10 @@ function CampaignDashboardPage() {
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
               <Box><Typography variant="overline" color="text.secondary">AT THE TABLE</Typography><Typography variant="h2">Session {activeSessionNumber}</Typography></Box>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                 <TextField label="Session" type="number" size="small" value={actionSessionInput} onChange={(event) => setActionSessionInput(event.target.value)} slotProps={{ htmlInput: { min: 1 } }} />
                 <Button startIcon={<HistoryIcon />} onClick={() => setSessionHistoryOpen(true)}>Session history</Button>
+                <Button variant="outlined" onClick={() => openSessionRecap(activeSessionNumber)} disabled={saving || legacyStory}>Session summary</Button>
                 <Button variant="contained" onClick={openSessionCloseout} disabled={!actions.length || legacyStory}>Close out</Button>
               </Stack>
             </Stack>
@@ -2510,6 +3593,7 @@ function CampaignDashboardPage() {
                     <Chip size="small" label={currentBeat.name} />
                   </Stack>
                   <Stack spacing={1.5}>
+                    {currentBeat.scene_script?.length ? <Button sx={{ alignSelf: "flex-start" }} onClick={() => setReadingScriptId(currentBeat.id)}>Read scene script</Button> : null}
                     {(currentBeat.description_content?.nodes.length || currentBeat.description) ? <Box>
                       <Typography variant="subtitle2">Description</Typography>
                       <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}><PlotPointDescription beat={currentBeat} onOpenEntity={openEntity} /></Typography>
@@ -2583,22 +3667,54 @@ function CampaignDashboardPage() {
                 </CardContent></Card>}
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>Log player action</Typography>
-                  <Stack spacing={1.25}>
-                    <TextField label="What did the party do?" value={actionDescription} onChange={(event) => setActionDescription(event.target.value)} multiline minRows={2} disabled={saving || legacyStory} />
-                    <WorldStoryLinksEditor worldStoryIds={actionWorldStories} threadLinks={actionWorldStoryThreads} worldStoryOptions={worldStoryOptions} threadOptions={worldStoryThreadOptions} onChange={(worldStories, threads) => { setActionWorldStories(worldStories); setActionWorldStoryThreads(threads); }} disabled={saving || legacyStory} />
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={addAction} disabled={!actionDescription.trim() || saving || legacyStory}>{saving ? "Saving…" : "Log action"}</Button>
-                  </Stack>
+                  <DraftEditor draft={actionCaptureEditor}>
+                    {(draft, setDraft) => (
+                      <Stack spacing={1.25}>
+                        <TextField
+                          label="What did the party do?"
+                          value={draft.description}
+                          onChange={(event) =>
+                            setDraft({ ...draft, description: event.target.value })
+                          }
+                          multiline
+                          minRows={2}
+                          disabled={saving || legacyStory}
+                        />
+                        <WorldStoryLinksEditor
+                          worldStoryIds={draft.worldStories}
+                          threadLinks={draft.threadLinks}
+                          worldStoryOptions={worldStoryOptions}
+                          threadOptions={worldStoryThreadOptions}
+                          onChange={(worldStories, threads) =>
+                            setDraft({ ...draft, worldStories, threadLinks: threads })
+                          }
+                          disabled={saving || legacyStory}
+                        />
+                        <Button
+                          variant="contained"
+                          startIcon={<AddIcon />}
+                          onClick={addAction}
+                          disabled={!draft.description.trim() || saving || legacyStory}
+                        >
+                          {saving ? "Saving…" : "Log action"}
+                        </Button>
+                      </Stack>
+                    )}
+                  </DraftEditor>
                 </CardContent></Card>
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>Recent actions · Session {activeSessionNumber}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Use Create consequence to record a possible reaction, a changed situation, or a scene that could follow.</Typography>
                   {liveActions.length ? <Stack spacing={1}>{liveActions.map((action) => <Box key={action.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
                     <Typography>{action.description}</Typography>
                     {beats.find((beat) => beat.id === action.story_beat) && <Typography variant="caption" color="text.secondary">During {beats.find((beat) => beat.id === action.story_beat)?.name}</Typography>}
                     <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
+                    <Button size="small" onClick={() => setConsequenceSource({ kind: "action", id: action.id })} disabled={saving || legacyStory}>Create consequence</Button>
                   </Box>)}</Stack> : <Typography color="text.secondary">No actions logged for this session yet.</Typography>}
                 </CardContent></Card>
               </Stack>
               <Stack spacing={2}>
+                <SessionJournal key={`${campaignId}:${activeSessionNumber}`} story={campaignStory} worldId={worldId ?? ""} campaignId={campaignId!} session={activeSessionNumber} npcs={npcOptions} disabled={saving || legacyStory} onSave={saveStory} onOpenEntity={openEntity} onConsequence={setConsequenceSource} />
                 <Card variant="outlined"><CardContent>
                   <Typography variant="h3" sx={{ mb: 1.5 }}>World clocks</Typography>
                   {worldClocks.filter((clock) => clock.status !== "completed").length ? <Stack spacing={1}>{worldClocks.filter((clock) => clock.status !== "completed").map((clock) => <Box key={clock.id} sx={{ p: 1.25, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
@@ -2634,6 +3750,7 @@ function CampaignDashboardPage() {
             </Box>
           </Stack>
         )}
+        {campaignDialogs}
         <EntityDetailDrawer entityId={entityId} open={isOpen} onClose={closeEntity} onOpenEntity={openEntity} onBack={goBack} canGoBack={canGoBack} />
       </Box>
     );
@@ -2910,89 +4027,232 @@ function CampaignDashboardPage() {
                         </IconButton>
                       </Stack>
                     </Stack>
+
+                    {editingBeatId !== beat.id && <Box sx={{ mt: 1 }}>
+                      {beat.scene_script?.length ? <Button size="small" onClick={() => setReadingScriptId(beat.id)} aria-label={`Read scene script for ${beat.name}`}>Read scene script · {beat.scene_script.length} sections</Button> : <Button size="small" onClick={() => startBeatEdit(beat)} disabled={saving || legacyStory || editingBeatId !== null} aria-label={`Write scene script for ${beat.name}`}>Write scene script</Button>}
+                    </Box>}
                     {beat.encounter && editingBeatId !== beat.id && <Box sx={{ mt: 1 }}>
                       <Typography variant="subtitle2">Combat: {beat.encounter.name} · {beat.encounter.participants.reduce((total, participant) => total + participant.quantity, 0)} prepared combatants</Typography>
                       <EncounterLaunchButton campaignId={campaignId!} beatId={beat.id} worldId={worldData?.world?.id ?? ""} />
                     </Box>}
-                    {editingBeatId === beat.id && beatDraft && (
-                      <Stack spacing={1.25} sx={{ mt: 1.5 }}>
-                        <TextField label="Plot point name" value={beatDraft.name} onChange={(event) => setBeatDraft({ ...beatDraft, name: event.target.value })} disabled={saving} />
-                        <PlotPointDescriptionEditor
-                          label="Description"
-                          resetKey={beat.id}
-                          content={beatDraft.description_content}
-                          entities={entities}
-                          disabled={saving}
-                          onChange={(content) => setBeatDraft({
-                            ...beatDraft,
-                            description_content: content,
-                            description: storyContentText(content),
-                          })}
-                        />
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                          <FormControl size="small" fullWidth>
-                            <Select aria-label="Plot point status" value={beatDraft.status} onChange={(event) => setBeatDraft({ ...beatDraft, status: event.target.value as StoryBeatStatus })} disabled={saving}>
-                              {BEAT_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                            </Select>
-                          </FormControl>
-                          <TextField label="Act" value={beatDraft.act} onChange={(event) => setBeatDraft({ ...beatDraft, act: event.target.value })} disabled={saving} />
-                          <TextField label="Order" type="number" value={beatDraft.order} onChange={(event) => setBeatDraft({ ...beatDraft, order: event.target.value })} disabled={saving} />
-                        </Stack>
-                        <PlotPointDescriptionEditor
-                          label="Events / what may happen"
-                          resetKey={`${beat.id}-events`}
-                          content={beatDraft.events_content}
-                          entities={entities}
-                          disabled={saving}
-                          onChange={(content) => setBeatDraft({ ...beatDraft, events_content: content })}
-                        />
-                        <PlotPointDescriptionEditor
-                          label="Triggers (one per line)"
-                          resetKey={`${beat.id}-triggers`}
-                          content={beatDraft.triggers_content}
-                          entities={entities}
-                          disabled={saving}
-                          onChange={(content) => setBeatDraft({ ...beatDraft, triggers_content: content })}
-                        />
-                        <PlotPointDescriptionEditor
-                          label="Possible approaches (one per line)"
-                          resetKey={`${beat.id}-approaches`}
-                          content={beatDraft.possible_approaches_content}
-                          entities={entities}
-                          disabled={saving}
-                          onChange={(content) => setBeatDraft({ ...beatDraft, possible_approaches_content: content })}
-                        />
-                        <PlotPointChecksEditor
-                          checks={beatDraft.checks}
-                          onChange={(checks) => setBeatDraft({ ...beatDraft, checks })}
-                          disabled={saving}
-                        />
-                        <PlotPointNpcKnowledgeEditor
-                          entries={beatDraft.npc_knowledge}
-                          npcs={npcOptions}
-                          onChange={(npc_knowledge) => setBeatDraft({ ...beatDraft, npc_knowledge })}
-                          disabled={saving}
-                        />
-                        <CombatEncounterEditor value={beatDraft.encounter} onChange={(encounter) => setBeatDraft({ ...beatDraft, encounter })} entities={entities} maps={worldData?.maps ?? []} locations={locationOptions} disabled={saving} />
-                        <TextField label="DM-only information (one per line)" value={beatDraft.secrets} onChange={(event) => setBeatDraft({ ...beatDraft, secrets: event.target.value })} multiline minRows={2} disabled={saving} />
-                        <EntityIdMultiSelect label="Leads to plot points" ids={textToList(beatDraft.leads_to)} options={plotPointOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, leads_to: listToText(ids) })} disabled={saving} />
-                        <EntityIdMultiSelect label="Locations" ids={textToList(beatDraft.locations)} options={locationOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, locations: listToText(ids) })} disabled={saving} />
-                        <EntityIdMultiSelect label="NPCs" ids={textToList(beatDraft.npcs)} options={npcOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, npcs: listToText(ids) })} disabled={saving} />
-                        <EntityIdMultiSelect label="Player characters" ids={textToList(beatDraft.player_characters)} options={playerCharacterOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, player_characters: listToText(ids) })} disabled={saving} />
-                        <EntityIdMultiSelect label="World events" ids={textToList(beatDraft.world_events)} options={worldEventOptions} onChange={(ids) => setBeatDraft({ ...beatDraft, world_events: listToText(ids) })} disabled={saving} />
-                        <WorldStoryLinksEditor
-                          worldStoryIds={beatDraft.world_stories}
-                          threadLinks={beatDraft.world_story_threads}
-                          worldStoryOptions={worldStoryOptions}
-                          threadOptions={worldStoryThreadOptions}
-                          onChange={(worldStoryIds, threadLinks) => setBeatDraft({ ...beatDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
-                          disabled={saving}
-                        />
-                        <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
-                          <Button size="small" startIcon={<SaveIcon />} onClick={() => saveBeatEdit(beat.id)} disabled={saving || !beatDraft.name.trim()}>Save changes</Button>
-                          <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingBeatId(null); setBeatDraft(null); }} disabled={saving}>Cancel</Button>
-                        </Stack>
-                      </Stack>
+                    {editingBeatId === beat.id && (
+                      <DraftEditor draft={beatEditor}>
+                        {(beatDraft, setBeatDraft) =>
+                          beatDraft && (
+                            <Stack spacing={1.25} sx={{ mt: 1.5 }}>
+                              <TextField
+                                label="Plot point name"
+                                value={beatDraft.name}
+                                onChange={(event) =>
+                                  setBeatDraft({ ...beatDraft, name: event.target.value })
+                                }
+                                disabled={saving}
+                              />
+                              <SceneScriptEditor
+                                blocks={beatDraft.scene_script}
+                                speakers={npcOptions.map((npc) => npc.name)}
+                                onChange={(scene_script) =>
+                                  setBeatDraft({ ...beatDraft, scene_script })
+                                }
+                                disabled={saving}
+                              />
+                              <PlotPointDescriptionEditor
+                                label="Description"
+                                resetKey={beat.id}
+                                content={beatDraft.description_content}
+                                entities={entities}
+                                disabled={saving}
+                                onChange={(content) =>
+                                  setBeatDraft({
+                                    ...beatDraft,
+                                    description_content: content,
+                                    description: storyContentText(content),
+                                  })
+                                }
+                              />
+                              <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                                <FormControl size="small" fullWidth>
+                                  <Select
+                                    aria-label="Plot point status"
+                                    value={beatDraft.status}
+                                    onChange={(event) =>
+                                      setBeatDraft({
+                                        ...beatDraft,
+                                        status: event.target.value as StoryBeatStatus,
+                                      })
+                                    }
+                                    disabled={saving}
+                                  >
+                                    {BEAT_STATUSES.map((status) => (
+                                      <MenuItem key={status} value={status}>
+                                        {formatStatusLabel(status)}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                                <TextField
+                                  label="Act"
+                                  value={beatDraft.act}
+                                  onChange={(event) =>
+                                    setBeatDraft({ ...beatDraft, act: event.target.value })
+                                  }
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Order"
+                                  type="number"
+                                  value={beatDraft.order}
+                                  onChange={(event) =>
+                                    setBeatDraft({ ...beatDraft, order: event.target.value })
+                                  }
+                                  disabled={saving}
+                                />
+                              </Stack>
+                              <PlotPointDescriptionEditor
+                                label="Events / what may happen"
+                                resetKey={`${beat.id}-events`}
+                                content={beatDraft.events_content}
+                                entities={entities}
+                                disabled={saving}
+                                onChange={(content) =>
+                                  setBeatDraft({ ...beatDraft, events_content: content })
+                                }
+                              />
+                              <PlotPointDescriptionEditor
+                                label="Triggers (one per line)"
+                                resetKey={`${beat.id}-triggers`}
+                                content={beatDraft.triggers_content}
+                                entities={entities}
+                                disabled={saving}
+                                onChange={(content) =>
+                                  setBeatDraft({ ...beatDraft, triggers_content: content })
+                                }
+                              />
+                              <PlotPointDescriptionEditor
+                                label="Possible approaches (one per line)"
+                                resetKey={`${beat.id}-approaches`}
+                                content={beatDraft.possible_approaches_content}
+                                entities={entities}
+                                disabled={saving}
+                                onChange={(content) =>
+                                  setBeatDraft({ ...beatDraft, possible_approaches_content: content })
+                                }
+                              />
+                              <PlotPointChecksEditor
+                                checks={beatDraft.checks}
+                                onChange={(checks) => setBeatDraft({ ...beatDraft, checks })}
+                                disabled={saving}
+                              />
+                              <PlotPointNpcKnowledgeEditor
+                                entries={beatDraft.npc_knowledge}
+                                npcs={npcOptions}
+                                onChange={(npc_knowledge) =>
+                                  setBeatDraft({ ...beatDraft, npc_knowledge })
+                                }
+                                disabled={saving}
+                              />
+                              <CombatEncounterEditor
+                                value={beatDraft.encounter}
+                                onChange={(encounter) => setBeatDraft({ ...beatDraft, encounter })}
+                                entities={entities}
+                                maps={worldData?.maps ?? []}
+                                locations={locationOptions}
+                                disabled={saving}
+                              />
+                              <TextField
+                                label="DM-only information (one per line)"
+                                value={beatDraft.secrets}
+                                onChange={(event) =>
+                                  setBeatDraft({ ...beatDraft, secrets: event.target.value })
+                                }
+                                multiline
+                                minRows={2}
+                                disabled={saving}
+                              />
+                              <EntityIdMultiSelect
+                                label="Leads to plot points"
+                                ids={textToList(beatDraft.leads_to)}
+                                options={plotPointOptions}
+                                onChange={(ids) =>
+                                  setBeatDraft({ ...beatDraft, leads_to: listToText(ids) })
+                                }
+                                disabled={saving}
+                              />
+                              <EntityIdMultiSelect
+                                label="Locations"
+                                ids={textToList(beatDraft.locations)}
+                                options={locationOptions}
+                                onChange={(ids) =>
+                                  setBeatDraft({ ...beatDraft, locations: listToText(ids) })
+                                }
+                                disabled={saving}
+                              />
+                              <EntityIdMultiSelect
+                                label="NPCs"
+                                ids={textToList(beatDraft.npcs)}
+                                options={npcOptions}
+                                onChange={(ids) =>
+                                  setBeatDraft({ ...beatDraft, npcs: listToText(ids) })
+                                }
+                                disabled={saving}
+                              />
+                              <EntityIdMultiSelect
+                                label="Player characters"
+                                ids={textToList(beatDraft.player_characters)}
+                                options={playerCharacterOptions}
+                                onChange={(ids) =>
+                                  setBeatDraft({ ...beatDraft, player_characters: listToText(ids) })
+                                }
+                                disabled={saving}
+                              />
+                              <EntityIdMultiSelect
+                                label="World events"
+                                ids={textToList(beatDraft.world_events)}
+                                options={worldEventOptions}
+                                onChange={(ids) =>
+                                  setBeatDraft({ ...beatDraft, world_events: listToText(ids) })
+                                }
+                                disabled={saving}
+                              />
+                              <WorldStoryLinksEditor
+                                worldStoryIds={beatDraft.world_stories}
+                                threadLinks={beatDraft.world_story_threads}
+                                worldStoryOptions={worldStoryOptions}
+                                threadOptions={worldStoryThreadOptions}
+                                onChange={(worldStoryIds, threadLinks) =>
+                                  setBeatDraft({
+                                    ...beatDraft,
+                                    world_stories: worldStoryIds,
+                                    world_story_threads: threadLinks,
+                                  })
+                                }
+                                disabled={saving}
+                              />
+                              <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                                <Button
+                                  size="small"
+                                  startIcon={<SaveIcon />}
+                                  onClick={() => saveBeatEdit(beat.id)}
+                                  disabled={saving || !beatDraft.name.trim()}
+                                >
+                                  Save changes
+                                </Button>
+                                <Button
+                                  size="small"
+                                  startIcon={<CloseIcon />}
+                                  onClick={() => {
+                                    setEditingBeatId(null);
+                                    setBeatDraft(null);
+                                  }}
+                                  disabled={saving}
+                                >
+                                  Cancel
+                                </Button>
+                              </Stack>
+                            </Stack>
+                          )
+                        }
+                      </DraftEditor>
                     )}
                     {editingBeatId !== beat.id && (beat.events || beat.events_content?.nodes.length || beat.triggers?.length || beat.triggers_content?.nodes.length || beat.possible_approaches?.length || beat.possible_approaches_content?.nodes.length || beat.checks?.length || beat.npc_knowledge?.length || beat.secrets?.length) && (
                       <Accordion disableGutters elevation={0} sx={{ mt: 1, "&:before": { display: "none" } }}>
@@ -3019,37 +4279,83 @@ function CampaignDashboardPage() {
               </Stack>
               <Divider sx={{ my: 2.5 }} />
               <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Add a plot point</Typography>
-              <Stack spacing={1.25}>
-                <TextField label="Plot point name" value={beatName} onChange={(event) => setBeatName(event.target.value)} disabled={saving || legacyStory} />
-                <TextField label="Optional notes" value={beatDescription} onChange={(event) => setBeatDescription(event.target.value)} multiline minRows={2} disabled={saving || legacyStory} />
-                <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={addBeat} disabled={!beatName.trim() || saving || legacyStory}>Add Plot Point</Button></Box>
-              </Stack>
+              <DraftEditor draft={newBeatEditor}>
+                {(draft, setDraft) => (
+                  <Stack spacing={1.25}>
+                    <TextField
+                      label="Plot point name"
+                      value={draft.name}
+                      onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                      disabled={saving || legacyStory}
+                    />
+                    <TextField
+                      label="Optional notes"
+                      value={draft.description}
+                      onChange={(event) =>
+                        setDraft({ ...draft, description: event.target.value })
+                      }
+                      multiline
+                      minRows={2}
+                      disabled={saving || legacyStory}
+                    />
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={addBeat}
+                        disabled={!draft.name.trim() || saving || legacyStory}
+                      >
+                        Add Plot Point
+                      </Button>
+                    </Box>
+                  </Stack>
+                )}
+              </DraftEditor>
           </CollapsibleDashboardSection>
         </Stack>
         <Stack spacing={2.5} sx={{ display: { xs: "contents", lg: "flex" }, minWidth: 0 }}>
           <CollapsibleDashboardSection eyebrow="QUICK LOG" title="Player Action" gridRow={2}>
-              <Stack spacing={1.5}>
-                <TextField
-                  label="What did the party do?"
-                  value={actionDescription}
-                  onChange={(event) => setActionDescription(event.target.value)}
-                  multiline
-                  minRows={2}
-                  disabled={saving || legacyStory}
-                />
-                <TextField label="Session (optional)" type="number" value={actionSessionInput} onChange={(event) => setActionSessionInput(event.target.value)} disabled={saving || legacyStory} />
-                <WorldStoryLinksEditor
-                  worldStoryIds={actionWorldStories}
-                  threadLinks={actionWorldStoryThreads}
-                  worldStoryOptions={worldStoryOptions}
-                  threadOptions={worldStoryThreadOptions}
-                  onChange={(worldStoryIds, threadLinks) => { setActionWorldStories(worldStoryIds); setActionWorldStoryThreads(threadLinks); }}
-                  disabled={saving || legacyStory}
-                />
-                <Button variant="contained" startIcon={<AddIcon />} onClick={addAction} disabled={!actionDescription.trim() || saving || legacyStory}>
-                  Log Action
-                </Button>
-              </Stack>
+              <DraftEditor draft={actionCaptureEditor}>
+                {(draft, setDraft) => (
+                  <Stack spacing={1.5}>
+                    <TextField
+                      label="What did the party do?"
+                      value={draft.description}
+                      onChange={(event) =>
+                        setDraft({ ...draft, description: event.target.value })
+                      }
+                      multiline
+                      minRows={2}
+                      disabled={saving || legacyStory}
+                    />
+                    <TextField
+                      label="Session (optional)"
+                      type="number"
+                      value={actionSessionInput}
+                      onChange={(event) => setActionSessionInput(event.target.value)}
+                      disabled={saving || legacyStory}
+                    />
+                    <WorldStoryLinksEditor
+                      worldStoryIds={draft.worldStories}
+                      threadLinks={draft.threadLinks}
+                      worldStoryOptions={worldStoryOptions}
+                      threadOptions={worldStoryThreadOptions}
+                      onChange={(worldStoryIds, threadLinks) =>
+                        setDraft({ ...draft, worldStories: worldStoryIds, threadLinks })
+                      }
+                      disabled={saving || legacyStory}
+                    />
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={addAction}
+                      disabled={!draft.description.trim() || saving || legacyStory}
+                    >
+                      Log Action
+                    </Button>
+                  </Stack>
+                )}
+              </DraftEditor>
               <Divider sx={{ my: 2.5 }} />
               <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1, gap: 1 }}>
                 <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
@@ -3066,33 +4372,113 @@ function CampaignDashboardPage() {
                   {actions.map((action) => {
                     const linkedBeat = beats.find((beat) => beat.id === action.story_beat);
                     return <Box key={action.id}>
-                      {editingActionId === action.id && actionDraft ? (
-                        <Stack spacing={1}>
-                          <TextField label="Player action" value={actionDraft.description} onChange={(event) => setActionDraft({ ...actionDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <TextField label="Notes" value={actionDraft.notes} onChange={(event) => setActionDraft({ ...actionDraft, notes: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                            <TextField label="Session" type="number" value={actionDraft.session} onChange={(event) => setActionDraft({ ...actionDraft, session: event.target.value })} disabled={saving} />
-                            <FormControl size="small" fullWidth>
-                              <Select displayEmpty aria-label="Related plot point" value={actionDraft.story_beat} onChange={(event) => setActionDraft({ ...actionDraft, story_beat: event.target.value as string })} disabled={saving}>
-                                <MenuItem value=""><em>No related plot point</em></MenuItem>
-                                {beats.map((beat) => <MenuItem key={beat.id} value={beat.id}>{beat.name}</MenuItem>)}
-                              </Select>
-                            </FormControl>
-                          </Stack>
-                          <EntityIdMultiSelect label="Consequences" ids={textToList(actionDraft.consequence_ids)} options={consequenceOptions} onChange={(ids) => setActionDraft({ ...actionDraft, consequence_ids: listToText(ids) })} disabled={saving} />
-                          <WorldStoryLinksEditor
-                            worldStoryIds={actionDraft.world_stories}
-                            threadLinks={actionDraft.world_story_threads}
-                            worldStoryOptions={worldStoryOptions}
-                            threadOptions={worldStoryThreadOptions}
-                            onChange={(worldStoryIds, threadLinks) => setActionDraft({ ...actionDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
-                            disabled={saving}
-                          />
-                          <Stack direction="row" spacing={1}>
-                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveActionEdit(action.id)} disabled={saving || !actionDraft.description.trim()}>Save</Button>
-                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingActionId(null); setActionDraft(null); }} disabled={saving}>Cancel</Button>
-                          </Stack>
-                        </Stack>
+                      {editingActionId === action.id ? (
+                        <DraftEditor draft={actionEditor}>
+                          {(actionDraft, setActionDraft) =>
+                            actionDraft && (
+                              <Stack spacing={1}>
+                                <TextField
+                                  label="Player action"
+                                  value={actionDraft.description}
+                                  onChange={(event) =>
+                                    setActionDraft({ ...actionDraft, description: event.target.value })
+                                  }
+                                  multiline
+                                  minRows={2}
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Notes"
+                                  value={actionDraft.notes}
+                                  onChange={(event) =>
+                                    setActionDraft({ ...actionDraft, notes: event.target.value })
+                                  }
+                                  multiline
+                                  minRows={2}
+                                  disabled={saving}
+                                />
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                                  <TextField
+                                    label="Session"
+                                    type="number"
+                                    value={actionDraft.session}
+                                    onChange={(event) =>
+                                      setActionDraft({ ...actionDraft, session: event.target.value })
+                                    }
+                                    disabled={saving}
+                                  />
+                                  <FormControl size="small" fullWidth>
+                                    <Select
+                                      displayEmpty
+                                      aria-label="Related plot point"
+                                      value={actionDraft.story_beat}
+                                      onChange={(event) =>
+                                        setActionDraft({
+                                          ...actionDraft,
+                                          story_beat: event.target.value as string,
+                                        })
+                                      }
+                                      disabled={saving}
+                                    >
+                                      <MenuItem value="">
+                                        <em>No related plot point</em>
+                                      </MenuItem>
+                                      {beats.map((beat) => (
+                                        <MenuItem key={beat.id} value={beat.id}>
+                                          {beat.name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Stack>
+                                <EntityIdMultiSelect
+                                  label="Consequences"
+                                  ids={textToList(actionDraft.consequence_ids)}
+                                  options={consequenceOptions}
+                                  onChange={(ids) =>
+                                    setActionDraft({ ...actionDraft, consequence_ids: listToText(ids) })
+                                  }
+                                  disabled={saving}
+                                />
+                                <WorldStoryLinksEditor
+                                  worldStoryIds={actionDraft.world_stories}
+                                  threadLinks={actionDraft.world_story_threads}
+                                  worldStoryOptions={worldStoryOptions}
+                                  threadOptions={worldStoryThreadOptions}
+                                  onChange={(worldStoryIds, threadLinks) =>
+                                    setActionDraft({
+                                      ...actionDraft,
+                                      world_stories: worldStoryIds,
+                                      world_story_threads: threadLinks,
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <Stack direction="row" spacing={1}>
+                                  <Button
+                                    size="small"
+                                    startIcon={<SaveIcon />}
+                                    onClick={() => saveActionEdit(action.id)}
+                                    disabled={saving || !actionDraft.description.trim()}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    startIcon={<CloseIcon />}
+                                    onClick={() => {
+                                      setEditingActionId(null);
+                                      setActionDraft(null);
+                                    }}
+                                    disabled={saving}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </Stack>
+                              </Stack>
+                            )
+                          }
+                        </DraftEditor>
                       ) : <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography variant="body2">{action.description}</Typography>
@@ -3140,7 +4526,7 @@ function CampaignDashboardPage() {
               ) : <Typography variant="body2" color="text.secondary">No actions logged yet.</Typography>}
           </CollapsibleDashboardSection>
 
-          <CollapsibleDashboardSection eyebrow="FOLLOW THROUGH" title="Consequences" gridRow={3} summaryAdornment={<Chip size="small" label={`${filteredConsequences.length} / ${consequences.length}`} />}>
+          <CollapsibleDashboardSection id="campaign-consequences" eyebrow="FOLLOW THROUGH" title="Consequences" gridRow={3} summaryAdornment={<Chip size="small" label={`${filteredConsequences.length} / ${consequences.length}`} />}>
               <Stack spacing={1.25}>
                 <Stack spacing={0.75}>
                   <Box>
@@ -3187,47 +4573,137 @@ function CampaignDashboardPage() {
                 {filteredConsequences.length ? filteredConsequences.map(({ beat, consequence }) => (
                   <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 1, p: 1.25, border: 1, borderColor: "divider", borderRadius: 1 }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      {editingConsequenceId === consequence.id && consequenceDraft ? (
-                        <Stack spacing={1}>
-                          <TextField label="Description" value={consequenceDraft.description} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                          <TextField label="Trigger" value={consequenceDraft.trigger} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, trigger: event.target.value })} disabled={saving} />
-                          <TextField label="Player action" value={consequenceDraft.player_action} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, player_action: event.target.value })} disabled={saving} />
-                          <TextField label="Timing" value={consequenceDraft.timing} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, timing: event.target.value })} disabled={saving} />
-                          <FormControl size="small" fullWidth>
-                            <Select aria-label="Consequence status" value={consequenceDraft.status} onChange={(event) => setConsequenceDraft({ ...consequenceDraft, status: event.target.value as StoryConsequence["status"] })} disabled={saving}>
-                              {CONSEQUENCE_STATUSES.map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                            </Select>
-                          </FormControl>
-                          <Typography variant="caption" color="text.secondary">
-                            If this consequence happens, these plot points or world events may follow.
-                          </Typography>
-                          <EntityIdMultiSelect
-                            label="Possible next plot points"
-                            ids={textToList(consequenceDraft.leads_to).filter((id) => plotPointOptions.some((option) => option.id === id))}
-                            options={plotPointOptions}
-                            onChange={(ids) => updateConsequenceTargetIds(ids, plotPointOptions)}
-                            disabled={saving}
-                          />
-                          <EntityIdMultiSelect
-                            label="Related world events"
-                            ids={textToList(consequenceDraft.leads_to).filter((id) => worldEventOptions.some((option) => option.id === id))}
-                            options={worldEventOptions}
-                            onChange={(ids) => updateConsequenceTargetIds(ids, worldEventOptions)}
-                            disabled={saving}
-                          />
-                          <WorldStoryLinksEditor
-                            worldStoryIds={consequenceDraft.world_stories}
-                            threadLinks={consequenceDraft.world_story_threads}
-                            worldStoryOptions={worldStoryOptions}
-                            threadOptions={worldStoryThreadOptions}
-                            onChange={(worldStoryIds, threadLinks) => setConsequenceDraft({ ...consequenceDraft, world_stories: worldStoryIds, world_story_threads: threadLinks })}
-                            disabled={saving}
-                          />
-                          <Stack direction="row" spacing={1}>
-                            <Button size="small" startIcon={<SaveIcon />} onClick={() => saveConsequenceEdit(beat.id, consequence.id)} disabled={saving || !consequenceDraft.description.trim()}>Save</Button>
-                            <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingConsequenceId(null); setConsequenceDraft(null); }} disabled={saving}>Cancel</Button>
-                          </Stack>
-                        </Stack>
+                      {editingConsequenceId === consequence.id ? (
+                        <DraftEditor draft={consequenceEditor}>
+                          {(consequenceDraft, setConsequenceDraft) =>
+                            consequenceDraft && (
+                              <Stack spacing={1}>
+                                <TextField
+                                  label="Description"
+                                  value={consequenceDraft.description}
+                                  onChange={(event) =>
+                                    setConsequenceDraft({
+                                      ...consequenceDraft,
+                                      description: event.target.value,
+                                    })
+                                  }
+                                  multiline
+                                  minRows={2}
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Trigger"
+                                  value={consequenceDraft.trigger}
+                                  onChange={(event) =>
+                                    setConsequenceDraft({
+                                      ...consequenceDraft,
+                                      trigger: event.target.value,
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Player action"
+                                  value={consequenceDraft.player_action}
+                                  onChange={(event) =>
+                                    setConsequenceDraft({
+                                      ...consequenceDraft,
+                                      player_action: event.target.value,
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Timing"
+                                  value={consequenceDraft.timing}
+                                  onChange={(event) =>
+                                    setConsequenceDraft({
+                                      ...consequenceDraft,
+                                      timing: event.target.value,
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <FormControl size="small" fullWidth>
+                                  <Select
+                                    aria-label="Consequence status"
+                                    value={consequenceDraft.status}
+                                    onChange={(event) =>
+                                      setConsequenceDraft({
+                                        ...consequenceDraft,
+                                        status: event.target.value as StoryConsequence["status"],
+                                      })
+                                    }
+                                    disabled={saving}
+                                  >
+                                    {CONSEQUENCE_STATUSES.map((status) => (
+                                      <MenuItem key={status} value={status}>
+                                        {formatStatusLabel(status)}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                                <Typography variant="caption" color="text.secondary">
+                                  If this consequence happens, these plot points or world events may
+                                  follow.
+                                </Typography>
+                                <EntityIdMultiSelect
+                                  label="Possible next plot points"
+                                  ids={textToList(consequenceDraft.leads_to).filter((id) =>
+                                    plotPointOptions.some((option) => option.id === id)
+                                  )}
+                                  options={plotPointOptions}
+                                  onChange={(ids) => updateConsequenceTargetIds(ids, plotPointOptions)}
+                                  disabled={saving}
+                                />
+                                <EntityIdMultiSelect
+                                  label="Related world events"
+                                  ids={textToList(consequenceDraft.leads_to).filter((id) =>
+                                    worldEventOptions.some((option) => option.id === id)
+                                  )}
+                                  options={worldEventOptions}
+                                  onChange={(ids) => updateConsequenceTargetIds(ids, worldEventOptions)}
+                                  disabled={saving}
+                                />
+                                <WorldStoryLinksEditor
+                                  worldStoryIds={consequenceDraft.world_stories}
+                                  threadLinks={consequenceDraft.world_story_threads}
+                                  worldStoryOptions={worldStoryOptions}
+                                  threadOptions={worldStoryThreadOptions}
+                                  onChange={(worldStoryIds, threadLinks) =>
+                                    setConsequenceDraft({
+                                      ...consequenceDraft,
+                                      world_stories: worldStoryIds,
+                                      world_story_threads: threadLinks,
+                                    })
+                                  }
+                                  disabled={saving}
+                                />
+                                <Stack direction="row" spacing={1}>
+                                  <Button
+                                    size="small"
+                                    startIcon={<SaveIcon />}
+                                    onClick={() => saveConsequenceEdit(beat.id, consequence.id)}
+                                    disabled={saving || !consequenceDraft.description.trim()}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    startIcon={<CloseIcon />}
+                                    onClick={() => {
+                                      setEditingConsequenceId(null);
+                                      setConsequenceDraft(null);
+                                    }}
+                                    disabled={saving}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </Stack>
+                              </Stack>
+                            )
+                          }
+                        </DraftEditor>
                       ) : <>
                         <Typography>{consequence.description}</Typography>
                         <Typography variant="caption" color="text.secondary">From {beat.name}{consequence.timing ? ` · ${consequence.timing}` : ""}</Typography>
@@ -3289,24 +4765,44 @@ function CampaignDashboardPage() {
                 )) : consequences.length ? <Typography color="text.secondary">No consequences match these filters.</Typography> : <Typography color="text.secondary">No consequences recorded. Add one once an action has a possible follow-on effect.</Typography>}
               </Stack>
               <Divider sx={{ my: 2.5 }} />
-              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                <TextField fullWidth label={currentBeat ? `New consequence for ${currentBeat.name}` : "Set a current beat to add a consequence"} value={consequenceDescription} onChange={(event) => setConsequenceDescription(event.target.value)} disabled={saving || legacyStory || !currentBeat} />
-                <IconButton
-                  aria-label="Add consequence"
-                  title="Add consequence"
-                  color="primary"
-                  onClick={addConsequence}
-                  disabled={!consequenceDescription.trim() || !currentBeat || saving || legacyStory}
-                  sx={{ width: 44, height: 44, flex: "0 0 44px", borderRadius: "50%" }}
-                >
-                  <AddIcon />
-                </IconButton>
-              </Stack>
+              <DraftEditor draft={newConsequenceEditor}>
+                {(consequenceDescription, setConsequenceDescription) => (
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                    <TextField
+                      fullWidth
+                      label={
+                        currentBeat
+                          ? `New consequence for ${currentBeat.name}`
+                          : "Set a current beat to add a consequence"
+                      }
+                      value={consequenceDescription}
+                      onChange={(event) => setConsequenceDescription(event.target.value)}
+                      disabled={saving || legacyStory || !currentBeat}
+                    />
+                    <IconButton
+                      aria-label="Add consequence"
+                      title="Add consequence"
+                      color="primary"
+                      onClick={addConsequence}
+                      disabled={
+                        !consequenceDescription.trim() ||
+                        !currentBeat ||
+                        saving ||
+                        legacyStory
+                      }
+                      sx={{ width: 44, height: 44, flex: "0 0 44px", borderRadius: "50%" }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Stack>
+                )}
+              </DraftEditor>
           </CollapsibleDashboardSection>
 
           <CollapsibleDashboardSection
             eyebrow="THREATS &amp; TIMING"
             title="World Clocks"
+            id="campaign-clocks"
             gridRow={5}
             summaryAdornment={<Chip size="small" label={`${filteredClocks.length} / ${worldClocks.length}`} />}
           >
@@ -3356,42 +4852,181 @@ function CampaignDashboardPage() {
                     </Stack>
                     <LinearProgress variant="determinate" value={Math.min(100, (clock.current / Math.max(1, clock.maximum)) * 100)} sx={{ mt: 1 }} />
                     {clock.current > 0 && clock.stages?.[clock.current - 1] && <Typography variant="caption" color="text.secondary">{clock.stages[clock.current - 1]}</Typography>}
-                    {editingClockId === clock.id && clockDraft ? (
-                      <Stack spacing={1} sx={{ mt: 1.25 }}>
-                        <TextField label="Clock name" value={clockDraft.name} onChange={(event) => setClockDraft({ ...clockDraft, name: event.target.value })} disabled={saving} />
-                        <FormControl size="small" fullWidth>
-                          <Select aria-label="Plot Point for clock" displayEmpty value={clockDraft.plot_point_id} onChange={(event) => setClockDraft({ ...clockDraft, plot_point_id: event.target.value as string })} disabled={saving} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "World clock — no Plot Point"}>
-                            <MenuItem value=""><em>World clock — no Plot Point</em></MenuItem>
-                            {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
-                          </Select>
-                        </FormControl>
-                        <TextField label="Description" value={clockDraft.description} onChange={(event) => setClockDraft({ ...clockDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                          <TextField label="Current step" type="number" slotProps={{ htmlInput: { min: 0 } }} value={clockDraft.current} onChange={(event) => setClockDraft({ ...clockDraft, current: event.target.value })} disabled={saving} />
-                          <TextField label="Steps to completion" type="number" slotProps={{ htmlInput: { min: 1 } }} value={clockDraft.maximum} onChange={(event) => setClockDraft({ ...clockDraft, maximum: event.target.value })} disabled={saving} />
-                          <FormControl size="small" fullWidth>
-                            <Select aria-label="Clock status" value={clockDraft.status} onChange={(event) => setClockDraft({ ...clockDraft, status: event.target.value as WorldClock["status"] })} disabled={saving}>
-                              {["active", "paused", "completed"].map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-                            </Select>
-                          </FormControl>
-                        </Stack>
-                        <TextField label="Stages (one per step, one per line)" value={clockDraft.stages} onChange={(event) => setClockDraft({ ...clockDraft, stages: event.target.value })} multiline minRows={2} disabled={saving} />
-                        <TextField label="What happens at completion" value={clockDraft.completion} onChange={(event) => setClockDraft({ ...clockDraft, completion: event.target.value })} multiline minRows={2} disabled={saving} />
-                        <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
-                          <Button size="small" startIcon={<SaveIcon />} onClick={() => saveClockEdit(clock.id)} disabled={saving || !clockDraft.name.trim()}>Save changes</Button>
-                          <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingClockId(null); setClockDraft(null); }} disabled={saving}>Cancel</Button>
-                        </Stack>
-                      </Stack>
+                    {editingClockId === clock.id ? (
+                      <DraftEditor draft={clockEditor}>
+                        {(clockDraft, setClockDraft) =>
+                          clockDraft && (
+                            <Stack spacing={1} sx={{ mt: 1.25 }}>
+                              <TextField
+                                label="Clock name"
+                                value={clockDraft.name}
+                                onChange={(event) =>
+                                  setClockDraft({ ...clockDraft, name: event.target.value })
+                                }
+                                disabled={saving}
+                              />
+                              <FormControl size="small" fullWidth>
+                                <Select
+                                  aria-label="Plot Point for clock"
+                                  displayEmpty
+                                  value={clockDraft.plot_point_id}
+                                  onChange={(event) =>
+                                    setClockDraft({
+                                      ...clockDraft,
+                                      plot_point_id: event.target.value as string,
+                                    })
+                                  }
+                                  disabled={saving}
+                                  renderValue={(value) =>
+                                    typeof value === "string" && value
+                                      ? plotPointOptions.find((option) => option.id === value)
+                                          ?.name ?? value
+                                      : "World clock — no Plot Point"
+                                  }
+                                >
+                                  <MenuItem value="">
+                                    <em>World clock — no Plot Point</em>
+                                  </MenuItem>
+                                  {plotPointOptions.map((option) => (
+                                    <MenuItem key={option.id} value={option.id}>
+                                      {option.name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                              <TextField
+                                label="Description"
+                                value={clockDraft.description}
+                                onChange={(event) =>
+                                  setClockDraft({ ...clockDraft, description: event.target.value })
+                                }
+                                multiline
+                                minRows={2}
+                                disabled={saving}
+                              />
+                              <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                                <TextField
+                                  label="Current step"
+                                  type="number"
+                                  slotProps={{ htmlInput: { min: 0 } }}
+                                  value={clockDraft.current}
+                                  onChange={(event) =>
+                                    setClockDraft({ ...clockDraft, current: event.target.value })
+                                  }
+                                  disabled={saving}
+                                />
+                                <TextField
+                                  label="Steps to completion"
+                                  type="number"
+                                  slotProps={{ htmlInput: { min: 1 } }}
+                                  value={clockDraft.maximum}
+                                  onChange={(event) =>
+                                    setClockDraft({ ...clockDraft, maximum: event.target.value })
+                                  }
+                                  disabled={saving}
+                                />
+                                <FormControl size="small" fullWidth>
+                                  <Select
+                                    aria-label="Clock status"
+                                    value={clockDraft.status}
+                                    onChange={(event) =>
+                                      setClockDraft({
+                                        ...clockDraft,
+                                        status: event.target.value as WorldClock["status"],
+                                      })
+                                    }
+                                    disabled={saving}
+                                  >
+                                    {["active", "paused", "completed"].map((status) => (
+                                      <MenuItem key={status} value={status}>
+                                        {formatStatusLabel(status)}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Stack>
+                              <TextField
+                                label="Stages (one per step, one per line)"
+                                value={clockDraft.stages}
+                                onChange={(event) =>
+                                  setClockDraft({ ...clockDraft, stages: event.target.value })
+                                }
+                                multiline
+                                minRows={2}
+                                disabled={saving}
+                              />
+                              <TextField
+                                label="What happens at completion"
+                                value={clockDraft.completion}
+                                onChange={(event) =>
+                                  setClockDraft({ ...clockDraft, completion: event.target.value })
+                                }
+                                multiline
+                                minRows={2}
+                                disabled={saving}
+                              />
+                              <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                                <Button
+                                  size="small"
+                                  startIcon={<SaveIcon />}
+                                  onClick={() => saveClockEdit(clock.id)}
+                                  disabled={saving || !clockDraft.name.trim()}
+                                >
+                                  Save changes
+                                </Button>
+                                <Button
+                                  size="small"
+                                  startIcon={<CloseIcon />}
+                                  onClick={() => {
+                                    setEditingClockId(null);
+                                    setClockDraft(null);
+                                  }}
+                                  disabled={saving}
+                                >
+                                  Cancel
+                                </Button>
+                              </Stack>
+                            </Stack>
+                          )
+                        }
+                      </DraftEditor>
                     ) : clock.completion && <Typography variant="caption" color="text.secondary">At the end: {clock.completion}</Typography>}
                   </Box>
                 )) : worldClocks.length ? <Typography color="text.secondary">No clocks match this progress filter.</Typography> : <Typography color="text.secondary">No active world clocks. Add one for a threat or event that advances over time.</Typography>}
               </Stack>
               <Divider sx={{ my: 2.5 }} />
-              <Stack spacing={1.25}>
-                <TextField label="Clock name" value={clockName} onChange={(event) => setClockName(event.target.value)} disabled={saving || legacyStory} />
-                <TextField label="Steps to completion" type="number" value={clockMaximum} slotProps={{ htmlInput: { min: 1 } }} onChange={(event) => setClockMaximum(event.target.value)} disabled={saving || legacyStory} />
-                <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={() => addClock(clockName, clockMaximum)} disabled={!clockName.trim() || saving || legacyStory}>Add Clock</Button></Box>
-              </Stack>
+              <DraftEditor draft={newClockEditor}>
+                {(draft, setDraft) => (
+                  <Stack spacing={1.25}>
+                    <TextField
+                      label="Clock name"
+                      value={draft.name}
+                      onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                      disabled={saving || legacyStory}
+                    />
+                    <TextField
+                      label="Steps to completion"
+                      type="number"
+                      value={draft.maximum}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                      onChange={(event) =>
+                        setDraft({ ...draft, maximum: event.target.value })
+                      }
+                      disabled={saving || legacyStory}
+                    />
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={() => addClock(draft.name, draft.maximum)}
+                        disabled={!draft.name.trim() || saving || legacyStory}
+                      >
+                        Add Clock
+                      </Button>
+                    </Box>
+                  </Stack>
+                )}
+              </DraftEditor>
           </CollapsibleDashboardSection>
           <CollapsibleDashboardSection
             eyebrow="PLOT PROGRESS"
@@ -3425,558 +5060,214 @@ function CampaignDashboardPage() {
                   onEdit={() => startClockEdit(clock)}
                   onDelete={() => setDeleteTarget({ kind: "clock", id: clock.id, label: clock.name })}
                 />
-                {editingClockId === clock.id && clockDraft && <Stack spacing={1} sx={{ mt: 1 }}>
-                  <TextField label="Clock name" value={clockDraft.name} onChange={(event) => setClockDraft({ ...clockDraft, name: event.target.value })} disabled={saving} />
-                  <FormControl size="small" fullWidth>
-                    <Select aria-label="Plot Point for clock" displayEmpty value={clockDraft.plot_point_id} onChange={(event) => setClockDraft({ ...clockDraft, plot_point_id: event.target.value as string })} disabled={saving} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "World clock — no Plot Point"}>
-                      <MenuItem value=""><em>World clock — no Plot Point</em></MenuItem>
-                      {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
-                    </Select>
-                  </FormControl>
-                  <TextField label="Description" value={clockDraft.description} onChange={(event) => setClockDraft({ ...clockDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                    <TextField label="Current step" type="number" slotProps={{ htmlInput: { min: 0 } }} value={clockDraft.current} onChange={(event) => setClockDraft({ ...clockDraft, current: event.target.value })} disabled={saving} />
-                    <TextField label="Steps to completion" type="number" slotProps={{ htmlInput: { min: 1 } }} value={clockDraft.maximum} onChange={(event) => setClockDraft({ ...clockDraft, maximum: event.target.value })} disabled={saving} />
-                    <FormControl size="small" fullWidth><Select aria-label="Plot clock status" value={clockDraft.status} onChange={(event) => setClockDraft({ ...clockDraft, status: event.target.value as WorldClock["status"] })} disabled={saving}>{["active", "paused", "completed"].map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}</Select></FormControl>
-                  </Stack>
-                  <TextField label="Stages (one per step, one per line)" value={clockDraft.stages} onChange={(event) => setClockDraft({ ...clockDraft, stages: event.target.value })} multiline minRows={2} disabled={saving} />
-                  <TextField label="What happens at completion" value={clockDraft.completion} onChange={(event) => setClockDraft({ ...clockDraft, completion: event.target.value })} multiline minRows={2} disabled={saving} />
-                  <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
-                    <Button size="small" startIcon={<SaveIcon />} onClick={() => saveClockEdit(clock.id)} disabled={saving || !clockDraft.name.trim()}>Save changes</Button>
-                    <Button size="small" startIcon={<CloseIcon />} onClick={() => { setEditingClockId(null); setClockDraft(null); }} disabled={saving}>Cancel</Button>
-                  </Stack>
-                </Stack>}
+                {editingClockId === clock.id && <DraftEditor draft={clockEditor}>
+                  {(clockDraft, setClockDraft) =>
+                    clockDraft && (
+                      <Stack spacing={1} sx={{ mt: 1 }}>
+                        <TextField
+                          label="Clock name"
+                          value={clockDraft.name}
+                          onChange={(event) =>
+                            setClockDraft({ ...clockDraft, name: event.target.value })
+                          }
+                          disabled={saving}
+                        />
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            aria-label="Plot Point for clock"
+                            displayEmpty
+                            value={clockDraft.plot_point_id}
+                            onChange={(event) =>
+                              setClockDraft({
+                                ...clockDraft,
+                                plot_point_id: event.target.value as string,
+                              })
+                            }
+                            disabled={saving}
+                            renderValue={(value) =>
+                              typeof value === "string" && value
+                                ? plotPointOptions.find((option) => option.id === value)
+                                    ?.name ?? value
+                                : "World clock — no Plot Point"
+                            }
+                          >
+                            <MenuItem value="">
+                              <em>World clock — no Plot Point</em>
+                            </MenuItem>
+                            {plotPointOptions.map((option) => (
+                              <MenuItem key={option.id} value={option.id}>
+                                {option.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        <TextField
+                          label="Description"
+                          value={clockDraft.description}
+                          onChange={(event) =>
+                            setClockDraft({ ...clockDraft, description: event.target.value })
+                          }
+                          multiline
+                          minRows={2}
+                          disabled={saving}
+                        />
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                          <TextField
+                            label="Current step"
+                            type="number"
+                            slotProps={{ htmlInput: { min: 0 } }}
+                            value={clockDraft.current}
+                            onChange={(event) =>
+                              setClockDraft({ ...clockDraft, current: event.target.value })
+                            }
+                            disabled={saving}
+                          />
+                          <TextField
+                            label="Steps to completion"
+                            type="number"
+                            slotProps={{ htmlInput: { min: 1 } }}
+                            value={clockDraft.maximum}
+                            onChange={(event) =>
+                              setClockDraft({ ...clockDraft, maximum: event.target.value })
+                            }
+                            disabled={saving}
+                          />
+                          <FormControl size="small" fullWidth>
+                            <Select
+                              aria-label="Plot clock status"
+                              value={clockDraft.status}
+                              onChange={(event) =>
+                                setClockDraft({
+                                  ...clockDraft,
+                                  status: event.target.value as WorldClock["status"],
+                                })
+                              }
+                              disabled={saving}
+                            >
+                              {["active", "paused", "completed"].map((status) => (
+                                <MenuItem key={status} value={status}>
+                                  {formatStatusLabel(status)}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Stack>
+                        <TextField
+                          label="Stages (one per step, one per line)"
+                          value={clockDraft.stages}
+                          onChange={(event) =>
+                            setClockDraft({ ...clockDraft, stages: event.target.value })
+                          }
+                          multiline
+                          minRows={2}
+                          disabled={saving}
+                        />
+                        <TextField
+                          label="What happens at completion"
+                          value={clockDraft.completion}
+                          onChange={(event) =>
+                            setClockDraft({ ...clockDraft, completion: event.target.value })
+                          }
+                          multiline
+                          minRows={2}
+                          disabled={saving}
+                        />
+                        <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                          <Button
+                            size="small"
+                            startIcon={<SaveIcon />}
+                            onClick={() => saveClockEdit(clock.id)}
+                            disabled={saving || !clockDraft.name.trim()}
+                          >
+                            Save changes
+                          </Button>
+                          <Button
+                            size="small"
+                            startIcon={<CloseIcon />}
+                            onClick={() => {
+                              setEditingClockId(null);
+                              setClockDraft(null);
+                            }}
+                            disabled={saving}
+                          >
+                            Cancel
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    )
+                  }
+                </DraftEditor>}
               </Box>)}</Stack> : plotClocks.length
                 ? <Typography color="text.secondary">No Plot Clocks match the current filters.</Typography>
                 : <Typography color="text.secondary">No Plot Clocks yet. Add one for a scene-specific progress track.</Typography>}
               <Divider />
               <Typography variant="subtitle2">Add a Plot Clock</Typography>
-              <FormControl size="small" fullWidth>
-                <Select aria-label="Choose Plot Point for new plot clock" displayEmpty value={plotClockCreateBeatId} onChange={(event) => setPlotClockCreateBeatId(event.target.value as string)} disabled={saving || legacyStory} renderValue={(value) => typeof value === "string" && value ? plotPointOptions.find((option) => option.id === value)?.name ?? value : "Choose a Plot Point"}>
-                  <MenuItem value=""><em>Choose a Plot Point</em></MenuItem>
-                  {plotPointOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <TextField label="Clock name" value={plotClockName} onChange={(event) => setPlotClockName(event.target.value)} disabled={saving || legacyStory} />
-              <TextField label="Steps to completion" type="number" value={plotClockMaximum} slotProps={{ htmlInput: { min: 1 } }} onChange={(event) => setPlotClockMaximum(event.target.value)} disabled={saving || legacyStory} />
-              <Box><Button variant="outlined" startIcon={<AddIcon />} onClick={() => addClock(plotClockName, plotClockMaximum, plotClockCreateBeatId)} disabled={!plotClockName.trim() || !plotClockCreateBeatId || saving || legacyStory}>Add Plot Clock</Button></Box>
+              <DraftEditor draft={newPlotClockEditor}>
+                {(draft, setDraft) => (
+                  <>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        aria-label="Choose Plot Point for new plot clock"
+                        displayEmpty
+                        value={draft.beatId}
+                        onChange={(event) =>
+                          setDraft({ ...draft, beatId: event.target.value as string })
+                        }
+                        disabled={saving || legacyStory}
+                        renderValue={(value) =>
+                          typeof value === "string" && value
+                            ? plotPointOptions.find((option) => option.id === value)?.name ??
+                              value
+                            : "Choose a Plot Point"
+                        }
+                      >
+                        <MenuItem value="">
+                          <em>Choose a Plot Point</em>
+                        </MenuItem>
+                        {plotPointOptions.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      label="Clock name"
+                      value={draft.name}
+                      onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                      disabled={saving || legacyStory}
+                    />
+                    <TextField
+                      label="Steps to completion"
+                      type="number"
+                      value={draft.maximum}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                      onChange={(event) =>
+                        setDraft({ ...draft, maximum: event.target.value })
+                      }
+                      disabled={saving || legacyStory}
+                    />
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={() => addClock(draft.name, draft.maximum, draft.beatId)}
+                        disabled={
+                          !draft.name.trim() || !draft.beatId || saving || legacyStory
+                        }
+                      >
+                        Add Plot Clock
+                      </Button>
+                    </Box>
+                  </>
+                )}
+              </DraftEditor>
             </Stack>
           </CollapsibleDashboardSection>
         </Stack>
       </Box>
 
-      <Dialog open={closeoutOpen} onClose={() => !saving && setCloseoutOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Session closeout</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Alert severity="info" action={<Button size="small" onClick={() => { setCloseoutOpen(false); navigate("/world-stories"); }}>Review World Stories</Button>}>
-              Review what the party did, connect relevant consequences, and decide whether an action should become a World Event. Nothing advances automatically.
-            </Alert>
-            {unreviewedActions.length > 0 && (
-              <FormControl size="small" sx={{ maxWidth: 260 }}>
-                <Select aria-label="Filter closeout actions by session" value={closeoutSessionFilter} onChange={(event) => setCloseoutSessionFilter(event.target.value)}>
-                  <MenuItem value="all">All sessions</MenuItem>
-                  <MenuItem value="unassigned">Session not set</MenuItem>
-                  {closeoutSessions.map((session) => <MenuItem key={session} value={session}>Session {session}</MenuItem>)}
-                </Select>
-              </FormControl>
-            )}
-            {unreviewedActions.length === 0 ? (
-              <Typography color="text.secondary">All logged actions have been reviewed.</Typography>
-            ) : closeoutActions.length === 0 ? (
-              <Typography color="text.secondary">No unreviewed actions match this session filter.</Typography>
-            ) : closeoutActions.map((action) => {
-              const draft = closeoutDrafts[action.id] ?? {
-                session: action.session === undefined ? "" : String(action.session),
-                consequence_ids: action.consequence_ids ?? [],
-                world_stories: action.world_stories ?? [],
-                world_story_threads: action.world_story_threads ?? [],
-              };
-              return (
-                <Box key={action.id} sx={{ p: 1.75, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
-                  <Stack spacing={1.25}>
-                    <Box>
-                      <Typography sx={{ fontWeight: 600 }}>{action.description}</Typography>
-                      {beats.find((beat) => beat.id === action.story_beat) && <Typography variant="caption" color="text.secondary">During {beats.find((beat) => beat.id === action.story_beat)?.name}</Typography>}
-                    </Box>
-                    <TextField label="Session (optional)" type="number" value={draft.session} onChange={(event) => setCloseoutDrafts((current) => ({ ...current, [action.id]: { ...draft, session: event.target.value } }))} disabled={saving} />
-                    <EntityIdMultiSelect
-                      label="Consequences"
-                      ids={draft.consequence_ids}
-                      options={consequenceOptions}
-                      onChange={(consequence_ids) => setCloseoutDrafts((current) => ({ ...current, [action.id]: { ...draft, consequence_ids } }))}
-                      disabled={saving}
-                    />
-                    <WorldStoryLinksEditor
-                      worldStoryIds={draft.world_stories}
-                      threadLinks={draft.world_story_threads}
-                      worldStoryOptions={worldStoryOptions}
-                      threadOptions={worldStoryThreadOptions}
-                      onChange={(world_stories, world_story_threads) => setCloseoutDrafts((current) => ({ ...current, [action.id]: { ...draft, world_stories, world_story_threads } }))}
-                      disabled={saving}
-                    />
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", flexWrap: "wrap" }}>
-                      <Button
-                        size="small"
-                        startIcon={<EventIcon />}
-                        onClick={async () => {
-                          const updatedAction = await saveCloseoutAction(action.id, false);
-                          if (updatedAction) {
-                            setCloseoutOpen(false);
-                            startWorldEventFromAction(updatedAction);
-                          }
-                        }}
-                        disabled={saving || creatingWorldEvent}
-                      >Create World Event</Button>
-                      <Button size="small" variant="contained" startIcon={<CheckIcon />} onClick={() => void saveCloseoutAction(action.id, true)} disabled={saving}>
-                        Mark reviewed
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Box>
-              );
-            })}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCloseoutOpen(false)} disabled={saving}>Done</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={sessionHistoryOpen} onClose={() => setSessionHistoryOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Session history</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
-              <Typography color="text.secondary">
-                Review logged player actions, their Plot Points, consequences, and linked events.
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                <FormControl size="small" sx={{ minWidth: 180 }}>
-                  <Select aria-label="Filter history by session" value={sessionHistoryFilter} onChange={(event) => setSessionHistoryFilter(event.target.value)}>
-                    <MenuItem value="all">All sessions</MenuItem>
-                    <MenuItem value="unassigned">Session not set</MenuItem>
-                    {sessionHistorySessionValues.map((session) => <MenuItem key={session} value={session}>Session {session}</MenuItem>)}
-                  </Select>
-                </FormControl>
-                <Button startIcon={<AddIcon />} onClick={() => openSessionRecap()} disabled={saving}>Add recap</Button>
-              </Stack>
-            </Stack>
-            {sessionHistoryGroups.length === 0 ? (
-              <Typography color="text.secondary">No sessions match this filter. Add a recap to start a session record.</Typography>
-            ) : sessionHistoryGroups.map((group) => (
-              <Stack key={group.label} spacing={1}>
-                <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography variant="h3" sx={{ fontSize: "1.05rem" }}>{group.label}</Typography>
-                  {group.session !== null && (
-                    <Button size="small" onClick={() => openSessionRecap(group.session!)} disabled={saving}>
-                      {group.recap ? "Edit recap" : "Add recap"}
-                    </Button>
-                  )}
-                </Stack>
-                {group.recap && (
-                  <Box sx={{ p: 1.5, border: 1, borderColor: "primary.light", borderRadius: 1.5, bgcolor: "action.hover" }}>
-                    <Stack spacing={0.5}>
-                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                        <Typography variant="subtitle2">Session recap</Typography>
-                        {group.recap.played_on && <Typography variant="caption" color="text.secondary">{group.recap.played_on}</Typography>}
-                      </Stack>
-                      {group.recap.summary && <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.summary}</Typography>}
-                      {group.recap.notes && <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>{group.recap.notes}</Typography>}
-                      {!group.recap.summary && !group.recap.notes && <Typography variant="body2" color="text.secondary">No recap text yet.</Typography>}
-                      {group.recap.timeline_event_id ? (
-                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => openEntity(group.recap!.timeline_event_id!)}>
-                          Open linked timeline event
-                        </Button>
-                      ) : (
-                        <Button size="small" startIcon={<EventIcon />} sx={{ alignSelf: "flex-start" }} onClick={() => startTimelineEventFromRecap(group.recap!)}>
-                          Create timeline event
-                        </Button>
-                      )}
-                    </Stack>
-                  </Box>
-                )}
-                {group.actions.map((action) => {
-                  const relatedBeat = beats.find((beat) => beat.id === action.story_beat);
-                  const relatedConsequences = consequences.filter(({ consequence }) => action.consequence_ids?.includes(consequence.id));
-                  const resultingEvents = [...new Set(relatedConsequences.flatMap(({ consequence }) => consequence.leads_to ?? []))]
-                    .map((eventId) => worldEventOptions.find((event) => event.id === eventId))
-                    .filter((event): event is EntitySummary => Boolean(event));
-
-                  return (
-                    <Box key={action.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
-                      <Stack spacing={0.75}>
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "flex-start" } }}>
-                          <Box sx={{ minWidth: 0 }}>
-                            <Typography sx={{ fontWeight: 600 }}>{action.description}</Typography>
-                            {relatedBeat && <Typography variant="caption" color="text.secondary">During {relatedBeat.name}</Typography>}
-                          </Box>
-                          <Chip size="small" label={action.reviewed ? "Reviewed" : "Needs review"} color={action.reviewed ? "success" : "warning"} />
-                        </Stack>
-                        {action.notes && <Typography variant="body2" color="text.secondary">{action.notes}</Typography>}
-                        {relatedConsequences.length > 0 && (
-                          <Stack spacing={0.5}>
-                            {relatedConsequences.map(({ consequence, beat }) => (
-                              <Stack key={consequence.id} direction={{ xs: "column", sm: "row" }} spacing={0.75} sx={{ alignItems: { sm: "center" } }}>
-                                <Typography variant="body2">{consequence.description}</Typography>
-                                <Chip size="small" variant="outlined" label={formatStatusLabel(consequence.status)} />
-                                {beat.id !== relatedBeat?.id && <Typography variant="caption" color="text.secondary">From {beat.name}</Typography>}
-                              </Stack>
-                            ))}
-                          </Stack>
-                        )}
-                        {resultingEvents.length > 0 && (
-                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                            {resultingEvents.map((event) => <Chip key={event.id} size="small" icon={<EventIcon />} label={event.name} clickable onClick={() => openEntity(event.id)} />)}
-                          </Stack>
-                        )}
-                        <WorldStoryReferenceChips worldStoryIds={action.world_stories ?? []} threadLinks={action.world_story_threads ?? []} stories={worldStories} onOpen={openEntity} />
-                      </Stack>
-                    </Box>
-                  );
-                })}
-              </Stack>
-            ))}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSessionHistoryOpen(false)}>Close</Button>
-          <Button onClick={() => { setSessionHistoryOpen(false); openSessionCloseout(); }} disabled={!actions.length || saving}>Review actions</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={sessionRecapDialogOpen} onClose={() => !saving && setSessionRecapDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{editingSessionRecapNumber === null ? "Add session recap" : `Edit Session ${editingSessionRecapNumber} recap`}</DialogTitle>
-        <DialogContent>
-          {sessionRecapDraft && (
-            <Stack spacing={2} sx={{ pt: 1 }}>
-              <TextField
-                label="Session number"
-                type="number"
-                slotProps={{ htmlInput: { min: 1, step: 1 } }}
-                value={sessionRecapDraft.session}
-                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, session: event.target.value })}
-                required
-                disabled={saving}
-              />
-              <TextField
-                label="Date played (optional)"
-                type="date"
-                slotProps={{ inputLabel: { shrink: true } }}
-                value={sessionRecapDraft.played_on}
-                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, played_on: event.target.value })}
-                disabled={saving}
-              />
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}>
-                <Typography variant="caption" color="text.secondary">
-                  {recapActionCount
-                    ? `${recapActionCount} logged ${recapActionCount === 1 ? "action" : "actions"} for Session ${recapSessionNumber}.`
-                    : "No logged actions match this session number."}
-                </Typography>
-                <Button
-                  size="small"
-                  title="Replaces the summary with an editable draft from this session’s actions."
-                  onClick={generateSessionRecapDraft}
-                  disabled={!recapActionCount || saving}
-                >
-                  Generate from actions
-                </Button>
-              </Stack>
-              <TextField
-                label="Session summary"
-                value={sessionRecapDraft.summary}
-                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, summary: event.target.value })}
-                multiline
-                minRows={3}
-                disabled={saving}
-              />
-              <TextField
-                label="Notes (optional)"
-                value={sessionRecapDraft.notes}
-                onChange={(event) => setSessionRecapDraft({ ...sessionRecapDraft, notes: event.target.value })}
-                multiline
-                minRows={2}
-                disabled={saving}
-              />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSessionRecapDialogOpen(false)} disabled={saving}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={() => void saveSessionRecap()}
-            disabled={saving || !sessionRecapDraft?.session.trim() || Number.parseInt(sessionRecapDraft?.session ?? "", 10) < 1}
-          >
-            {saving ? "Saving…" : "Save recap"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={Boolean(timelineEventDraft)} onClose={() => !creatingTimelineEvent && setTimelineEventDraft(null)} fullWidth maxWidth="md">
-        <DialogTitle>Create timeline event from {timelineEventDraft?.source_label}</DialogTitle>
-        <DialogContent>
-          {timelineEventDraft && (
-            <Stack spacing={1.5} sx={{ pt: 1 }}>
-              <Alert severity="info">
-                Review this campaign source as a world timeline entry. It will link to {campaign.name} and retain references to {timelineEventDraft.plot_point_ids.length} Plot Points, {timelineEventDraft.player_action_ids.length} player actions, and {timelineEventDraft.consequence_ids.length} consequences. Nothing is created until you select Create timeline event.
-              </Alert>
-              <TextField
-                label="Event name"
-                value={timelineEventDraft.name}
-                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, name: event.target.value })}
-                disabled={creatingTimelineEvent}
-                required
-              />
-              <TextField
-                select
-                label="Date precision"
-                value={timelineEventDraft.date_precision}
-                onChange={(event) => {
-                  const date_precision = event.target.value as TimelineEventDraft["date_precision"];
-                  const year = /^(-?\d{1,6})/.exec(timelineEventDraft.date_start)?.[1];
-                  setTimelineEventDraft({
-                    ...timelineEventDraft,
-                    date_precision,
-                    date_start: date_precision === "unknown"
-                      ? ""
-                      : date_precision === "year" && year
-                        ? year
-                        : timelineEventDraft.date_start,
-                    date_end: date_precision === "range" ? timelineEventDraft.date_end : "",
-                  });
-                }}
-                disabled={creatingTimelineEvent}
-              >
-                <MenuItem value="unknown">Unknown / not recorded</MenuItem>
-                <MenuItem value="exact">Exact date</MenuItem>
-                <MenuItem value="year">Year only</MenuItem>
-                <MenuItem value="approximate">Approximate</MenuItem>
-                <MenuItem value="range">Date range</MenuItem>
-              </TextField>
-              <TextField
-                label={timelineEventDraft.date_precision === "range" ? "Start date or year" : "Date or year (optional)"}
-                placeholder="2026-10-08, 1472, or -1200"
-                helperText="Use YYYY-MM-DD or a year. Negative years represent BCE. For events without dates, the timeline preserves manual era order."
-                value={timelineEventDraft.date_start}
-                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, date_start: event.target.value })}
-                disabled={creatingTimelineEvent || timelineEventDraft.date_precision === "unknown"}
-              />
-              {timelineEventDraft.date_precision === "range" && (
-                <TextField
-                  label="End date or year"
-                  placeholder="2027-03-14 or 1475"
-                  value={timelineEventDraft.date_end}
-                  onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, date_end: event.target.value })}
-                  disabled={creatingTimelineEvent}
-                />
-              )}
-              <TextField
-                label="Event summary"
-                value={timelineEventDraft.description}
-                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, description: event.target.value })}
-                multiline
-                minRows={4}
-                disabled={creatingTimelineEvent}
-              />
-              <EntityIdMultiSelect
-                label="Locations involved"
-                ids={timelineEventDraft.locations}
-                options={locationOptions}
-                onChange={(locations) => setTimelineEventDraft({ ...timelineEventDraft, locations })}
-                disabled={creatingTimelineEvent}
-              />
-              <EntityIdMultiSelect
-                label="Characters involved"
-                ids={timelineEventDraft.characters}
-                options={entities.filter((entity) => entity.entity_type === "npc" || entity.entity_type === "player_character")}
-                onChange={(characters) => setTimelineEventDraft({ ...timelineEventDraft, characters })}
-                disabled={creatingTimelineEvent}
-              />
-              <WorldStoryLinksEditor
-                worldStoryIds={timelineEventDraft.world_stories}
-                threadLinks={timelineEventDraft.world_story_threads}
-                worldStoryOptions={worldStoryOptions}
-                threadOptions={worldStoryThreadOptions}
-                onChange={(world_stories, world_story_threads) => setTimelineEventDraft({ ...timelineEventDraft, world_stories, world_story_threads })}
-                disabled={creatingTimelineEvent}
-              />
-              <TextField
-                label="Consequences (one per line)"
-                value={listToText(timelineEventDraft.consequences)}
-                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, consequences: textToList(event.target.value) })}
-                multiline
-                minRows={2}
-                disabled={creatingTimelineEvent}
-              />
-              <TextField
-                label="DM-only notes"
-                value={timelineEventDraft.dm_notes}
-                onChange={(event) => setTimelineEventDraft({ ...timelineEventDraft, dm_notes: event.target.value })}
-                multiline
-                minRows={2}
-                disabled={creatingTimelineEvent}
-              />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTimelineEventDraft(null)} disabled={creatingTimelineEvent}>Cancel</Button>
-          <Button
-            variant="contained"
-            startIcon={creatingTimelineEvent ? <CircularProgress size={16} color="inherit" /> : <EventIcon />}
-            onClick={() => void createTimelineEventFromPlay()}
-            disabled={creatingTimelineEvent || !timelineEventDraft?.name.trim() || !isTimelineDateDraftValid(timelineEventDraft)}
-          >
-            {creatingTimelineEvent ? "Creating…" : "Create timeline event"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={campaignArcEditorOpen} onClose={() => !saving && setCampaignArcEditorOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Edit campaign arc</DialogTitle>
-        <DialogContent>
-          {campaignArcDraft && <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField label="Campaign description" value={campaignArcDraft.description} onChange={(event) => setCampaignArcDraft({ ...campaignArcDraft, description: event.target.value })} multiline minRows={2} disabled={saving} />
-            <TextField label="Campaign overview" helperText="A concise summary of the campaign so far or its central premise." value={campaignArcDraft.overview} onChange={(event) => setCampaignArcDraft({ ...campaignArcDraft, overview: event.target.value })} multiline minRows={3} disabled={saving} />
-            <Box>
-              <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", gap: 1, mb: 1 }}>
-                <Box>
-                  <Typography variant="subtitle1">Overarching plot sections</Typography>
-                  <Typography variant="body2" color="text.secondary">Give each thread or phase a short title. Existing paragraphs are kept as editable sections.</Typography>
-                </Box>
-                <Button size="small" startIcon={<AddIcon />} onClick={() => setCampaignArcDraft({
-                  ...campaignArcDraft,
-                  overarching_plot_sections: [...campaignArcDraft.overarching_plot_sections, { id: crypto.randomUUID(), title: "", content: "" }],
-                })} disabled={saving}>Add section</Button>
-              </Stack>
-              <Stack spacing={1.5}>
-                {campaignArcDraft.overarching_plot_sections.map((section, index) => <Box key={section.id} sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5 }}>
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label={`Section ${index + 1} title`}
-                        value={section.title}
-                        onChange={(event) => setCampaignArcDraft({
-                          ...campaignArcDraft,
-                          overarching_plot_sections: campaignArcDraft.overarching_plot_sections.map((item) => item.id === section.id ? { ...item, title: event.target.value } : item),
-                        })}
-                        disabled={saving}
-                      />
-                      <Tooltip title="Remove section"><span><IconButton aria-label={`Remove arc section ${index + 1}`} onClick={() => setCampaignArcDraft({
-                        ...campaignArcDraft,
-                        overarching_plot_sections: campaignArcDraft.overarching_plot_sections.filter((item) => item.id !== section.id),
-                      })} disabled={saving}><DeleteOutlineIcon /></IconButton></span></Tooltip>
-                    </Stack>
-                    <TextField
-                      label="Section details"
-                      value={section.content}
-                      onChange={(event) => setCampaignArcDraft({
-                        ...campaignArcDraft,
-                        overarching_plot_sections: campaignArcDraft.overarching_plot_sections.map((item) => item.id === section.id ? { ...item, content: event.target.value } : item),
-                      })}
-                      multiline
-                      minRows={3}
-                      disabled={saving}
-                    />
-                  </Stack>
-                </Box>)}
-              </Stack>
-            </Box>
-            <Autocomplete
-              multiple
-              options={worldStoryOptions}
-              value={worldStoryOptions.filter((option) => campaignArcDraft.world_stories.includes(option.id))}
-              onChange={(_, values) => setCampaignArcDraft({ ...campaignArcDraft, world_stories: values.map((value) => value.id) })}
-              getOptionLabel={(option) => option.name}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              renderInput={(params) => <TextField {...params} label="Connected World Stories" helperText="Link setting-wide storylines that this campaign contributes to." />}
-              disabled={saving}
-            />
-          </Stack>}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCampaignArcEditorOpen(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={() => void saveCampaignArc()} variant="contained" startIcon={<SaveIcon />} disabled={saving || !campaignArcDraft}>{saving ? "Saving…" : "Save"}</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={worldEventDialogOpen}
-        onClose={() => !creatingWorldEvent && setWorldEventDialogOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>Create World Event from Campaign Story</DialogTitle>
-        <DialogContent>
-          {worldEventDraft && worldEventSource && (
-            <Stack spacing={1.5} sx={{ pt: 1 }}>
-              <Alert severity="info">
-                <Stack spacing={0.25}>
-                  <Typography variant="body2">Created from {campaign?.name}</Typography>
-                  {worldEventSource.plotPointId && <Typography variant="body2">Plot point: {beats.find((beat) => beat.id === worldEventSource.plotPointId)?.name}</Typography>}
-                  {worldEventSource.actionDescriptions.map((description, index) => <Typography key={`${index}-${description}`} variant="body2">Player action: {description}</Typography>)}
-                  {worldEventSource.consequenceDescriptions.map((description, index) => <Typography key={`${index}-${description}`} variant="body2">Consequence: {description}</Typography>)}
-                </Stack>
-              </Alert>
-              <TextField label="Event name" value={worldEventDraft.name} onChange={(event) => setWorldEventDraft({ ...worldEventDraft, name: event.target.value })} disabled={creatingWorldEvent} required />
-              <TextField label="What is happening?" value={worldEventDraft.description} onChange={(event) => setWorldEventDraft({ ...worldEventDraft, description: event.target.value })} multiline minRows={3} disabled={creatingWorldEvent} />
-              <TextField select label="Status" value={worldEventDraft.status} onChange={(event) => setWorldEventDraft({ ...worldEventDraft, status: event.target.value })} disabled={creatingWorldEvent}>
-                {["ongoing", "rumored", "resolved"].map((status) => <MenuItem key={status} value={status}>{formatStatusLabel(status)}</MenuItem>)}
-              </TextField>
-              <EntityIdMultiSelect
-                label="Locations involved"
-                ids={worldEventDraft.locations}
-                options={locationOptions}
-                onChange={(locations) => setWorldEventDraft({ ...worldEventDraft, locations })}
-                disabled={creatingWorldEvent}
-              />
-              <EntityIdMultiSelect
-                label="Characters involved"
-                ids={worldEventDraft.characters}
-                options={entities.filter((entity) => entity.entity_type === "npc" || entity.entity_type === "player_character")}
-                onChange={(characters) => setWorldEventDraft({ ...worldEventDraft, characters })}
-                disabled={creatingWorldEvent}
-              />
-              <WorldStoryLinksEditor
-                worldStoryIds={worldEventDraft.world_stories}
-                threadLinks={worldEventDraft.world_story_threads}
-                worldStoryOptions={worldStoryOptions}
-                threadOptions={worldStoryThreadOptions}
-                onChange={(world_stories, world_story_threads) => setWorldEventDraft({ ...worldEventDraft, world_stories, world_story_threads })}
-                disabled={creatingWorldEvent}
-              />
-              <TextField label="DM-only notes" value={worldEventDraft.dm_notes} onChange={(event) => setWorldEventDraft({ ...worldEventDraft, dm_notes: event.target.value })} multiline minRows={2} disabled={creatingWorldEvent} />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setWorldEventDialogOpen(false); setWorldEventDraft(null); setWorldEventSource(null); }} disabled={creatingWorldEvent}>Cancel</Button>
-          <Button variant="contained" onClick={() => void saveWorldEventFromConsequence()} disabled={creatingWorldEvent || !worldEventDraft?.name.trim()}>
-            {creatingWorldEvent ? "Creating…" : "Create World Event"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={Boolean(deleteTarget)} onClose={() => !saving && setDeleteTarget(null)}>
-        <DialogTitle>Delete {deleteTarget?.kind}?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Delete “{deleteTarget?.label}”? This cannot be undone.
-            {deleteTarget?.kind === "plot point" && " Links to this plot point and its consequences will be removed, and logged actions will be unlinked."}
-            {deleteTarget?.kind === "consequence" && " Logged actions linked to this consequence will be unlinked."}
-            {deleteTarget?.kind === "player action" && " This action will be removed from the campaign log."}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)} disabled={saving}>Cancel</Button>
-          <Button color="error" startIcon={<DeleteOutlineIcon />} onClick={confirmDelete} disabled={saving}>
-            {saving ? "Deleting…" : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {campaignDialogs}
 
       <EntityDetailDrawer
         entityId={entityId}

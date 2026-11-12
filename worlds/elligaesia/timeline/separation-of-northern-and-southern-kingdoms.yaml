@@ -11,7 +11,10 @@ created: '2026-10-08T23:39:45.367490'
 updated: '2026-10-08T23:39:45.367495'
 era: Ancient Era
 date: null
-chronology_order: 400
+date_start: null
+date_end: null
+date_precision: unknown
+chronology_order: 300
 locations:
 - mountain-of-bane
 kingdoms: []
@@ -21,6 +24,8 @@ campaigns: []
 world_stories: []
 world_story_threads: []
 source_world_event_id: null
+event_links: []
+campaign_sources: []
 consequences:
 - The northern and southern regions are separated.
 - The Mountain of Bane becomes a major geographic boundary.

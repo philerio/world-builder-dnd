@@ -1,3 +1,4 @@
+import { createId } from "../utils/createId";
 import type { HTMLAttributes } from "react";
 import {
   Accordion,
@@ -25,6 +26,8 @@ import LocationCityIcon from "@mui/icons-material/LocationCity";
 import MapIcon from "@mui/icons-material/Map";
 import PlaceIcon from "@mui/icons-material/Place";
 import { type EntityFieldDefinition } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
+import { entityTypeLabel } from "../utils/entityNavigation";
 const ICON_OPTIONS = [
   { value: "location", label: "Location", icon: PlaceIcon },
   { value: "city", label: "City", icon: LocationCityIcon },
@@ -54,6 +57,7 @@ function EntityField({
   onChange,
   disabled,
 }: EntityFieldProps) {
+  const { getEntity } = useWorldData();
   const normalizeTags = (values: unknown[]): string[] => {
     const seen = new Set<string>();
     return values.flatMap((item) => {
@@ -102,7 +106,7 @@ function EntityField({
         <Typography variant="caption" color="text.secondary">
           {option.entity_type === "unknown"
             ? "Missing reference"
-            : option.entity_type.replaceAll("_", " ")}
+            : entityTypeLabel(option.entity_type, getEntity(option.id)?.entity)}
         </Typography>
       </Stack>
     </Box>
@@ -255,7 +259,7 @@ function EntityField({
 
         fields.forEach((childField) => {
           if (childField.generated) {
-            newItem[childField.name] = crypto.randomUUID();
+            newItem[childField.name] = createId();
           } else if (childField.type === "boolean") {
             newItem[childField.name] = false;
           } else if (

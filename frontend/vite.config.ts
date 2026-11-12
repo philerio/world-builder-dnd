@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig, type Plugin } from 'vite'
+import react from "@vitejs/plugin-react";
+import { defineConfig, type Plugin } from "vite";
 
 const networkInfoPlugin: Plugin = {
   name: "world-builder-network-info",
@@ -15,6 +15,8 @@ const networkInfoPlugin: Plugin = {
 export default defineConfig({
   plugins: [react(), networkInfoPlugin],
   server: {
+    // The normal start.sh / npm run dev path must also support phones on the LAN.
+    host: "0.0.0.0",
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8000",
@@ -24,6 +26,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled'],
+    dedupe: ["react", "react-dom", "@emotion/react", "@emotion/styled"],
   },
-})
+});

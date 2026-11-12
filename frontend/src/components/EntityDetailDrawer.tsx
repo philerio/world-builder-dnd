@@ -25,9 +25,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Tooltip,
+  Snackbar,
 } from "@mui/material";
 import { useEntityMaps } from "../hooks/useEntityMaps";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseIcon from "@mui/icons-material/Close";
 import MapIcon from "@mui/icons-material/Map";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -38,7 +40,6 @@ import PublicIcon from "@mui/icons-material/Public";
 import AutoAwesomeMotionIcon from "@mui/icons-material/AutoAwesomeMotion";
 import EntityForm from "./EntityForm";
 import type { CampaignStorySource, EntityResponse, EntitySummary } from "../types";
-import useEntityIndex from "../hooks/useEntityIndex";
 import useRelatedEntities from "../hooks/useRelatedEntities";
 import useEntityRelationships from "../hooks/useEntityRelationships";
 import { useWorldData } from "../context/WorldDataContext";
@@ -46,6 +47,15 @@ import formatStatusLabel from "../utils/formatStatusLabel";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import PoliticalLeadershipDetails from "./PoliticalLeadershipDetails";
+import CreateEntityDrawer from "./CreateEntityDrawer";
+import UnsavedChangesDialog from "./UnsavedChangesDialog";
+import useDraftProtection from "../hooks/useDraftProtection";
+import { draftKey, draftValuesEqual, mergeEntityDraft, readEntityDraft, removeEntityDraft } from "../utils/entityDrafts";
+import type { CreationContext } from "../utils/contextualCreation";
+import { ENTITY_FIELD_DEFINITIONS } from "../entityFieldDefinitions";
+import useDrawerViewport from "../hooks/useDrawerViewport";
+import EntityBreadcrumbs from "./EntityBreadcrumbs";
+import { entityTypeLabel } from "../utils/entityNavigation";
 
 type EntityDetailDrawerProps = {
   entityId: string | null;
@@ -55,6 +65,7 @@ type EntityDetailDrawerProps = {
   onBack: () => void;
   canGoBack: boolean;
   onOpenMap?: (id: string, entityId?: string, placeEntity?: boolean) => void;
+  overlayZIndex?: number;
 };
 
 const drawerWidth = 440;
@@ -67,29 +78,49 @@ function EntityDetailDrawer({
   onBack,
   canGoBack,
   onOpenMap,
+  overlayZIndex,
 }: EntityDetailDrawerProps) {
+  const viewport = useDrawerViewport();
   const [data, setData] = useState<EntityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
-  const { getEntity } = useEntityIndex();
   const {
     getEntity: getSharedEntity,
     loadEntity,
     updateEntity,
     deleteEntity,
+    worldData,
+    entities,
   } = useWorldData();
+  const getEntity = (id: string) => entities.find((entity) => entity.id === id);
+  const [editBase, setEditBase] = useState<Record<string, unknown>>({});
+  const [editStart, setEditStart] = useState<Record<string, unknown>>({});
+  const [editingEntityId, setEditingEntityId] = useState<string | null>(null);
+  const [recovered, setRecovered] = useState(false);
+  const [leaveAction, setLeaveAction] = useState<"close" | "cancel" | "back" | null>(null);
+  const [saveConflicts, setSaveConflicts] = useState<string[]>([]);
+  const [creationContext, setCreationContext] = useState<CreationContext | undefined>();
+  const [success, setSuccess] = useState<string | null>(null);
+  const storageKey = draftKey(worldData?.world?.id ?? worldData?.worlds?.[0]?.id ?? "default", `edit:${entityId}`);
+  const isDirty = isEditing && editingEntityId === entityId && !draftValuesEqual(editFormData, editStart);
+  const draftStatus = useDraftProtection({ key: storageKey, entityType: entities.find((entity) => entity.id === entityId)?.entity_type ?? "unknown", base: editBase, data: editFormData, active: open && isEditing && editingEntityId === entityId, dirty: isDirty });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   useEffect(() => {
     setIsEditing(false);
+    setEditingEntityId(null);
     setDeleteDialogOpen(false);
     setDeleteError(null);
+    setLeaveAction(null);
+    setSaveConflicts([]);
+    setCreationContext(undefined);
+    setSuccess(null);
   }, [entityId]);
   const sharedData = entityId ? getSharedEntity(entityId) : undefined;
-  const currentData = sharedData ?? data;
+  const currentData = sharedData ?? (data?.id === entityId ? data : null);
   const entityName =
     typeof currentData?.entity.name === "string"
       ? currentData.entity.name
@@ -116,11 +147,16 @@ function EntityDetailDrawer({
       delete nextFormData.ruler;
     }
 
-    setEditFormData(nextFormData);
+    const draft = readEntityDraft(storageKey);
+    setEditBase(draft?.base ?? currentData.entity);
+    setEditStart(nextFormData);
+    setEditFormData(draft?.data ?? nextFormData);
+    setRecovered(Boolean(draft));
+    setEditingEntityId(entityId);
     setIsEditing(true);
     setError(null);
   };
-  const handleSave = async () => {
+  const handleSave = async (allowedConflicts: string[] = []) => {
     if (!entityId) {
       return;
     }
@@ -129,13 +165,57 @@ function EntityDetailDrawer({
     setError(null);
 
     try {
-      await updateEntity(entityId, editFormData);
+      const latest = await loadEntity(entityId);
+      const merged = mergeEntityDraft(editBase, editFormData, latest.entity);
+      if (merged.conflicts.some((field) => !allowedConflicts.includes(field))) {
+        setSaveConflicts(merged.conflicts);
+        return;
+      }
+      await updateEntity(entityId, merged.entity, latest.entity_type === "map" ? latest.revision : undefined);
+      removeEntityDraft(storageKey);
       setIsEditing(false);
+      setSaveConflicts([]);
+      setSuccess("Changes saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes.");
     } finally {
       setSaving(false);
     }
+  };
+  const finishLeave = (discard: boolean) => {
+    if (discard) removeEntityDraft(storageKey);
+    const action = leaveAction;
+    setLeaveAction(null);
+    setIsEditing(false);
+    if (action === "close") onClose();
+    if (action === "back") onBack();
+  };
+  const requestLeave = (action: "close" | "cancel" | "back") => {
+    if (saving || deleting) return;
+    if (isDirty) { setLeaveAction(action); return; }
+    setIsEditing(false);
+    if (action === "close") onClose();
+    if (action === "back") onBack();
+  };
+  const createCapital = () => {
+    if (!currentData || !entityId) return;
+    const parentId = entityId;
+    const expectedCapital = currentData.entity.capital ?? null;
+    setCreationContext({
+      key: `capital:${parentId}`,
+      title: "Create capital city",
+      description: `Create a city in ${entityName} and set it as this ${currentData.entity.political_level === "nation" ? "nation" : "kingdom"}'s capital.`,
+      entityType: "city",
+      initialData: { kingdom: parentId },
+      allowedTypes: ["city"],
+      submitLabel: "Create and set capital",
+      link: async (city) => {
+        const latest = await loadEntity(parentId);
+        if (latest.entity.capital === city.id) return;
+        if ((latest.entity.capital ?? null) !== expectedCapital) throw new Error("The capital changed while this form was open. Your new city is saved; review the current capital before replacing it.");
+        await updateEntity(parentId, { ...latest.entity, capital: city.id });
+      },
+    });
   };
   const handleDelete = async () => {
     if (!entityId) return;
@@ -144,6 +224,7 @@ function EntityDetailDrawer({
     setDeleteError(null);
     try {
       await deleteEntity(entityId);
+      removeEntityDraft(storageKey);
       setDeleteDialogOpen(false);
       onClose();
     } catch (err) {
@@ -183,13 +264,16 @@ function EntityDetailDrawer({
   }, [entityId, loadEntity]);
 
   return (
+    <>
     <Drawer
       anchor="right"
       open={open}
-      onClose={onClose}
+      sx={overlayZIndex ? { zIndex: overlayZIndex } : undefined}
+      onClose={() => requestLeave("close")}
       slotProps={{
         paper: {
           sx: {
+            ...viewport,
             width: {
               xs: "100%",
               sm: drawerWidth,
@@ -198,7 +282,7 @@ function EntityDetailDrawer({
         },
       }}
     >
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, flex: 1, minHeight: 0, overflowY: "auto" }}>
         <Stack
           direction="row"
           sx={{
@@ -215,7 +299,7 @@ function EntityDetailDrawer({
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {canGoBack && (
-                <IconButton onClick={onBack} aria-label="Go back" size="small">
+                <IconButton onClick={() => requestLeave("back")} aria-label="Go back" size="small" disabled={saving || deleting}>
                   <ArrowBackIcon />
                 </IconButton>
               )}
@@ -246,9 +330,15 @@ function EntityDetailDrawer({
           </Stack>
         </Stack>
 
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <IconButton aria-label="Close entity details" onClick={() => requestLeave("close")} disabled={saving || deleting}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
         <Divider sx={{ my: 2 }} />
 
-        {!data && !error && (
+        {!currentData && !error && (
           <Stack
             sx={{
               alignItems: "center",
@@ -264,9 +354,14 @@ function EntityDetailDrawer({
           <Typography color="error">Could not load entity: {error}</Typography>
         )}
 
+        {!isEditing && currentData?.entity_type === "kingdom" && !currentData.entity.capital && (
+          <Button variant="outlined" startIcon={<LocationCityIcon />} onClick={createCapital} sx={{ mb: 2 }}>Create capital city</Button>
+        )}
+
         {currentData &&
           (isEditing ? (
             <>
+              {recovered && <Alert severity="info" sx={{ mb: 2 }}>Recovered your unfinished draft. Saving will check for newer changes to this record.</Alert>}
               <EntityForm
                 entityType={currentData.entity_type}
                 formData={editFormData}
@@ -274,43 +369,6 @@ function EntityDetailDrawer({
                 disabled={saving}
               />
 
-              <Box
-                sx={{
-                  position: "sticky",
-                  bottom: 0,
-                  mt: 3,
-                  pt: 2,
-                  pb: 2,
-                  backgroundColor: "background.paper",
-                  borderTop: 1,
-                  borderColor: "divider",
-                  zIndex: 1,
-                }}
-              >
-                <Stack
-                  direction="row"
-                  sx={{
-                    justifyContent: "flex-end",
-                    gap: 1,
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    onClick={() => setIsEditing(false)}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </Button>
-
-                  <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {saving ? "Saving…" : "Save Changes"}
-                  </Button>
-                </Stack>
-              </Box>
             </>
           ) : (
             <EntityContent
@@ -321,6 +379,17 @@ function EntityDetailDrawer({
             />
           ))}
       </Box>
+      {currentData && isEditing && (
+        <Box sx={{ px: 3, py: 2, flexShrink: 0, bgcolor: "background.paper", borderTop: 1, borderColor: "divider" }}>
+          {isDirty && <Typography role="status" variant="caption" color={draftStatus === "unavailable" ? "warning.main" : "text.secondary"} sx={{ display: "block", mb: 1 }}>
+            {draftStatus === "saved" ? "Draft kept in this browser. Not saved to your world yet." : draftStatus === "unavailable" ? "Browser draft storage is unavailable. Keep this form open until you save." : "Keeping your draft…"}
+          </Typography>}
+          <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={() => requestLeave("cancel")} disabled={saving}>Cancel</Button>
+            <Button variant="contained" onClick={() => void handleSave()} disabled={saving}>{saving ? "Saving…" : "Save changes"}</Button>
+          </Stack>
+        </Box>
+      )}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => {
@@ -353,6 +422,23 @@ function EntityDetailDrawer({
         </DialogActions>
       </Dialog>
     </Drawer>
+    <UnsavedChangesDialog open={leaveAction !== null} canKeepDraft={draftStatus === "saved"} onKeepEditing={() => setLeaveAction(null)} onKeepDraft={() => finishLeave(false)} onDiscard={() => finishLeave(true)} />
+    <Dialog open={saveConflicts.length > 0} onClose={() => !saving && setSaveConflicts([])} fullWidth maxWidth="sm">
+      <DialogTitle>This record has newer changes</DialogTitle>
+      <DialogContent>
+        <DialogContentText>Your draft and the saved record both changed these fields. You can keep editing, or apply your changes to these fields. Other saved fields will be preserved.</DialogContentText>
+        <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", mt: 2 }}>
+          {saveConflicts.map((field) => <Chip key={field} label={ENTITY_FIELD_DEFINITIONS[currentData?.entity_type ?? ""]?.find((definition) => definition.name === field)?.label ?? field.replaceAll("_", " ")} />)}
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setSaveConflicts([])} disabled={saving}>Keep editing</Button>
+        <Button onClick={() => void handleSave(saveConflicts)} disabled={saving} variant="contained">{saving ? "Saving…" : "Apply my changes"}</Button>
+      </DialogActions>
+    </Dialog>
+    <CreateEntityDrawer overlayZIndex={overlayZIndex} open={Boolean(creationContext)} context={creationContext} onClose={() => setCreationContext(undefined)} onCreated={() => { setCreationContext(undefined); setSuccess("Capital city created and linked."); }} />
+    <Snackbar open={Boolean(success)} autoHideDuration={4500} onClose={() => setSuccess(null)}><Alert severity="success" onClose={() => setSuccess(null)}>{success}</Alert></Snackbar>
+    </>
   );
 }
 
@@ -436,6 +522,7 @@ function EntityContent({
   return (
     <Stack spacing={3}>
       <Box>
+        <EntityBreadcrumbs record={data} onOpenEntity={onOpenEntity} />
         <Typography
           variant="caption"
           color="primary"
@@ -444,11 +531,7 @@ function EntityContent({
             letterSpacing: "0.1em",
           }}
         >
-          {data.entity_type === "kingdom" && data.entity.political_level === "nation"
-            ? "Nation"
-            : data.entity_type === "kingdom"
-              ? "Kingdom"
-              : formatEntityType(data.entity_type)}
+          {entityTypeLabel(data.entity_type, data.entity)}
         </Typography>
 
         <Typography variant="h2" sx={{ mt: 0.5 }}>
@@ -616,6 +699,7 @@ function EntityConnectionGroup({
   entities: EntitySummary[];
   onOpenEntity?: (id: string) => void;
 }) {
+  const { getEntity } = useWorldData();
   if (entities.length === 0) return null;
 
   return (
@@ -625,7 +709,7 @@ function EntityConnectionGroup({
       </Typography>
       <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, mt: 0.75 }}>
         {entities.map((entity) => (
-          <Tooltip key={entity.id} title={formatEntityType(entity.entity_type)}>
+          <Tooltip key={entity.id} title={entityTypeLabel(entity.entity_type, getEntity(entity.id)?.entity)}>
             <Chip
               label={entity.name}
               size="small"
@@ -1999,9 +2083,6 @@ function formatValue(value: unknown): string {
   return "";
 }
 
-function formatEntityType(type: string): string {
-  return type === "kingdom" ? "Kingdom or Nation" : type.replaceAll("_", " ");
-}
 function getStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];

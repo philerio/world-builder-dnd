@@ -9,7 +9,10 @@ created: '2026-10-08T23:39:45.339252'
 updated: '2026-10-08T23:39:45.339257'
 era: Ancient Era
 date: null
-chronology_order: 300
+date_start: null
+date_end: null
+date_precision: unknown
+chronology_order: 400
 locations: []
 kingdoms: []
 characters: []
@@ -17,6 +20,8 @@ campaigns: []
 world_stories: []
 world_story_threads: []
 source_world_event_id: null
+event_links: []
+campaign_sources: []
 consequences:
 - The Dwarmar civilization falls.
 - The Power Sources become remnants of a lost civilization.

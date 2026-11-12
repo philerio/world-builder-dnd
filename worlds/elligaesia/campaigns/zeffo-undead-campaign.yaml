@@ -267,7 +267,52 @@ story:
   - encounter: null
     id: opening-zeffo-undead-sightings
     name: Zeffo Undead
-    description: Rumors have spread of undead appearing in the woods of Zeffo.
+    description: Rumors have spread of undead appearing in the woods of Zeffo. The
+      Council has asked for the help of the adventurers to check it out.
+    scene_script:
+    - id: 9d077567-dec7-421d-a683-68f35d75721c
+      kind: narration
+      text: "The Kingdom of Elligaesia is going through a rough time. The various\
+        \ nations of the land are experiencing problem after problem. Monsters are\
+        \ awakening throughout the land that many thought had gone extinct. \nA mysterious\
+        \ island has appeared off the coast of  Teth and Umbara that has sparked tensions\
+        \ between the 2 nations. Each wanting to claim it for their own. \nThe ruling\
+        \ family of Serenno has been assasinated, and now a civil war is brewing due\
+        \ to 2 powerful families wanting to take the throne.\nWith all the political\
+        \ turmoil the ruling Council of the kingdom has decided to hire adventures\
+        \ to tackle the awakening of monsters throughout the land. \nThey have asked\
+        \ adventures to travel to Citadel City in order to get their assignments. "
+      speaker: null
+    - id: 0e7f2e8f-e3cd-49e2-9893-b092ddc5d62a
+      kind: narration
+      text: The party answering the call find themselves in the castle of the city.
+        They are lead to the great banquet hall where many other adventurers are found.  After
+        introductions, the steward to the king will bring the adventurers to the great
+        Council chamber
+      speaker: null
+    - id: 0a731fb0-f8da-4538-bcc3-02e22635a057
+      kind: narration
+      text: 'The Great Council chamber consists of a large throne with 4 smaller thrones
+        on either side. The thrones are in a  curved line with the largest in the
+        center. Each throne bares the crest of each ruling family. All but one throne
+        is occupied. '
+      speaker: null
+    - id: 6c5a38d1-83a7-48e3-8c71-a8a9f0f97bbc
+      kind: dialogue
+      text: "Welcome to the great Council hall. I, as you may know, am your King.\
+        \ Krennic first of his name. We welcome you adventurers in our time of need.\
+        \ Never before has our kingdom faced this many threats to our daily lives\
+        \ as now. You are amongst some of the bravest adventures to be welcomed into\
+        \ this hall. Not many have been given such an honor to appear before this\
+        \ council. We have a dangerous job for you that we feel only you can accomplish.\
+        \ \n(Calls for his squire bring him the task, which is in a scroll)\nWe ask\
+        \ you to travel to the town of Zeffo in the North-East region of Nevarro.\
+        \ There we ask you to help investigate the stories of undead appearing in\
+        \ the area. Not much information has been given to us other than the captain\
+        \ of the guard has request help numerous times in the past month. Go now adventurers\
+        \ and rid those lands of undead. A great reward will be given if you accomplish\
+        \ your task.  "
+      speaker: Krennic
     description_content:
       nodes:
       - type: text
@@ -276,9 +321,8 @@ story:
         text: woods of Zeffo
         entity_id: the-woods-of-zeffo-location
       - type: text
-        text: '.
-
-          '
+        text: ". The Council has asked for the help of the adventurers to check it\
+          \ out. \n"
     events_content: null
     triggers_content: null
     possible_approaches_content: null
@@ -286,7 +330,9 @@ story:
     act: null
     order: 0
     triggers: []
-    events: null
+    events: 'Party is introduced to the Council
+
+      Party is given job to investigate the Undead'
     secrets: []
     possible_approaches: []
     checks: []
@@ -325,6 +371,7 @@ story:
     description: The party is traveling along a forest road when they hear a scream.
       A merchant's wagon has overturned, and a figure is struggling to pull someone
       from beneath it.
+    scene_script: []
     description_content: null
     events_content:
       nodes:
@@ -503,6 +550,7 @@ story:
       green-glowing eyes. Captain Ressa Thorn is struggling to maintain order while
       villagers disagree about the cause of the disturbances. The party can speak
       with residents, investigate recent incidents, or offer to help protect the settlement.
+    scene_script: []
     description_content: null
     events_content:
       nodes:
@@ -810,6 +858,7 @@ story:
       from within, and witnesses describe corpses with faintly glowing green eyes
       wandering toward the northern forest. The investigation offers evidence that
       the undead are rising without a visible necromancer directing them.
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1030,6 +1079,7 @@ story:
       alive because a rechargeable green Dwarmar stone is temporarily sustaining her.
       Edrin hopes an ancient golem could provide temporary life support and gradually
       heal her enough to live outside it; he does not want to imprison her permanently.'
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1220,6 +1270,7 @@ story:
       toward the northern forest. When he fails to return, the party can track his
       route, find evidence of a concealed ancient complex, and decide whether to rescue
       him before continuing.
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1327,6 +1378,7 @@ story:
       an ancient undead soldier whose armor and fittings resemble Dwarmar work. The
       site provides a physical route toward the ruins without making the soldier a
       deliberate guard or messenger.
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1414,6 +1466,7 @@ story:
       and leads to an explorable network of halls, optional chambers, and machinery.
       Edrin's original collapsed tunnel and concealed surface service route exist
       but do not bypass the intended initial dungeon exploration.
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1507,6 +1560,7 @@ story:
       broken equipment, and connecting passages leading toward the testing arena and
       Bane stone. Optional rooms can hold solitary undead, environmental clues, debris,
       resources, or nothing at all.'
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1641,6 +1695,7 @@ story:
       a resetting drop trap: undead approach a green lure stone, fall into the arena,
       and remain alive below. A separate rear maintenance passage allows Edrin to
       recharge and replace the lure stone without entering the trap.'
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1773,6 +1828,7 @@ story:
       iron golem can support Mira''s failing body while the artifact gradually repairs
       her illness, allowing her to leave the machine once cured. His trials on trapped
       undead restore some tissue but neither revive them nor fully power the golem.'
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -1913,6 +1969,7 @@ story:
       conducting a desperate treatment experiment when the party reaches him. Negotiation,
       containment, and withdrawal remain possible; if pushed beyond his limits he
       may enter the golem as an untested living host.
+    scene_script: []
     description_content:
       nodes:
       - type: text
@@ -2246,6 +2303,7 @@ story:
     description: The party returns to Zeffo after the confrontation and sees how the
       condition of the Bane stone, the remaining undead, and Edrin's fate affect the
       town. This is a short wrap-up scene, not a required new adventure.
+    scene_script: []
     description_content: null
     events_content: null
     triggers_content: null
@@ -2344,8 +2402,9 @@ story:
     - bane-overarching-story
     - northern-elligaesia-s-turmoil-world-story
     world_story_threads: []
-  current_beat: c1dcbe0b-8394-4fd7-8375-c80f784e43f9
+  current_beat: opening-zeffo-undead-sightings
   player_actions: []
+  session_entries: []
   session_recaps: []
   session_preps: []
   world_clocks:

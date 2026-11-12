@@ -410,6 +410,7 @@ export type WorldStory = {
 };
 
 export type EntityResponse = {
+  revision?: string;
   id: string;
   entity_type: string;
   entity: Record<string, unknown>;
@@ -434,6 +435,7 @@ export const ENTITY_TYPES = [
 ];
 
 export type EntityData = {
+  revision?: string;
   id: string;
   entity_type: string;
   entity: Record<string, unknown>;
@@ -489,6 +491,13 @@ export type StoryContentNode =
   | { type: "entity_link"; text: string; entity_id: string };
 
 export type StoryContent = { nodes: StoryContentNode[] };
+
+export type SceneScriptBlock = {
+  id: string;
+  kind: "narration" | "dialogue" | "dm_note";
+  text: string;
+  speaker?: string;
+};
 
 export type StoryBeatCheck = {
   id: string;
@@ -548,6 +557,7 @@ export type StoryBeat = {
   id: string;
   name: string;
   description?: string;
+  scene_script?: SceneScriptBlock[];
   description_content?: StoryContent;
   events_content?: StoryContent;
   triggers_content?: StoryContent;
@@ -673,11 +683,26 @@ export type SessionPrep = {
   reference_ids: string[];
 };
 
+export type SessionEntry = {
+  id: string;
+  kind: "dm_note" | "npc_action" | "world_change" | "follow_up";
+  description: string;
+  session: number;
+  story_beat?: string;
+  npc_ids?: string[];
+  source_action_id?: string;
+  source_entry_id?: string;
+  consequence_ids?: string[];
+  resolved?: boolean;
+  recorded_at?: string;
+};
+
 export type CampaignStory = {
   combat_results?: CombatResult[];
   beats: StoryBeat[];
   current_beat?: string;
   player_actions: PlayerAction[];
+  session_entries?: SessionEntry[];
   session_recaps?: SessionRecap[];
   session_preps?: SessionPrep[];
   world_clocks: WorldClock[];

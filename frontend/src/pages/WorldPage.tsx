@@ -18,6 +18,7 @@ import CastleIcon from "@mui/icons-material/Castle";
 import PlaceIcon from "@mui/icons-material/Place";
 
 import EntityDetailDrawer from "../components/EntityDetailDrawer";
+import KingdomHierarchy from "../components/KingdomHierarchy";
 
 import type { WorldData } from "../types";
 
@@ -116,6 +117,15 @@ function WorldPage({ data }: WorldPageProps) {
             </Box>
 
             <Box sx={{ p: { xs: 3, md: 5 } }}>
+                <WorldSection
+                    title="Political hierarchy"
+                    description="Kingdoms branch into their nations. Open any name for details, or expand council and leadership to see political offices and reporting relationships."
+                >
+                    <KingdomHierarchy data={data} onOpenEntity={openEntity} />
+                </WorldSection>
+
+                <Divider sx={{ my: 5 }} />
+
                 <WorldSection
                     title="Continents"
                     description="Major landmasses within the world."

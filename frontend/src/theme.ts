@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import { viewportDropdownModifier } from "./utils/viewportDropdown";
 
 const theme = createTheme({
     palette: {
@@ -74,6 +75,20 @@ const theme = createTheme({
     },
 
     components: {
+        MuiAutocomplete: {
+            defaultProps: {
+                slotProps: {
+                    popper: { modifiers: [viewportDropdownModifier] },
+                },
+            },
+            styleOverrides: {
+                listbox: {
+                    maxHeight: "var(--world-builder-options-height, 40vh)",
+                    overflowY: "auto",
+                    overscrollBehavior: "contain",
+                },
+            },
+        },
         MuiCard: {
             styleOverrides: {
                 root: {

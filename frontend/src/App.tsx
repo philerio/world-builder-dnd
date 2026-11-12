@@ -4,8 +4,10 @@ import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import {
   Alert,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   AppBar,
-  Autocomplete,
   Badge,
   Box,
   Button,
@@ -23,7 +25,6 @@ import {
   ListItemText,
   IconButton,
   Stack,
-  TextField,
   Toolbar,
   Typography,
   useMediaQuery,
@@ -46,6 +47,10 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import NoteAltIcon from "@mui/icons-material/NoteAlt";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import MenuIcon from "@mui/icons-material/Menu";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import HomeSessionDashboard from "./components/HomeSessionDashboard";
+import WorldSearchDialog from "./components/WorldSearchDialog";
+import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import WifiIcon from "@mui/icons-material/Wifi";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -69,7 +74,6 @@ import WorldStoryDashboardPage from "./pages/WorldStoryDashboardPage";
 import EntityDetailDrawer from "./components/EntityDetailDrawer";
 import useEntityDrawer from "./hooks/useEntityDrawer";
 import { useWorldData } from "./context/WorldDataContext";
-import type { EntitySummary } from "./types";
 import DataHealthPage from "./pages/DataHealthPage";
 import DMScratchpadPage from "./pages/DMScratchpadPage";
 import StorePage from "./pages/StorePage";
@@ -165,6 +169,7 @@ const navigation = [
 function Sidebar({ onNewEntity, onSearch, onNetworkAccess, healthCounts, mobile = false, mobileOpen = false, onMobileClose }: SidebarProps) {
   return (
     <Drawer
+      data-app-chrome="navigation"
       variant={mobile ? "temporary" : "permanent"}
       open={mobile ? mobileOpen : undefined}
       onClose={onMobileClose}
@@ -201,6 +206,11 @@ function Sidebar({ onNewEntity, onSearch, onNetworkAccess, healthCounts, mobile 
             </Typography>
           </Box>
         </Stack>
+        {mobile && (
+          <IconButton aria-label="Close navigation" onClick={onMobileClose} sx={{ ml: "auto" }}>
+            <CloseIcon />
+          </IconButton>
+        )}
       </Toolbar>
 
       <Divider />
@@ -435,7 +445,7 @@ function PagePlaceholder({ title }: { title: string }) {
   );
 }
 
-function Dashboard({ data }: { data: WorldData }) {
+function Dashboard({ data, onOpenEntity }: { data: WorldData; onOpenEntity: (id: string) => void }) {
   const world = data.world ?? data.worlds?.[0];
 
   if (!world) {
@@ -561,7 +571,10 @@ function Dashboard({ data }: { data: WorldData }) {
       </Box>
 
       <Box sx={{ p: { xs: 3, md: 5 } }}>
-        <Typography variant="h2">World Overview</Typography>
+        <HomeSessionDashboard data={data} onOpenEntity={onOpenEntity} />
+        <Accordion sx={{ mt: 4 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography variant="h2">World overview</Typography></AccordionSummary>
+          <AccordionDetails>
 
         <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>
           Your campaign world at a glance.
@@ -599,6 +612,8 @@ function Dashboard({ data }: { data: WorldData }) {
             </Card>
           ))}
         </Box>
+          </AccordionDetails>
+        </Accordion>
       </Box>
     </Box>
   );
@@ -613,7 +628,6 @@ function AppContent() {
   const [healthCounts, setHealthCounts] = useState<{ errors: number; warnings: number } | null>(null);
   const {
     entities,
-    entitiesLoading,
     refreshEntities,
     refreshWorldData,
     loadEntity,
@@ -704,48 +718,14 @@ function AppContent() {
       <CreateEntityDrawer
         open={createDrawerOpen}
         onClose={() => setCreateDrawerOpen(false)}
-        onCreated={(_entityId, keepOpen) => {
-          if (!keepOpen) setCreateDrawerOpen(false);
+        onCreated={(createdId, keepOpen) => {
+          if (!keepOpen) {
+            setCreateDrawerOpen(false);
+            openEntity(createdId);
+          }
         }}
       />
-      <Dialog open={searchOpen} onClose={() => setSearchOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Search the world</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          <Autocomplete
-            autoHighlight
-            options={entities}
-            groupBy={(entity) => entity.entity_type.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}
-            getOptionLabel={(entity) => entity.name}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            loading={entitiesLoading}
-            noOptionsText={entitiesLoading ? "Loading world records…" : "No matching records"}
-            onChange={(_event, selected: EntitySummary | null) => {
-              if (!selected) return;
-              setSearchOpen(false);
-              openEntity(selected.id);
-            }}
-            renderOption={(props, entity) => {
-              const { key, ...optionProps } = props;
-              return (
-                <Box component="li" key={key} {...optionProps}>
-                  <Stack sx={{ minWidth: 0 }}>
-                    <Typography variant="body2">{entity.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {entity.entity_type.replaceAll("_", " ")}
-                    </Typography>
-                  </Stack>
-                </Box>
-              );
-            }}
-            renderInput={(params) => (
-              <TextField {...params} autoFocus label="Find a record" placeholder="Search by name" />
-            )}
-          />
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-            Tip: press Ctrl+K or ⌘K from anywhere to open search.
-          </Typography>
-        </DialogContent>
-      </Dialog>
+      {searchOpen && <WorldSearchDialog open onClose={() => setSearchOpen(false)} onOpenEntity={openEntity} />}
       {networkDialogOpen ? <NetworkAccessDialog open onClose={() => setNetworkDialogOpen(false)} /> : null}
       <EntityDetailDrawer
         entityId={entityId}
@@ -764,7 +744,7 @@ function AppContent() {
         }}
       >
         {mobileLayout && (
-          <AppBar position="sticky" color="default" elevation={1} sx={{ mb: 2, mx: -1.5, width: "calc(100% + 24px)" }}>
+          <AppBar data-app-chrome="header" position="sticky" color="default" elevation={1} sx={{ mb: 2, mx: -1.5, width: "calc(100% + 24px)" }}>
             <Toolbar variant="dense" sx={{ minHeight: 56, gap: 1 }}>
               <IconButton aria-label="Open navigation" onClick={() => setMobileMenuOpen(true)} edge="start">
                 <MenuIcon />
@@ -785,7 +765,7 @@ function AppContent() {
           </AppBar>
         )}
         <Routes>
-          <Route path="/" element={<Dashboard data={data} />} />
+          <Route path="/" element={<Dashboard data={data} onOpenEntity={openEntity} />} />
           <Route path="/world-map" element={<WorldMapPage />} />
           <Route path="/world" element={<WorldPage data={data} />} />
           <Route path="/locations" element={<LocationsPage />} />

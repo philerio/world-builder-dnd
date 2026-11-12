@@ -1,5 +1,4 @@
 import { Stack } from "@mui/material";
-import { useEntities } from "../hooks/useEntities";
 import { ENTITY_FIELD_DEFINITIONS } from "../entityFieldDefinitions";
 import { useWorldData } from "../context/WorldDataContext";
 import EntityField from "./EntityField";
@@ -18,8 +17,7 @@ function EntityForm({
   onChange,
   disabled = false,
 }: EntityFormProps) {
-  const { entities } = useEntities();
-  const { worldData } = useWorldData();
+  const { worldData, entities } = useWorldData();
 
   const fields = ENTITY_FIELD_DEFINITIONS[entityType] ?? [];
 

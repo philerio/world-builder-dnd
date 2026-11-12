@@ -3,11 +3,13 @@ name: Scarif
 tags: []
 description: An Elligaesian nation governed by an elected official.
 ruler: krennic
-capital: null
+capital: scarif-citadel-city
 continent: elligaesia
 government_type: Elected leadership
 government_notes: This nation governs independently and coordinates with the other Elligaesian nations
   on trade and shared policies.
+  Krennic also serves as High Ruler of Northern Elligaesia's ruling council. Citadel City is Scarif's
+  capital and the current capital of Northern Elligaesia because Scarif is the High Ruler's nation.
 leadership:
 - id: scarif-elected-official
   title: Elected Official

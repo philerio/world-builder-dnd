@@ -1,10 +1,17 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, TextField, Typography } from "@mui/material";
-import type { MapMarker } from "../types";
+import { useEffect, useEffectEvent, useState } from "react";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Stack, TextField, Typography, MenuItem, useMediaQuery } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import type { MapMarker, MapLayer } from "../types";
 import { useWorldData } from "../context/WorldDataContext";
 import EntityField from "./EntityField";
 import { ENTITY_FIELD_DEFINITIONS } from "../entityFieldDefinitions";
+import CreateEntityDrawer from "./CreateEntityDrawer";
+import type { CreationContext } from "../utils/contextualCreation";
+import useDrawerViewport from "../hooks/useDrawerViewport";
+import type { MarkerStyles } from "../hooks/useMarkerStyles";
+import { applyMarkerStyle, markerKind } from "../utils/markerStyles";
+import { MarkerStylePicker, SaveMarkerStyleButton } from "./MarkerStyles";
 
 type MarkerDrawerProps = {
   open: boolean;
@@ -15,6 +22,14 @@ type MarkerDrawerProps = {
   onDelete?: (markerId: string) => Promise<void>;
   onStartDrawing?: (type: "area" | "path", marker?: MapMarker) => void;
   onEditShape?: (markerId: string) => void;
+  mapEntityId?: string | null;
+  layers?: MapLayer[];
+  unavailableLayers?: string[];
+  onOpenEntity?: (id: string) => void;
+  onOpenMap?: (id: string) => void;
+  onDraftChange?: (marker: MapMarker | null) => void;
+  styles?: MarkerStyles;
+  fullScreen?: boolean;
 };
 
 function MarkerDrawer({
@@ -26,14 +41,27 @@ function MarkerDrawer({
   onDelete,
   onStartDrawing,
   onEditShape,
+  mapEntityId,
+  layers = [],
+  unavailableLayers = [],
+  onOpenEntity,
+  onOpenMap,
+  onDraftChange,
+  styles,
+  fullScreen = false,
 }: MarkerDrawerProps) {
+  const viewport = useDrawerViewport();
+  const mobile = useMediaQuery("(max-width: 899px)");
+  const [collapsed, setCollapsed] = useState(false);
   const [formData, setFormData] = useState<MapMarker | null>(marker);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const { entities } = useWorldData();
+  const [creationContext, setCreationContext] = useState<CreationContext | undefined>();
+  const [createdPlace, setCreatedPlace] = useState(false);
+  const { entities, getEntity } = useWorldData();
   const markerDefinition = ENTITY_FIELD_DEFINITIONS.map.find(
     (field) => field.name === "markers",
   );
@@ -53,7 +81,6 @@ function MarkerDrawer({
 
     if (
       field.name === "points" ||
-      field.name === "fill_color" ||
       field.name === "fill_opacity"
     ) {
       return markerType === "area" || markerType === "path";
@@ -69,19 +96,64 @@ function MarkerDrawer({
 
     return true;
   });
+  const markerForReset = useEffectEvent(() => marker);
   useEffect(() => {
-    setFormData(marker);
+    setFormData(markerForReset());
     setError(null);
     setDiscardOpen(false);
     setDeleteOpen(false);
-  }, [marker]);
+    setCreationContext(undefined);
+    setCreatedPlace(false);
+    setCollapsed(false);
+  }, [marker?.id]);
+  // Live dragging updates geometry without wiping unapplied text/property changes.
+  const currentX = marker?.x, currentY = marker?.y, currentPoints = marker?.points;
+  useEffect(() => {
+    if (currentX !== undefined && currentY !== undefined) setFormData((current) => current ? { ...current, x: currentX, y: currentY, points: currentPoints } : current);
+  }, [currentX, currentY, currentPoints]);
   const isDirty = Boolean(marker && formData && JSON.stringify(marker) !== JSON.stringify(formData));
+  useEffect(() => { onDraftChange?.(open && isDirty ? formData : null); }, [open, isDirty, formData, onDraftChange]);
+  useEffect(() => () => onDraftChange?.(null), [onDraftChange]);
+  useEffect(() => {
+    if (!open || !isDirty) return;
+    const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", protect);
+    return () => window.removeEventListener("beforeunload", protect);
+  }, [open, isDirty]);
   const requestClose = () => {
+    if (saving || deleting) return;
     if (isDirty) {
       setDiscardOpen(true);
       return;
     }
     onClose();
+  };
+  const createPlace = () => {
+    if (!formData) return;
+    const parent = mapEntityId ? getEntity(mapEntityId) : undefined;
+    const defaults: Record<string, unknown> = {};
+    if (parent?.entity_type === "kingdom") defaults.kingdom = parent.id;
+    if (parent?.entity_type === "region") defaults.region = parent.id;
+    if (typeof parent?.entity.kingdom === "string") defaults.kingdom = parent.entity.kingdom;
+    if (typeof parent?.entity.region === "string") defaults.region = parent.entity.region;
+    if (formData.label?.trim() && !["New marker", "New area", "New path"].includes(formData.label)) defaults.name = formData.label;
+    setCreationContext({
+      key: `marker:${formData.id}`,
+      title: "Create a place for this marker",
+      description: "Create a city or location and select it here. Apply to the map, then save the map to keep the link.",
+      entityType: "location",
+      allowedTypes: ["location", "city"],
+      initialData: defaults,
+      submitLabel: "Create and select",
+      link: async (entity) => {
+        setFormData((current) => current ? {
+          ...current,
+          entity_id: entity.id,
+          label: !current.label?.trim() || ["New marker", "New area", "New path"].includes(current.label) ? String(entity.entity.name) : current.label,
+        } : current);
+        setCreatedPlace(true);
+      },
+    });
   };
   const updateField = (fieldName: string, value: unknown) => {
     setFormData((current) => {
@@ -97,11 +169,17 @@ function MarkerDrawer({
   };
   return (
     <>
-    <Drawer anchor="right" open={open} onClose={requestClose}>
-      <Box sx={{ width: { xs: "min(100vw, 440px)", sm: 460 }, p: 3, boxSizing: "border-box", minHeight: "100%" }}>
+    <Drawer variant="persistent" anchor={mobile ? "bottom" : "right"} open={open} onClose={requestClose} slotProps={{ paper: { role: "region", "aria-label": "Marker properties", sx: { ...viewport, top: (viewport.top ?? 0) + 80, height: Math.max(80, (viewport.height ?? window.innerHeight) - 80), zIndex: fullScreen ? 1290 : 1180, width: mobile ? "100%" : 400, ...(mobile ? { top: "auto", bottom: Math.max(0, window.innerHeight - ((viewport.top ?? 0) + (viewport.height ?? window.innerHeight))), height: collapsed ? 64 : Math.min(viewport.height ?? window.innerHeight, Math.max(220, (viewport.height ?? window.innerHeight) * 0.55), 520), maxHeight: "100%" } : {}) } } }}>
+      <Box sx={{ px: 3, py: 1, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography variant="subtitle2">Marker properties</Typography>
+        <Stack direction="row">{mobile && <Button size="small" onClick={() => setCollapsed(!collapsed)}>{collapsed ? "Expand" : "Collapse"}</Button>}<IconButton aria-label="Close marker editor" onClick={requestClose} disabled={saving || deleting}><CloseIcon /></IconButton></Stack>
+      </Box>
+      {!collapsed && <><Box sx={{ p: 3, pt: 1, boxSizing: "border-box", flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
         <Typography variant="overline" color="text.secondary">
           {mode === "create" ? "CREATE" : "EDITING"}
         </Typography>
+        </Stack>
 
         <Typography variant="h5" sx={{ mb: 3 }}>
           {markerType === "point" ? "Point Marker" : markerType === "area" ? "Area Marker" : "Path Marker"}
@@ -114,7 +192,7 @@ function MarkerDrawer({
             </Typography>
             {markerType === "point" && mode === "edit" && (
               <Typography variant="caption" color="text.secondary">
-                Drag this marker on the map to move it; its position saves immediately.
+                Drag this marker on the map to adjust its position. Apply property changes below, then save the map.
               </Typography>
             )}
             {(markerType === "area" || markerType === "path") && mode === "create" && (
@@ -123,19 +201,37 @@ function MarkerDrawer({
               </Typography>
             )}
             <Stack spacing={2}>
+              {styles && formData && <>
+                <MarkerStylePicker styles={styles} kind={markerKind(formData)} disabled={saving || deleting} onSelect={(style) => setFormData((current) => current ? applyMarkerStyle(current, style) : current)} />
+                <SaveMarkerStyleButton styles={styles} marker={formData} disabled={saving || deleting} />
+                {styles.warning && <Alert severity="warning">{styles.warning}</Alert>}
+              </>}
+              <TextField select label="Layer" size="small" value={formData?.layer_id ?? ""} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }} disabled={saving || deleting} onChange={(event) => updateField("layer_id", event.target.value || null)}>
+                <MenuItem value="">Unassigned</MenuItem>
+                {layers.map((layer) => <MenuItem key={layer.id} value={layer.id} disabled={unavailableLayers.includes(layer.id) && layer.id !== marker?.layer_id}>{layer.name}</MenuItem>)}
+              </TextField>
+              {(formData?.entity_id || formData?.linked_map) && <Stack direction="row" spacing={1}>
+                {formData.entity_id && <Button size="small" onClick={() => onOpenEntity?.(formData.entity_id!)}>Open linked record</Button>}
+                {formData.linked_map && <Button size="small" onClick={() => onOpenMap?.(formData.linked_map!)}>Open linked map</Button>}
+              </Stack>}
               {formData &&
                 visibleMarkerFields.map((field) => (
+                  <Box key={field.name}>
                   <EntityField
-                    key={field.name}
                     field={field}
                     value={formData[field.name as keyof MapMarker]}
                     onChange={(value) => {
                       updateField(field.name as keyof MapMarker, value);
                     }}
                     entities={entities}
-                    disabled={false}
+                    disabled={saving || deleting || field.name === "id"}
                   />
+                  {field.name === "entity_id" && !formData.entity_id && (
+                    <Button size="small" variant="outlined" onClick={createPlace} disabled={saving || deleting} sx={{ mt: 1 }}>Create a city or location</Button>
+                  )}
+                  </Box>
                 ))}
+              {createdPlace && <Alert severity="success">Place created and selected. Apply to map, then save the map to keep the link. The place remains in your world if you discard this marker.</Alert>}
               {formData?.icon_image && markerType === "point" && (
                 <TextField
                   label="Building footprint size (map units)"
@@ -208,7 +304,11 @@ function MarkerDrawer({
                 Delete Marker
               </Button>
             )}
-            <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
+          </Stack>
+        )}
+      </Box>
+      {marker && (
+            <Stack direction="row" spacing={2} sx={{ px: 3, py: 2, flexShrink: 0, borderTop: 1, borderColor: "divider", bgcolor: "background.paper" }}>
               <Button
                 variant="contained"
                 onClick={async () => {
@@ -225,16 +325,15 @@ function MarkerDrawer({
                 }}
                 disabled={!formData || saving || deleting}
               >
-                {saving ? "Saving…" : "Save Details"}
+                {saving ? "Applying…" : "Apply to map"}
               </Button>
 
               <Button variant="outlined" onClick={requestClose} disabled={saving || deleting}>
                 Cancel
               </Button>
             </Stack>
-          </Stack>
-        )}
-      </Box>
+      )}
+      </>}
     </Drawer>
     <Dialog open={discardOpen} onClose={() => setDiscardOpen(false)}>
       <DialogTitle>Discard marker changes?</DialogTitle>
@@ -266,6 +365,7 @@ function MarkerDrawer({
         </Button>
       </DialogActions>
     </Dialog>
+    <CreateEntityDrawer overlayZIndex={fullScreen ? 1295 : undefined} open={Boolean(creationContext)} context={creationContext} onClose={() => setCreationContext(undefined)} onCreated={() => setCreationContext(undefined)} />
     </>
   );
 }

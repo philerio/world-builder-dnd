@@ -2,8 +2,10 @@ import { API_BASE_URL } from "../api";
 import { useEffect, useState } from "react";
 
 import type { EntitySummary } from "../types";
+import { useWorldData } from "../context/WorldDataContext";
 
 function useRelatedEntities(entityId: string | null) {
+    const { worldData } = useWorldData();
     const [result, setResult] = useState<{
         entityId: string;
         entities: EntitySummary[];
@@ -38,7 +40,7 @@ function useRelatedEntities(entityId: string | null) {
         return () => {
             cancelled = true;
         };
-    }, [entityId]);
+    }, [entityId, worldData]);
 
     const isCurrentResult = entityId !== null && result?.entityId === entityId;
 

@@ -1,6 +1,7 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
 from worldbuilder.models.combat import CombatEncounter, CombatResult
 
 
@@ -81,8 +82,20 @@ class StoryBeatCheck(BaseModel):
     name: str
     category: Literal["notice", "approach", "obstacle"] = "notice"
     description: str | None = None
-    roll_type: Literal["skill_check", "ability_check", "saving_throw", "passive", "contested"] = "skill_check"
-    ability: Literal["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] | None = None
+    roll_type: Literal[
+        "skill_check", "ability_check", "saving_throw", "passive", "contested"
+    ] = "skill_check"
+    ability: (
+        Literal[
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma",
+        ]
+        | None
+    ) = None
     skill: str | None = None
     dc: int | None = Field(default=None, ge=1, le=40)
     success: str | None = None
@@ -100,12 +113,35 @@ class StoryBeatNpcKnowledge(BaseModel):
     check: StoryBeatCheck | None = None
 
 
+class SceneScriptBlock(BaseModel):
+    """One authored paragraph, line of dialogue, or private scene reminder."""
+
+    id: str = Field(min_length=1)
+    kind: Literal["narration", "dialogue", "dm_note"] = "narration"
+    text: str = ""
+    speaker: str | None = None
+
+
 class StoryBeat(BaseModel):
     encounter: CombatEncounter | None = None
     id: str
     name: str
 
     description: str | None = None
+
+    # Optional ordered scene prose; separate from summaries, checks and outcomes.
+    scene_script: list[SceneScriptBlock] = Field(default_factory=list)
+
+    @field_validator("scene_script")
+    @classmethod
+    def unique_script_ids(
+        cls, blocks: list[SceneScriptBlock]
+    ) -> list[SceneScriptBlock]:
+        if len({block.id for block in blocks}) != len(blocks):
+            raise ValueError(
+                "Scene script block IDs must be unique within a plot point."
+            )
+        return blocks
 
     # Optional rich version of description with inline entity links.
     description_content: StoryContent | None = None
@@ -204,6 +240,22 @@ class SessionPrep(BaseModel):
     reference_ids: list[str] = Field(default_factory=list)
 
 
+class SessionEntry(BaseModel):
+    """A DM's record of events and reminders, distinct from party actions."""
+
+    id: str = Field(min_length=1)
+    kind: Literal["dm_note", "npc_action", "world_change", "follow_up"] = "dm_note"
+    description: str = Field(min_length=1)
+    session: int = Field(ge=1)
+    story_beat: str | None = None
+    npc_ids: list[str] = Field(default_factory=list)
+    source_action_id: str | None = None
+    source_entry_id: str | None = None
+    consequence_ids: list[str] = Field(default_factory=list)
+    resolved: bool = False
+    recorded_at: str | None = None
+
+
 class CampaignStory(BaseModel):
     combat_results: list[CombatResult] = Field(default_factory=list)
     beats: list[StoryBeat] = Field(default_factory=list)
@@ -211,6 +263,17 @@ class CampaignStory(BaseModel):
     current_beat: str | None = None
 
     player_actions: list[PlayerAction] = Field(default_factory=list)
+
+    session_entries: list[SessionEntry] = Field(default_factory=list)
+
+    @field_validator("session_entries")
+    @classmethod
+    def unique_session_entry_ids(
+        cls, entries: list[SessionEntry]
+    ) -> list[SessionEntry]:
+        if len({entry.id for entry in entries}) != len(entries):
+            raise ValueError("Session entry IDs must be unique within a campaign.")
+        return entries
 
     session_recaps: list[SessionRecap] = Field(default_factory=list)
 

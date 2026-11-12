@@ -6,11 +6,12 @@ app and the phone are connected to the same trusted Wi-Fi network.
 Start both servers with one command from the repository root:
 
 ```bash
-./scripts/start-world-builder.sh
+./start.sh
 ```
 
-The script starts the API bound to the computer and the Vite frontend on the
-LAN interface. On the computer, open:
+The default Vite configuration listens on the LAN interface, so both `start.sh`
+and `scripts/start-world-builder.sh` support phone access. The API stays bound to
+the computer. On the computer, open:
 
 ```text
 http://localhost:5173

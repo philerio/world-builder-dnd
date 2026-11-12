@@ -41,7 +41,7 @@ class Canvas {
       this.operations.push(
         source instanceof Canvas
           ? { layer: source.record() }
-          : { image: objectUrls.get(source.src) ?? source.src, bounds }
+          : { image: objectUrls.get(source.src) ?? source.src, bounds },
       ),
     measureText: (text) => ({ width: text.length * 10 }),
     beginPath() {},
@@ -49,7 +49,7 @@ class Canvas {
     lineTo() {},
     closePath() {},
     roundRect() {},
-    stroke() {},
+    stroke: () => this.operations.push({ stroke: this.context.strokeStyle }),
     arc() {},
     save() {},
     restore() {},
@@ -69,7 +69,7 @@ class Canvas {
   }
   toBlob(callback, type) {
     callback(
-      failExport ? null : new Blob([JSON.stringify(this.record())], { type })
+      failExport ? null : new Blob([JSON.stringify(this.record())], { type }),
     );
   }
 }
@@ -86,7 +86,7 @@ class SourceImage {
     queueMicrotask(() =>
       failSpriteDecode && value.startsWith("blob:")
         ? this.onerror()
-        : this.onload()
+        : this.onload(),
     );
   }
   get src() {
@@ -194,7 +194,7 @@ const labels = (image) =>
   image.operations.flatMap((operation) =>
     operation.label && !["•", "♜", "▦"].includes(operation.label)
       ? [operation.label]
-      : []
+      : [],
   );
 
 test("paired exports use one source and identical bounds; only the player image contains fog and masks", async () => {
@@ -209,19 +209,43 @@ test("paired exports use one source and identical bounds; only the player image 
   assert.ok(
     player.operations.some((operation) =>
       operation.layer?.operations.some(
-        (op) => op.composite === "destination-out"
-      )
-    )
+        (op) => op.composite === "destination-out",
+      ),
+    ),
   );
   assert.ok(
-    player.operations.some((operation) => operation.fill === "#14161b")
+    player.operations.some((operation) => operation.fill === "#14161b"),
   );
   assert.equal(
     dm.operations.some(
-      (operation) => operation.layer || operation.fill === "#14161b"
+      (operation) => operation.layer || operation.fill === "#14161b",
     ),
-    false
+    false,
   );
+});
+
+test("point style colors survive both player and DM flattening", async () => {
+  const source = map();
+  source.fog_of_war.enabled = false;
+  source.markers = [
+    {
+      id: "styled",
+      type: "point",
+      x: 50,
+      y: 50,
+      visible: true,
+      icon: "castle",
+      fill_color: "#80b8d9",
+      hide_label: true,
+    },
+  ];
+  const pair = await flattenMapPair(source);
+  for (const blob of [pair.player, pair.dm]) {
+    const image = JSON.parse(await blob.text());
+    assert.ok(
+      image.operations.some((operation) => operation.stroke === "#80b8d9"),
+    );
+  }
 });
 
 test("publishing sends the fogged and full images together with the stable map ID", async () => {
@@ -241,7 +265,7 @@ test("the legacy player-only exporter still omits DM markers and keeps fog masks
   const player = JSON.parse(await (await flattenMapForPlayer(map())).text());
   assert.deepEqual(labels(player), ["Entrance"]);
   assert.ok(
-    player.operations.some((operation) => operation.fill === "#14161b")
+    player.operations.some((operation) => operation.fill === "#14161b"),
   );
 });
 
@@ -252,7 +276,7 @@ test("an outdated combat API produces an upgrade message without falling back to
   };
   await assert.rejects(
     publishMapToCombat("http://localhost:3000", map()),
-    /Update and restart/
+    /Update and restart/,
   );
   assert.equal(requests.length, 1);
   assert.ok(requests[0].url.endsWith("/player/map/pair"));
@@ -262,7 +286,7 @@ test("failed canvas exports never publish a partial pair", async () => {
   failExport = true;
   await assert.rejects(
     publishMapToCombat("http://localhost:3000", map()),
-    /Could not export/
+    /Could not export/,
   );
   assert.equal(requests.length, 0);
 });
@@ -288,49 +312,49 @@ test("sprite exports fetch fresh CORS blobs once per pair and preserve aspect ra
   assert.equal(imageLoads, 3);
   assert.deepEqual(spriteRequests, [
     {
-      url: "http://localhost:8000/map-sprites/crystal.png",
+      url: "/map-sprites/crystal.png",
       mode: "cors",
       cache: "no-store",
     },
     {
-      url: "http://localhost:8000/map-assets/secret.png",
+      url: "/map-assets/secret.png",
       mode: "cors",
       cache: "no-store",
     },
   ]);
   const sprite = player.operations.find((op) =>
-    op.image?.endsWith("/crystal.png")
+    op.image?.endsWith("/crystal.png"),
   );
   const size = (100 * 4096) / 4400;
   assert.deepEqual(sprite.bounds, [-size / 2, -size / 4, size, size / 2]);
   assert.ok(player.operations.some((op) => op.rotate === Math.PI / 2));
   assert.ok(
-    player.operations.some((op) => JSON.stringify(op.scale) === "[-1,-1]")
+    player.operations.some((op) => JSON.stringify(op.scale) === "[-1,-1]"),
   );
   assert.ok(
     player.operations.some(
-      (op) => JSON.stringify(op.translate) === "[409.6,204.8]"
-    )
+      (op) => JSON.stringify(op.translate) === "[409.6,204.8]",
+    ),
   );
   assert.equal(
     player.operations.some((op) => op.image?.endsWith("/secret.png")),
-    false
+    false,
   );
   assert.ok(dm.operations.some((op) => op.image?.endsWith("/secret.png")));
   assert.equal(
     player.operations.some((op) => op.label === "•"),
-    false
+    false,
   );
   assert.equal(
     dm.operations.some((op) => op.label === "•"),
-    false
+    false,
   );
   assert.deepEqual(revokedUrls.sort(), [...objectUrls.keys()].sort());
 });
 
 test("player-only exports never request hidden or DM-only sprites", async () => {
   const player = JSON.parse(
-    await (await flattenMapForPlayer(spriteMap())).text()
+    await (await flattenMapForPlayer(spriteMap())).text(),
   );
   assert.equal(spriteRequests.length, 1);
   assert.ok(player.operations.some((op) => op.image?.endsWith("/crystal.png")));
@@ -344,7 +368,7 @@ test("missing public or DM-only sprites stop publishing instead of silently beco
       publishMapToCombat("http://localhost:3000", spriteMap()),
       (error) =>
         error.message.includes(path) &&
-        /Could not load map sprite/.test(error.message)
+        /Could not load map sprite/.test(error.message),
     );
     assert.equal(requests.length, 0);
   }
@@ -354,7 +378,7 @@ test("sprite decode failures revoke blob URLs and leave the published pair untou
   failSpriteDecode = true;
   await assert.rejects(
     publishMapToCombat("http://localhost:3000", spriteMap()),
-    /Could not load map sprite/
+    /Could not load map sprite/,
   );
   assert.equal(requests.length, 0);
   assert.deepEqual(revokedUrls.sort(), [...objectUrls.keys()].sort());

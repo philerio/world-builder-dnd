@@ -1,22 +1,22 @@
 id: elligaesia-independent-nations-lore
 name: Elligaesia and Its Independent Nations
-description: Teth, Umbara, Serenno, Scarif, Ryloth, Nevarro, and Mortis govern independently while cooperating
-  on trade and policies shared across the region.
+description: Teth, Umbara, Serenno, Scarif, Ryloth, Nevarro, and Mortis govern independently
+  while cooperating on trade and policies shared across the region.
 tags:
 - world-lore
+created: '2026-11-10T14:20:28.915334'
+updated: '2026-11-10T14:20:28.915337'
 player_knowledge: null
-common_knowledge: Northern Elligaesia is a kingdom whose nations govern themselves while cooperating on
-  shared trade and policy. Its nations include Teth, Umbara, Serenno, Scarif, Ryloth, Nevarro, and Mortis.
-  The closure of the southern road has created trade pressure as northern nations compensate for goods
-  no longer arriving from Batik.
+common_knowledge: Northern Elligaesia is a kingdom whose nations govern themselves
+  while cooperating on shared trade and policy. Its nations include Teth, Umbara,
+  Serenno, Scarif, Ryloth, Nevarro, and Mortis. The closure of the southern road has
+  created trade pressure as northern nations compensate for goods no longer arriving
+  from Batik.
 common_knowledge_locations:
 - elligaesia
-details: Northern Elligaesia is a kingdom whose nations govern themselves while cooperating on shared
-  trade and policy. Its nations include Teth, Umbara, Serenno, Scarif, Ryloth, Nevarro, and Mortis. The
-  closure of the southern road has created trade pressure as northern nations compensate for goods no
-  longer arriving from Batik.
-dm_notes: The source document uses “country-state” for the named nations, but the setting hierarchy is
-  Kingdom → Nation → City. Batik is a separate kingdom to the south. Elligaesia remains modeled as the
-  continent; the source uses the name both broadly and politically. The source does not define a central
-  government or a formal name for a union of the independent nations.
+details: Northern Elligaesia is a kingdom whose nations govern themselves while cooperating
+  on shared trade and policy. Its nations include Teth, Umbara, Serenno, Scarif, Ryloth,
+  Nevarro, and Mortis. The closure of the southern road has created trade pressure
+  as northern nations compensate for goods no longer arriving from Batik.
+dm_notes: ''
 campaigns: []

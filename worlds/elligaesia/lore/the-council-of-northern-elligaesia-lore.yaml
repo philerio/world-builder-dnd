@@ -1,0 +1,19 @@
+id: the-council-of-northern-elligaesia-lore
+name: The Council of Northern Elligaesia
+description: The ruling government body of Northern Elligaesia
+tags: []
+created: '2026-11-10T14:19:06.397228'
+updated: '2026-11-10T14:19:06.397232'
+player_knowledge: null
+common_knowledge: 'Krennic is the current king. There are 8 different rules at any
+  given time within the Council. Krennic has been the king for the past 15 years. '
+common_knowledge_locations:
+- north-elligaesia
+details: 'The northern kingdom of Elligaesia is divided into 8 nations. Each nation
+  is ruled by their own government body. In order to have relations between the different
+  nations, they all meet at the capitol of the kingdom, Citadel City, to discuss politics.
+  This political body is known as The Council. They all vote to see who is the new
+  King whenever a nation''s government body changes. To replace the current king requires
+  a majority of votes to replace. The current king is Krennic of Scarif. '
+dm_notes: null
+campaigns: []

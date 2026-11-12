@@ -30,6 +30,7 @@ type WorldDataContextValue = {
   updateEntity: (
     entityId: string,
     entity: Record<string, unknown>,
+    expectedRevision?: string,
   ) => Promise<EntityData>;
   deleteEntity: (entityId: string) => Promise<void>;
   createEntity: (
@@ -209,7 +210,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
   );
 
   const updateEntity = useCallback(
-    async (entityId: string, entity: Record<string, unknown>) => {
+    async (entityId: string, entity: Record<string, unknown>, expectedRevision?: string) => {
       const response = await fetch(
         `${API_BASE_URL}/entities/${entityId}`,
         {
@@ -217,7 +218,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(entity),
+          body: JSON.stringify(expectedRevision ? { ...entity, _expected_revision: expectedRevision } : entity),
         },
       );
 
@@ -229,7 +230,7 @@ export function WorldDataProvider({ children }: WorldDataProviderProps) {
             ? result.detail
             : "Failed to update entity.";
 
-        throw new Error(message);
+        throw Object.assign(new Error(message), { status: response.status });
       }
 
       const updatedEntity = result as EntityData;

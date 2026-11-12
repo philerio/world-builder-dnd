@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 from uuid import uuid4
 
@@ -525,6 +526,7 @@ def get_world() -> dict:
 
 
 @app.get("/entities/{entity_id}")
+@serialized_world_write
 def get_entity(entity_id: str) -> dict:
     registry = load_world_registry(WORLD_PATH)
 
@@ -542,7 +544,15 @@ def get_entity(entity_id: str) -> dict:
         "id": entity_id,
         "entity_type": entity_type,
         "entity": entity.model_dump(mode="json"),
+        **({"revision": _map_revision(entity_id)} if entity_type == "map" else {}),
     }
+
+
+def _map_revision(entity_id: str) -> str:
+    """Hash authored bytes so legacy maps without timestamps also have stable revisions."""
+    model = get_entity_model("map")
+    source, _ = WorldService(WORLD_PATH.parent).read_entity_yaml(entity_id, model)
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()
 
 
 @app.get("/entities")
@@ -724,6 +734,10 @@ def update_entity(
         )
 
     model = get_entity_model(registry.get_entity_type(entity_id) or "")
+    expected_revision = payload.pop("_expected_revision", None)
+    if expected_revision is not None and registry.get_entity_type(entity_id) == "map":
+        if expected_revision != _map_revision(entity_id):
+            raise HTTPException(status_code=409, detail="This map changed while you were saving. Reload its latest version and merge your draft before retrying.")
     preserve_combat_history(existing_entity, payload)
     
     if model is None:
@@ -750,6 +764,7 @@ def update_entity(
         "entity_type": registry.get_entity_type(entity_id),
         "entity": updated_entity.model_dump(mode="json"),
         "path": str(path),
+        **({"revision": _map_revision(entity_id)} if registry.get_entity_type(entity_id) == "map" else {}),
     }
 
 

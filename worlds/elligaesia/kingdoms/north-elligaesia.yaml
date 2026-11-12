@@ -1,7 +1,37 @@
 id: north-elligaesia
 name: Northern Elligaesia
 description: The northern kingdom of Elligaesia, containing several self-governing nations.
-ruler: null
-capital: null
+ruler: krennic
+capital: scarif-citadel-city
 continent: elligaesia
 political_level: kingdom
+government_type: Ruling council with an elected High Ruler
+government_notes: |-
+  Northern Elligaesia is governed by a ruling council made up of the political leaders of its nations.
+
+  The national leaders vote to choose the council's High Ruler. A sitting High Ruler can only be replaced when all of the other national leaders agree to replace them.
+
+  The kingdom's current capital is located in the High Ruler's nation. Krennic of Scarif is the current High Ruler, and Citadel City in Scarif is the current capital.
+leadership:
+- id: northern-elligaesia-ruling-council
+  title: Ruling Council
+  holders: []
+  reports_to: []
+  authority: Governs Northern Elligaesia and elects the High Ruler.
+  status: Current
+  notes: |-
+    Membership consists of the political leaders of the nations of Northern Elligaesia.
+    Replacing a sitting High Ruler requires the agreement of all the other national leaders.
+- id: northern-elligaesia-high-ruler
+  title: High Ruler
+  holders:
+  - krennic
+  reports_to:
+  - entity_id: north-elligaesia
+    office_id: northern-elligaesia-ruling-council
+  authority: Leads the ruling council after being elected by the national leaders.
+  status: Current
+  notes: |-
+    Krennic, the elected official of Scarif, is the current High Ruler.
+    The kingdom's capital is located in the High Ruler's nation, currently Citadel City in Scarif.
+    All of the other national leaders must agree before the High Ruler can be replaced.

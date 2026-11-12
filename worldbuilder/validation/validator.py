@@ -491,6 +491,33 @@ def validate_campaign_references(
             ["story"],
         )
     elif isinstance(campaign.story, CampaignStory):
+        story = campaign.story
+        beat_ids = {beat.id for beat in story.beats}
+        action_ids = {action.id for action in story.player_actions}
+        entry_ids = {entry.id for entry in story.session_entries}
+        consequence_ids = {
+            consequence.id for beat in story.beats for consequence in beat.consequences
+        }
+        for entry_index, entry in enumerate(story.session_entries):
+            for npc_index, npc_id in enumerate(entry.npc_ids):
+                validate_reference(
+                    result,
+                    registry.npcs,
+                    npc_id,
+                    "NPC",
+                    reference_type="npc",
+                    reference_path=["story", "session_entries", entry_index, "npc_ids", npc_index],
+                )
+            for value, available, label in (
+                (entry.story_beat, beat_ids, "plot point"),
+                (entry.source_action_id, action_ids, "party action"),
+                (entry.source_entry_id, entry_ids - {entry.id}, "source journal entry"),
+            ):
+                if value and value not in available:
+                    result.add_error(f"Unknown {label} in session journal: {value}")
+            for consequence_id in entry.consequence_ids:
+                if consequence_id not in consequence_ids:
+                    result.add_error(f"Unknown consequence in session journal: {consequence_id}")
         for action_index, action in enumerate(campaign.story.player_actions):
             for story_index, story_id in enumerate(action.world_stories):
                 validate_reference(
